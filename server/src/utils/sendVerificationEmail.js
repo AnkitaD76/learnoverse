@@ -1,14 +1,14 @@
 import sendEmail from './sendEmail.js';
 
 const sendVerificationEmail = async ({
-  name,
-  email,
-  verificationToken,
-  origin,
+    name,
+    email,
+    verificationToken,
+    origin,
 }) => {
-  const verifyEmail = `${origin}/verify-email?token=${verificationToken}&email=${email}`;
+    const verifyEmail = `${origin}/verify-email?token=${verificationToken}&email=${email}`;
 
-  const htmlTemplate = `
+    const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -59,11 +59,11 @@ const sendVerificationEmail = async ({
     </html>
   `;
 
-  return sendEmail({
-    to: email,
-    subject: '🐾 Pet Management System - Verify Your Email',
-    html: htmlTemplate,
-  });
+    return sendEmail({
+        to: email,
+        subject: '🐾 Pet Management System - Verify Your Email',
+        html: htmlTemplate,
+    });
 };
 
 export default sendVerificationEmail;

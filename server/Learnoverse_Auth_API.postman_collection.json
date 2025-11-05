@@ -1,0 +1,480 @@
+{
+    "info": {
+        "name": "Learnoverse Auth API",
+        "_postman_id": "learnoverse-auth-v1",
+        "description": "Complete authentication and authorization API for Learnoverse",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "BASE_URL",
+            "value": "http://localhost:3000/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "ACCESS_TOKEN",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@123456\",\n  \"age\": 25,\n  \"gender\": \"male\",\n  \"location\": {\n    \"country\": \"USA\",\n    \"state\": \"California\",\n    \"city\": \"San Francisco\"\n  },\n  \"occupation\": \"Software Engineer\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/register",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "register"]
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"verificationToken\": \"YOUR_VERIFICATION_TOKEN\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/verify-email",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "verify-email"]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.environment.set('ACCESS_TOKEN', response.accessToken);",
+                                    "    pm.collectionVariables.set('ACCESS_TOKEN', response.accessToken);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test@123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/login",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "Login as Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.environment.set('ACCESS_TOKEN', response.accessToken);",
+                                    "    pm.collectionVariables.set('ACCESS_TOKEN', response.accessToken);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@learnoverse.com\",\n  \"password\": \"Admin@123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/login",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/refresh-token",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "refresh-token"]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/forgot-password",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "forgot-password"]
+                        }
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"test@example.com\",\n  \"token\": \"YOUR_RESET_TOKEN\",\n  \"password\": \"NewPassword@123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/reset-password",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "reset-password"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User Profile",
+            "item": [
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/me",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "me"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/me",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "me"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update My Profile",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\",\n  \"age\": 26,\n  \"occupation\": \"Senior Software Engineer\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/me",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "me"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Password",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"Test@123456\",\n  \"newPassword\": \"NewPassword@123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/update-password",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "update-password"]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/logout",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "logout"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Session Management",
+            "item": [
+                {
+                    "name": "Get Active Sessions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/sessions",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "sessions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Revoke All Sessions",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/revoke-all-sessions",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "revoke-all-sessions"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Dashboards",
+            "item": [
+                {
+                    "name": "Student Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/student/dashboard",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "student", "dashboard"]
+                        }
+                    }
+                },
+                {
+                    "name": "Instructor Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/instructor/dashboard",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "instructor", "dashboard"]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/admin/dashboard",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "admin", "dashboard"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin - User Management",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/admin/users?page=1&limit=20",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["users", "admin", "users"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "role",
+                                    "value": "student",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "active",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "john",
+                                    "disabled": true
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update User Role",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{ACCESS_TOKEN}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"instructor\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/users/admin/users/:userId/role",
+                            "host": ["{{BASE_URL}}"],
+                            "path": [
+                                "users",
+                                "admin",
+                                "users",
+                                ":userId",
+                                "role"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "USER_ID_HERE"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,9 +1,9 @@
 import sendEmail from './sendEmail';
 
 const sendResetPasswordEmail = async ({ name, email, token, origin }) => {
-  const resetURL = `${origin}/reset-password?token=${token}&email=${email}`;
+    const resetURL = `${origin}/reset-password?token=${token}&email=${email}`;
 
-  const htmlTemplate = `
+    const htmlTemplate = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -48,11 +48,11 @@ const sendResetPasswordEmail = async ({ name, email, token, origin }) => {
     </html>
   `;
 
-  return sendEmail({
-    to: email,
-    subject: 'Password Reset Request',
-    html: htmlTemplate,
-  });
+    return sendEmail({
+        to: email,
+        subject: 'Password Reset Request',
+        html: htmlTemplate,
+    });
 };
 
 export default sendResetPasswordEmail;

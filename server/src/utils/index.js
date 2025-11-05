@@ -6,12 +6,12 @@ import createHash from './createHash.js';
 import authorizePermissions from './authorizePermissions.js';
 
 export {
-  createJWT,
-  isTokenValid,
-  attachCookiesToResponse,
-  createTokenUser,
-  checkPermissions,
-  sendVerificationEmail,
-  createHash,
-  authorizePermissions,
+    createJWT,
+    isTokenValid,
+    attachCookiesToResponse,
+    createTokenUser,
+    checkPermissions,
+    sendVerificationEmail,
+    createHash,
+    authorizePermissions,
 };

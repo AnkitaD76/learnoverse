@@ -1,51 +1,88 @@
 import { UnauthorizedError } from '../errors/index.js';
 
 const authorizePermissions = requiredPermissions => {
-  return (req, res, next) => {
-    // Get user roles from authenticated request
-    const userRoles = req.user.roles;
+    return async (req, res, next) => {
+        try {
+            const userRole = req.user.role;
 
-    // Check if user has admin role
-    const isAdmin = userRoles.some(role => role.name === 'admin');
-    if (isAdmin) {
-      return next(); // Admin has full access
-    }
+            // Admin has full access
+            if (userRole === 'admin') {
+                return next();
+            }
 
-    // For other roles, check specific permissions
-    const hasPermission = userRoles.some(role => {
-      return role.permissions.some(permission => {
-        // Check if the role has full management permission
-        if (
-          permission.resource === 'all' &&
-          permission.actions.includes('manage')
-        ) {
-          return true;
+            // For simple role-based authorization, check if required permission needs admin
+            // In this simplified version, we check resource 'all' with action 'manage' = admin only
+            const requiresAdmin = requiredPermissions.some(
+                perm => perm.resource === 'all' && perm.action === 'manage'
+            );
+
+            if (requiresAdmin) {
+                throw new UnauthorizedError(
+                    'You do not have permission to perform this action'
+                );
+            }
+
+            // Check specific permissions based on role
+            // Instructor can create courses, content, assignments, grades
+            if (userRole === 'instructor') {
+                const hasPermission = requiredPermissions.every(
+                    ({ resource, action }) => {
+                        const instructorPermissions = {
+                            courses: ['create', 'read', 'update', 'delete'],
+                            content: ['create', 'read', 'update', 'delete'],
+                            assignments: ['create', 'read', 'update', 'delete'],
+                            grades: ['create', 'read', 'update'],
+                            students: ['read'],
+                        };
+
+                        return (
+                            instructorPermissions[resource] &&
+                            instructorPermissions[resource].includes(action)
+                        );
+                    }
+                );
+
+                if (hasPermission) {
+                    return next();
+                }
+            }
+
+            // Student has read-only access to courses and content
+            if (userRole === 'student') {
+                const hasPermission = requiredPermissions.every(
+                    ({ resource, action }) => {
+                        const studentPermissions = {
+                            courses: ['read'],
+                            content: ['read'],
+                            assignments: ['read', 'create'], // Can submit
+                            profile: ['read', 'update'], // Own profile
+                        };
+
+                        return (
+                            studentPermissions[resource] &&
+                            studentPermissions[resource].includes(action)
+                        );
+                    }
+                );
+
+                if (hasPermission) {
+                    return next();
+                }
+            }
+
+            throw new UnauthorizedError(
+                'You do not have permission to perform this action'
+            );
+        } catch (error) {
+            next(error);
         }
-
-        // Check specific resource and action permissions
-        return requiredPermissions.every(({ resource, action }) => {
-          return (
-            permission.resource === resource &&
-            permission.actions.includes(action)
-          );
-        });
-      });
-    });
-
-    if (!hasPermission) {
-      throw new UnauthorizedError(
-        'You do not have permission to perform this action'
-      );
-    }
-
-    next();
-  };
+    };
 };
 
 // Helper function to create permission requirements
 authorizePermissions.createPermission = (resource, action) => ({
-  resource,
-  action,
+    resource,
+    action,
 });
 
 export default authorizePermissions;
