@@ -57,8 +57,7 @@ app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 3000;
 const MONGO_URI =
-    process.env.MONGO_URI ||
-    'mongodb+srv://hirokr0625:lernoverse22@first.ixrytin.mongodb.net/lernoverse?appName=first';
+    process.env.MONGO_URI || "";
 
 const start = async () => {
     try {

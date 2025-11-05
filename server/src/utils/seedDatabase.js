@@ -4,8 +4,7 @@ import Role from '../models/Role.js';
 import User from '../models/User.js';
 
 const MONGO_URI =
-    process.env.MONGO_URI ||
-    'mongodb+srv://hirokr0625:lernoverse22@first.ixrytin.mongodb.net/lernoverse?appName=first';
+    process.env.MONGO_URI;
 
 /**
  * Seed default roles and optionally create admin user
