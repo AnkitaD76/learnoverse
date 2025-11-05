@@ -1,8 +1,14 @@
+import { BrowserRouter } from 'react-router-dom';
+import { SessionProvider } from './contexts/SessionContext';
+import { AppRouter } from './router';
+
 function App() {
   return (
-    <>
-      <h1>Learnoverse</h1>
-    </>
+    <BrowserRouter>
+      <SessionProvider>
+        <AppRouter />
+      </SessionProvider>
+    </BrowserRouter>
   );
 }
 
