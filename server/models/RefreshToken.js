@@ -1,29 +1,31 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const RefreshTokenSchema = new mongoose.Schema({
+const RefreshTokenSchema = new mongoose.Schema(
+  {
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
     token: {
-        type: String,
-        required: true,
-        unique: true,
+      type: String,
+      required: true,
+      unique: true,
     },
 
     expiresAt: {
-        type: Date,
-        required: true,
-        index: { expires: 0 },
+      type: Date,
+      required: true,
+      index: { expires: 0 },
     },
 
     isRevoked: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
-}, { timestamps: true });
+  },
+  { timestamps: true },
+);
 
-
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+module.exports = mongoose.model("RefreshToken", RefreshTokenSchema);
