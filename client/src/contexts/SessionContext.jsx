@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient, {
   setAccessToken,
   clearAccessToken,
-  getAccessToken,
+  // getAccessToken,
 } from '../api/client';
 
 const SessionContext = createContext(null);
@@ -35,6 +35,7 @@ export const SessionProvider = ({ children }) => {
         setIsAuthenticated(true);
       } catch (error) {
         // No valid session
+        console.log(error);
         clearAccessToken();
         setUser(null);
         setIsAuthenticated(false);

@@ -64,7 +64,7 @@ apiClient.interceptors.response.use(
         const response = await refreshTokenPromise;
         refreshTokenPromise = null;
 
-        const { accessToken: newAccessToken, user } = response.data;
+        const { accessToken: newAccessToken } = response.data;
         setAccessToken(newAccessToken);
 
         // Retry the original request with new token

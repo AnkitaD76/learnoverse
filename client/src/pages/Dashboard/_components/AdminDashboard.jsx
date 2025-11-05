@@ -14,6 +14,7 @@ export const AdminDashboard = () => {
         const response = await apiClient.get('/users/admin/dashboard');
         setStats(response.data.dashboard);
       } catch (err) {
+        console.log(err);
         setError('Failed to load dashboard data');
       } finally {
         setIsLoading(false);
