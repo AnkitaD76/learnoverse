@@ -61,7 +61,7 @@ export const ProfileEditForm = ({ user }) => {
         payload.location = formData.location;
       }
 
-      await apiClient.patch('/users/me', payload);
+      await apiClient.patch('/users/updateUser', payload);
       await refreshUser();
 
       setMessage('Profile updated successfully!');

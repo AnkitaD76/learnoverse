@@ -11,8 +11,8 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await apiClient.get('/users/admin/dashboard');
-        setStats(response.data.dashboard);
+        const response = await apiClient.get('/admin/stats');
+        setStats(response.data.stats);
       } catch (err) {
         console.log(err);
         setError('Failed to load dashboard data');

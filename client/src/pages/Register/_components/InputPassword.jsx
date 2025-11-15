@@ -1,4 +1,4 @@
-import { Input } from '../../../components/Input';
+import { PasswordInput } from '../../../components/passwordInput';
 
 export const InputPassword = ({
   value,
@@ -7,8 +7,7 @@ export const InputPassword = ({
   label = 'Password',
 }) => {
   return (
-    <Input
-      type="password"
+    <PasswordInput
       label={label}
       placeholder="Enter your password"
       value={value}

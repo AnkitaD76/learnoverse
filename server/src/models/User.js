@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import validator, { trim } from "validator";
+import validator from "validator";
 import bcrypt from "bcryptjs";
 
 const UserSchema = new mongoose.Schema(

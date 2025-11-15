@@ -95,7 +95,7 @@ export const SessionProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const response = await apiClient.get('/auth/me');
+      const response = await apiClient.get('/users/showMe');
       setUser(response.data.user);
       return { success: true, user: response.data.user };
     } catch (error) {
