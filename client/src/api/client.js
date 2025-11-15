@@ -15,9 +15,6 @@ const apiClient = axios.create({
 // Store for access token (in memory only)
 let accessToken = null;
 
-// Store for token refresh promise (prevents multiple simultaneous refresh calls)
-let refreshTokenPromise = null;
-
 export const setAccessToken = token => {
   accessToken = token;
 };
@@ -43,42 +40,18 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle token refresh
+// Response interceptor - handle session expiration
 apiClient.interceptors.response.use(
   response => {
     return response;
   },
   async error => {
-    const originalRequest = error.config;
+    // If error is 401, session has expired
+    if (error.response?.status === 401) {
+      clearAccessToken();
 
-    // If error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // If a refresh is already in progress, wait for it
-        if (!refreshTokenPromise) {
-          refreshTokenPromise = apiClient.post('/auth/refresh-token');
-        }
-
-        const response = await refreshTokenPromise;
-        refreshTokenPromise = null;
-
-        const { accessToken: newAccessToken } = response.data;
-        setAccessToken(newAccessToken);
-
-        // Retry the original request with new token
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        refreshTokenPromise = null;
-        clearAccessToken();
-
-        // Redirect to login or trigger logout
-        window.dispatchEvent(new CustomEvent('auth:session-expired'));
-
-        return Promise.reject(refreshError);
-      }
+      // Trigger session expired event
+      window.dispatchEvent(new CustomEvent('auth:session-expired'));
     }
 
     return Promise.reject(error);

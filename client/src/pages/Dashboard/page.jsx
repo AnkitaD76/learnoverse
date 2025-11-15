@@ -31,9 +31,9 @@ const DashboardPage = () => {
           <LogoutButton />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           {/* Left Column - User Profile */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <Card>
               <UserAvatar name={user?.name} email={user?.email} />
 
@@ -48,7 +48,7 @@ const DashboardPage = () => {
           </div>
 
           {/* Right Column - Role-Based Dashboard */}
-          <div className="lg:col-span-2">{renderRoleBasedDashboard()}</div>
+          <div className="lg:col-span-3">{renderRoleBasedDashboard()}</div>
         </div>
       </div>
     </div>

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import apiClient, {
   setAccessToken,
   clearAccessToken,
-  // getAccessToken,
 } from '../api/client';
 
 const SessionContext = createContext(null);
@@ -26,16 +25,13 @@ export const SessionProvider = ({ children }) => {
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        // Try to refresh token on mount
-        const response = await apiClient.post('/auth/refresh-token');
-        const { accessToken, user } = response.data;
+        const response = await apiClient.get('/users/showMe');
+        const { user } = response.data;
 
-        setAccessToken(accessToken);
         setUser(user);
         setIsAuthenticated(true);
       } catch (error) {
-        // No valid session
-        console.log(error);
+        // No valid access token cookie - user needs to log in
         clearAccessToken();
         setUser(null);
         setIsAuthenticated(false);
@@ -45,9 +41,7 @@ export const SessionProvider = ({ children }) => {
     };
 
     initializeSession();
-  }, []);
-
-  // Listen for session expiration events
+  }, []); // Listen for session expiration events
   useEffect(() => {
     const handleSessionExpired = () => {
       setUser(null);

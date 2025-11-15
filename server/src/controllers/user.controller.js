@@ -65,7 +65,18 @@ export const showCurrentUser = async (req, res) => {
  * @access  Private
  */
 export const updateUser = async (req, res) => {
-    const { name, email, phone, country, city, bio, interests } = req.body;
+    const {
+        name,
+        email,
+        phone,
+        country,
+        city,
+        bio,
+        interests,
+        avater,
+        dateOfBirth,
+        gender,
+    } = req.body;
 
     if (!name && !email) {
         throw new BadRequestError('Please provide name or email');
@@ -94,17 +105,16 @@ export const updateUser = async (req, res) => {
     if (city) user.city = city;
     if (bio) user.bio = bio;
     if (interests) user.interests = interests;
+    if (avater) user.avater = avater;
+    if (dateOfBirth) user.dateOfBirth = dateOfBirth;
+    if (gender) user.gender = gender;
 
     await user.save();
 
     res.status(StatusCodes.OK).json({
         success: true,
         message: 'User profile updated successfully',
-        user: {
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        },
+        user,
     });
 };
 

@@ -1,9 +1,8 @@
-import { Input } from '../../../components/Input';
+import { PasswordInput } from '../../../components/passwordInput';
 
 export const NewPasswordInput = ({ value, onChange, error }) => {
   return (
-    <Input
-      type="password"
+    <PasswordInput
       label="New Password"
       placeholder="Enter your new password"
       value={value}

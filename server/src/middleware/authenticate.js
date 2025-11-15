@@ -4,8 +4,16 @@ import { UnauthenticatedError } from '../errors/index.js';
 
 export const authenticate = async (req, res, next) => {
     try {
-        // Get token from cookies
-        const { accessToken } = req.signedCookies;
+        // Get token from Authorization header or cookies
+        let accessToken = req.signedCookies.accessToken;
+
+        // If no cookie, check Authorization header
+        if (!accessToken) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                accessToken = authHeader.substring(7);
+            }
+        }
 
         if (!accessToken) {
             throw new UnauthenticatedError('Authentication required');
@@ -55,33 +63,6 @@ export const authenticate = async (req, res, next) => {
     }
 };
 
-export const optionalAuthenticate = async (req, res, next) => {
-    try {
-        const { accessToken } = req.signedCookies;
-
-        if (!accessToken) {
-            return next();
-        }
-
-        const decoded = verifyJWT(accessToken);
-        const user = await User.findById(decoded.userId).select('-password');
-
-        if (user && user.isActive) {
-            req.user = {
-                userId: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                isVerified: user.isVerified,
-            };
-        }
-
-        next();
-    } catch (error) {
-        // Silently fail and continue without user
-        next();
-    }
-};
 
 export const requireVerification = (req, res, next) => {
     if (!req.user) {

@@ -2,6 +2,7 @@ export const Button = ({
   children,
   variant = 'primary',
   isLoading,
+  className,
   ...props
 }) => {
   const baseStyles =
@@ -16,7 +17,7 @@ export const Button = ({
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]}`}
+      className={`${baseStyles} ${variants[variant]} ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { StatusCodes } from 'http-status-codes';
-import { User, RefreshToken } from '../models/index.js';
+import { User } from '../models/index.js';
 import {
     BadRequestError,
     UnauthenticatedError,
@@ -8,10 +8,8 @@ import {
 } from '../errors/index.js';
 import {
     createAccessToken,
-    createRefreshToken,
     attachCookiesToResponse,
     clearAuthCookies,
-    verifyJWT,
 } from '../utils/jwt.js';
 import { createTokenUser } from '../utils/createTokenUser.js';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
@@ -111,7 +109,11 @@ export const verifyEmail = async (req, res) => {
     }
 
     if (user.isVerified) {
-        throw new BadRequestError('Email already verified');
+        res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: 'Email already verified',
+        });
+        return;
     }
 
     // Check if token matches and is not expired
@@ -171,38 +173,13 @@ export const login = async (req, res) => {
     }
 
     // Create token user
-    const tokenUser = createTokenUser(user);
-
-    // Create refresh token
-    let refreshToken = '';
-
-    // Check for existing refresh token
-    const existingToken = await RefreshToken.findOne({ user: user._id });
-
-    if (existingToken) {
-        if (!existingToken.isValid) {
-            throw new UnauthenticatedError('Invalid credentials');
-        }
-        refreshToken = existingToken.refreshToken;
-    } else {
-        // Create new refresh token
-        refreshToken = createRefreshToken(user);
-        const userAgent = req.headers['user-agent'] || 'unknown';
-        const ip = req.ip;
-
-        await RefreshToken.create({
-            refreshToken,
-            user: user._id,
-            userAgent,
-            ip,
-        });
-    }
+    // const tokenUser = createTokenUser(user);
 
     // Create access token
     const accessToken = createAccessToken(user);
 
     // Attach cookies
-    attachCookiesToResponse({ res, accessToken, refreshToken });
+    attachCookiesToResponse({ res, accessToken });
 
     // Update last login
     user.lastLogin = Date.now();
@@ -211,7 +188,8 @@ export const login = async (req, res) => {
     res.status(StatusCodes.OK).json({
         success: true,
         message: 'Login successful',
-        user: tokenUser,
+        accessToken,
+        user,
     });
 };
 
@@ -221,13 +199,6 @@ export const login = async (req, res) => {
  * @access  Private
  */
 export const logout = async (req, res) => {
-    const { refreshToken } = req.signedCookies;
-
-    if (refreshToken) {
-        // Delete refresh token from database
-        await RefreshToken.findOneAndDelete({ refreshToken });
-    }
-
     // Clear cookies
     clearAuthCookies(res);
 
@@ -323,9 +294,6 @@ export const resetPassword = async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    // Invalidate all existing refresh tokens
-    await RefreshToken.deleteMany({ user: user._id });
-
     res.status(StatusCodes.OK).json({
         success: true,
         message: 'Password reset successful. You can now login.',
@@ -347,54 +315,5 @@ export const getCurrentUser = async (req, res) => {
     res.status(StatusCodes.OK).json({
         success: true,
         user,
-    });
-};
-
-/**
- * @desc    Refresh access token
- * @route   POST /api/v1/auth/refresh-token
- * @access  Public (requires refresh token in cookie)
- */
-export const refreshAccessToken = async (req, res) => {
-    const { refreshToken } = req.signedCookies;
-
-    if (!refreshToken) {
-        throw new UnauthenticatedError('No refresh token provided');
-    }
-
-    // Verify refresh token
-    let payload;
-    try {
-        payload = verifyJWT(refreshToken);
-    } catch (error) {
-        throw new UnauthenticatedError('Invalid refresh token');
-    }
-
-    // Check if refresh token exists in database
-    const existingToken = await RefreshToken.findOne({
-        refreshToken,
-        user: payload.userId,
-    });
-
-    if (!existingToken || !existingToken.isValid) {
-        throw new UnauthenticatedError('Invalid refresh token');
-    }
-
-    // Get user
-    const user = await User.findById(payload.userId);
-
-    if (!user || !user.isActive) {
-        throw new UnauthenticatedError('User not found or inactive');
-    }
-
-    // Create new access token
-    const accessToken = createAccessToken(user);
-
-    // Attach new access token to cookies
-    attachCookiesToResponse({ res, accessToken, refreshToken });
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Access token refreshed successfully',
     });
 };
