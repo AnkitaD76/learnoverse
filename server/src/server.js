@@ -14,7 +14,7 @@ import { errorHandlerMiddleware } from './middleware/error-handler.js';
 const app = express();
 
 // Security Middleware
-app.use(helmet()); // Adds various HTTP headers for security
+// app.use(helmet()); // Adds various HTTP headers for security
 
 // CORS configuration
 app.use(

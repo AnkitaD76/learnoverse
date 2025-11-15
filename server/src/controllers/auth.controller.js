@@ -58,13 +58,25 @@ export const register = async (req, res) => {
     });
 
     // Send verification email
-    const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
-    await sendVerificationEmail({
-        name: user.name,
-        email: user.email,
-        verificationToken,
-        origin,
-    });
+    try {
+        const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
+        await sendVerificationEmail({
+            name: user.name,
+            email: user.email,
+            verificationToken,
+            origin,
+        });
+    } catch (error) {
+        const newUser = await User.findById(user._id);
+        await newUser.deleteOne();
+        // throw new Error('Error sending verification email. Please try again.');
+        console.log(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            success: false,
+            message: 'Error sending verification email. Please try again.',
+        });
+        return;
+    }
 
     res.status(StatusCodes.CREATED).json({
         success: true,

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { nodemailerConfig } from '../config/index.js';
+import { nodemailerConfig } from '../config/nodemailerConfig.js';
 
 const sendEmail = async ({ to, subject, html }) => {
     try {
@@ -8,13 +8,9 @@ const sendEmail = async ({ to, subject, html }) => {
                 'SENDER_EMAIL is not defined in environment variables'
             );
         }
-
+        // console.log(nodemailerConfig);
         const transporter = nodemailer.createTransport({
             ...nodemailerConfig,
-            tls: {
-                ciphers: 'SSLv3',
-                rejectUnauthorized: false,
-            },
         });
 
         // Verify connection configuration
