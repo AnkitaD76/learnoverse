@@ -1,5 +1,3 @@
-import nodemailerConfig from './nodemailerconfig';
+import nodemailerConfig from './nodemailerConfig.js';
 
-export default {
-    nodemailerConfig,
-};
+export { nodemailerConfig };

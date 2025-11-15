@@ -38,7 +38,7 @@ export const register = async (req, res) => {
     const role = isFirstAccount ? 'admin' : 'student';
 
     // Create verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const verificationToken = crypto.randomBytes(32).toString('hex');
 
     // Create user
     const user = await User.create({

@@ -10,6 +10,8 @@
 # testing
 /coverage
 
+server*
+
 # next.js
 /.next/
 /out/

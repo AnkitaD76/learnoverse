@@ -3,8 +3,7 @@ import connectDB from '../db/connectDB.js';
 import Role from '../models/Role.js';
 import User from '../models/User.js';
 
-const MONGO_URI =
-    process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI;
 
 /**
  * Seed default roles and optionally create admin user

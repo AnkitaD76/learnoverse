@@ -1,50 +1,68 @@
 {
-    "name": "learnoverse",
-    "version": "1.0.0",
-    "description": "Learnoverse - Learning Management System",
-    "license": "ISC",
-    "author": "",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {
-        "start": "node src/index.js",
-        "dev": "nodemon src/index.js",
-        "seed": "node src/utils/seedDatabase.js",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "format": "prettier --write .",
-        "format:check": "prettier --check ."
-    },
-    "dependencies": {
-        "bcryptjs": "^3.0.2",
-        "cookie-parser": "^1.4.7",
-        "cors": "^2.8.5",
-        "dotenv": "^17.2.3",
-        "express": "^5.1.0",
-        "express-mongo-sanitize": "^2.2.0",
-        "express-rate-limit": "^7.2.0",
-        "helmet": "^7.1.0",
-        "http-status-codes": "^2.3.0",
-        "jsonwebtoken": "^9.0.2",
-        "mongoose": "^8.19.2",
-        "nodemailer": "^7.0.10",
-        "validator": "^13.11.0",
-        "xss-clean": "^0.1.4"
-    },
-    "devDependencies": {
-        "@eslint/js": "^9.37.0",
-        "cross-env": "^10.1.0",
-        "drizzle-kit": "^0.31.5",
-        "eslint": "^9.37.0",
-        "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-prettier": "^5.5.4",
-        "jest": "^30.2.0",
-        "prettier": "^3.6.2",
-        "supertest": "^7.1.4",
-        "globals": "^16.5.0",
-        "nodemon": "^3.1.10"
-    },
-    "engines": {
-        "node": ">=18.0.0"
-    }
+  "name": "server2",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "imports": {
+    "#src/*": "./src/*",
+    "#config/*": "./src/config/*",
+    "#controllers/*": "./src/controllers/*",
+    "#models/*": "./src/models/*",
+    "#routes/*": "./src/routes/*",
+    "#services/*": "./src/services/*",
+    "#middlewares/*": "./src/middlewares/*",
+    "#utils/*": "./src/utils/*",
+    "#validations/*": "./src/validations/*"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "dev:docker": "sh ./scripts/dev.sh",
+    "prod:docker": "sh ./scripts/prod.sh",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AnkitaD76/learnoverse"
+  },
+  "bugs": {
+    "url": "https://github.com/AnkitaD76/learnoverse/issues"
+  },
+  "homepage": "https://github.com/AnkitaD76/learnoverse#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "cross-env": "^10.1.0",
+    "drizzle-kit": "^0.31.5",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "http-status-codes": "^2.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.4",
+    "nodemailer": "^7.0.10",
+    "validator": "^13.15.23",
+    "zod": "^4.1.12"
+  }
 }

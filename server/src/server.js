@@ -1,4 +1,6 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -7,7 +9,7 @@ import connectDB from './db/connectDB.js';
 
 // Error Handlers
 import notFoundMiddleware from './middleware/not-found.js';
-import errorHandlerMiddleware from './middleware/error-handler.js';
+import { errorHandlerMiddleware } from './middleware/error-handler.js';
 
 const app = express();
 
@@ -56,9 +58,7 @@ app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 3000;
-const MONGO_URI =
-    process.env.MONGO_URI || "";
-
+const MONGO_URI = process.env.MONGO_URI;
 const start = async () => {
     try {
         await connectDB(MONGO_URI);
