@@ -1,77 +1,30 @@
 import express from 'express';
-import { authenticate } from '../middleware/authenticate.js';
-import authorizePermissions from '../utils/authorizePermissions.js';
 import {
-    getMyProfile,
-    updateMyProfile,
-    getAdminDashboard,
     getAllUsers,
-    getUserById,
-    updateUserRole,
-    updateUserStatus,
+    getSingleUser,
+    showCurrentUser,
+    updateUser,
+    updateUserPassword,
     deleteUser,
-    getInstructorDashboard,
-    getStudentDashboard,
 } from '../controllers/user.controller.js';
+import { authenticate } from '../middleware/authenticate.js';
+import { authorizeRoles } from '../middleware/authorization.js';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticate);
 
-// ===========================
-// User Profile Routes
-// ===========================
-router.route('/me').get(getMyProfile).patch(updateMyProfile);
+// User's own profile routes
+router.get('/showMe', showCurrentUser);
+router.patch('/updateUser', updateUser);
+router.patch('/updateUserPassword', updateUserPassword);
 
-// ===========================
-// Dashboard Routes
-// ===========================
-router.get('/student/dashboard', getStudentDashboard);
+// Admin only routes
+router.get('/', authorizeRoles('admin'), getAllUsers);
 
-router.get(
-    '/instructor/dashboard',
-    authorizePermissions([{ resource: 'courses', action: 'create' }]),
-    getInstructorDashboard
-);
-
-router.get(
-    '/admin/dashboard',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    getAdminDashboard
-);
-
-// ===========================
-// Admin - User Management Routes
-// ===========================
-router.get(
-    '/admin/users',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    getAllUsers
-);
-
-router.get(
-    '/admin/users/:id',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    getUserById
-);
-
-router.patch(
-    '/admin/users/:id/role',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    updateUserRole
-);
-
-router.patch(
-    '/admin/users/:id/status',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    updateUserStatus
-);
-
-router.delete(
-    '/admin/users/:id',
-    authorizePermissions([{ resource: 'all', action: 'manage' }]),
-    deleteUser
-);
+// Routes that check individual permissions
+router.get('/:id', getSingleUser);
+router.delete('/:id', deleteUser);
 
 export default router;

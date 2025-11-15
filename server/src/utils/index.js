@@ -1,17 +1,49 @@
-import { createJWT, isTokenValid, attachCookiesToResponse } from './jwt.js';
-import createTokenUser from './createTokenUser.js';
-import checkPermissions from './checkPermissions.js';
 import sendVerificationEmail from './sendVerificationEmail.js';
-import createHash from './createHash.js';
-import authorizePermissions from './authorizePermissions.js';
+import sendResetPasswordEmail from './sendResetPasswordEmail.js';
+import { sendEmail } from './sendEmail.js';
+import {
+    createJWT,
+    verifyJWT,
+    createAccessToken,
+    createRefreshToken,
+    attachCookiesToResponse,
+    clearAuthCookies,
+} from './jwt.js';
+import { createTokenUser } from './createTokenUser.js';
+import {
+    createHash,
+    generateToken,
+    generateVerificationToken,
+    generatePasswordResetToken,
+} from './createHash.js';
+import {
+    checkPermissions,
+    hasRole,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    authorizePermissions,
+} from './checkPermissions.js';
 
 export {
-    createJWT,
-    isTokenValid,
-    attachCookiesToResponse,
-    createTokenUser,
-    checkPermissions,
     sendVerificationEmail,
+    sendResetPasswordEmail,
+    sendEmail,
+    createJWT,
+    verifyJWT,
+    createAccessToken,
+    createRefreshToken,
+    attachCookiesToResponse,
+    clearAuthCookies,
+    createTokenUser,
     createHash,
+    generateToken,
+    generateVerificationToken,
+    generatePasswordResetToken,
+    checkPermissions,
+    hasRole,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
     authorizePermissions,
 };

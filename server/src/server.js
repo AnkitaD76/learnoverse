@@ -24,26 +24,18 @@ app.use(
             'http://localhost:3000',
             'http://127.0.0.1:5173',
         ],
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: [
-            'Content-Type',
-            'Authorization',
-            'Cookie',
-            'X-Requested-With',
-            'X-Refresh-Token',
-        ],
     })
 );
 
 // Body Parser Middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json());
+app.use(express.urlencoded());
 app.use(cookieParser(process.env.JWT_SECRET));
 
 // Import routes
 import authRoutes from './routers/auth.routes.js';
 import userRoutes from './routers/user.routes.js';
+import adminRoutes from './routers/admin.routes.js';
 
 // Routes
 app.get('/', (req, res) => {
@@ -53,6 +45,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

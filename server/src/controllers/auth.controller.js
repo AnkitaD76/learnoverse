@@ -1,17 +1,22 @@
-import { StatusCodes } from 'http-status-codes';
 import crypto from 'crypto';
-import User from '../models/User.js';
-import RefreshToken from '../models/RefreshToken.js';
+import { StatusCodes } from 'http-status-codes';
+import { User, RefreshToken } from '../models/index.js';
 import {
     BadRequestError,
     UnauthenticatedError,
     NotFoundError,
 } from '../errors/index.js';
-import createTokenUser from '../utils/createTokenUser.js';
+import {
+    createAccessToken,
+    createRefreshToken,
+    attachCookiesToResponse,
+    clearAuthCookies,
+    verifyJWT,
+} from '../utils/jwt.js';
+import { createTokenUser } from '../utils/createTokenUser.js';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
 import sendResetPasswordEmail from '../utils/sendResetPasswordEmail.js';
-import createHash from '../utils/createHash.js';
-import jwt from '../utils/jwt.js';
+import { createHash } from '../utils/createHash.js';
 
 /**
  * @desc    Register a new user
@@ -19,59 +24,52 @@ import jwt from '../utils/jwt.js';
  * @access  Public
  */
 export const register = async (req, res) => {
-    const { email, name, password, age, gender, location, occupation } =
-        req.body;
+    const { name, email, password, role } = req.body;
 
-    // Validate required fields
-    if (!email || !name || !password) {
-        throw new BadRequestError('Please provide email, name, and password');
+    // Validate input
+    if (!name || !email || !password) {
+        throw new BadRequestError('Please provide name, email, and password');
     }
 
-    // Check if email already exists
-    const emailAlreadyExists = await User.findOne({ email });
-    if (emailAlreadyExists) {
-        throw new BadRequestError('Email already exists');
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        throw new BadRequestError('Email already registered');
     }
 
-    // Check if this is the first account (make them admin)
-    const isFirstAccount = (await User.countDocuments({})) === 0;
-    const role = isFirstAccount ? 'admin' : 'student';
+    // Prevent users from self-assigning admin role
+    const userRole = role === 'admin' ? 'student' : role || 'student';
 
-    // Create verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    // Check if this is the first user - make them admin
+    const isFirstUser = (await User.countDocuments({})) === 0;
+    const assignedRole = isFirstUser ? 'admin' : userRole;
+
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(40).toString('hex');
 
     // Create user
     const user = await User.create({
         name,
         email,
         password,
-        role,
-        age,
-        gender,
-        location,
-        occupation,
-        verificationToken: createHash(verificationToken),
-        verificationTokenExpiry: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        role: assignedRole,
+        verificationToken,
+        verificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     });
 
-    // Send verification email (in production)
-    // TODO: sending the email in development mode for testing purposes
-    if (process.env.NODE_ENV === 'development') {
-        const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
-        await sendVerificationEmail({
-            name: user.name,
-            email: user.email,
-            verificationToken,
-            origin,
-        });
-    }
+    // Send verification email
+    const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
+    await sendVerificationEmail({
+        name: user.name,
+        email: user.email,
+        verificationToken,
+        origin,
+    });
 
     res.status(StatusCodes.CREATED).json({
         success: true,
         message:
-            process.env.NODE_ENV === 'development'
-                ? 'Registration successful! Please check your email to verify your account.'
-                : `Registration successful! Verification token: ${verificationToken}`,
+            'Registration successful! Please check your email to verify your account.',
         user: {
             name: user.name,
             email: user.email,
@@ -94,34 +92,28 @@ export const verifyEmail = async (req, res) => {
         );
     }
 
-    const user = await User.findOne({ email }).select(
-        '+verificationToken +verificationTokenExpiry'
-    );
+    const user = await User.findOne({ email });
 
     if (!user) {
         throw new NotFoundError('User not found');
     }
 
     if (user.isVerified) {
-        throw new BadRequestError('Email is already verified');
+        throw new BadRequestError('Email already verified');
     }
 
-    // Hash the token and compare
-    const hashedToken = createHash(verificationToken);
-
-    if (user.verificationToken !== hashedToken) {
-        throw new UnauthenticatedError('Invalid verification token');
-    }
-
-    if (user.verificationTokenExpiry < Date.now()) {
-        throw new UnauthenticatedError('Verification token has expired');
+    // Check if token matches and is not expired
+    if (
+        user.verificationToken !== verificationToken ||
+        user.verificationTokenExpires < Date.now()
+    ) {
+        throw new UnauthenticatedError('Invalid or expired verification token');
     }
 
     // Update user
     user.isVerified = true;
-    user.verified = Date.now();
     user.verificationToken = undefined;
-    user.verificationTokenExpiry = undefined;
+    user.verificationTokenExpires = undefined;
     await user.save();
 
     res.status(StatusCodes.OK).json({
@@ -142,66 +134,72 @@ export const login = async (req, res) => {
         throw new BadRequestError('Please provide email and password');
     }
 
-    // Find user and include password field
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email });
 
     if (!user) {
         throw new UnauthenticatedError('Invalid credentials');
     }
 
-    // Check if account is locked
-    if (user.isLocked) {
-        throw new UnauthenticatedError(
-            'Account is temporarily locked due to too many failed login attempts. Please try again later.'
-        );
-    }
-
     // Check if account is active
-    if (user.status !== 'active') {
-        throw new UnauthenticatedError(
-            `Account is ${user.status}. Please contact support.`
-        );
+    if (!user.isActive) {
+        throw new UnauthenticatedError('Account is deactivated');
     }
 
-    // Check if email is verified (can be disabled for development)
-    if (!user.isVerified && process.env.NODE_ENV === 'development') {
+    // Verify password
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!isPasswordCorrect) {
+        throw new UnauthenticatedError('Invalid credentials');
+    }
+
+    // Check if email is verified
+    if (!user.isVerified) {
         throw new UnauthenticatedError(
             'Please verify your email before logging in'
         );
     }
 
-    // Compare password
-    const isPasswordCorrect = await user.comparePassword(password);
-
-    if (!isPasswordCorrect) {
-        // Increment login attempts
-        await user.incLoginAttempts();
-        throw new UnauthenticatedError('Invalid credentials');
-    }
-
-    // Reset login attempts on successful login
-    if (user.loginAttempts > 0) {
-        await user.resetLoginAttempts();
-    }
-
-    // Update last active
-    user.lastActive = Date.now();
-    await user.save();
-
-    // Create token user object
+    // Create token user
     const tokenUser = createTokenUser(user);
 
-    // Get device information for session tracking
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const ipAddress = req.ip || req.connection.remoteAddress;
+    // Create refresh token
+    let refreshToken = '';
 
-    // Send token response with refresh token stored
-    await jwt.sendTokenResponse({
-        res,
+    // Check for existing refresh token
+    const existingToken = await RefreshToken.findOne({ user: user._id });
+
+    if (existingToken) {
+        if (!existingToken.isValid) {
+            throw new UnauthenticatedError('Invalid credentials');
+        }
+        refreshToken = existingToken.refreshToken;
+    } else {
+        // Create new refresh token
+        refreshToken = createRefreshToken(user);
+        const userAgent = req.headers['user-agent'] || 'unknown';
+        const ip = req.ip;
+
+        await RefreshToken.create({
+            refreshToken,
+            user: user._id,
+            userAgent,
+            ip,
+        });
+    }
+
+    // Create access token
+    const accessToken = createAccessToken(user);
+
+    // Attach cookies
+    attachCookiesToResponse({ res, accessToken, refreshToken });
+
+    // Update last login
+    user.lastLogin = Date.now();
+    await user.save();
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Login successful',
         user: tokenUser,
-        statusCode: StatusCodes.OK,
-        userAgent,
-        ipAddress,
     });
 };
 
@@ -211,103 +209,24 @@ export const login = async (req, res) => {
  * @access  Private
  */
 export const logout = async (req, res) => {
-    // Get refresh token from cookie
     const { refreshToken } = req.signedCookies;
 
     if (refreshToken) {
-        // Remove refresh token from database
-        await jwt.removeRefreshToken(refreshToken);
+        // Delete refresh token from database
+        await RefreshToken.findOneAndDelete({ refreshToken });
     }
 
     // Clear cookies
-    res.cookie('refreshToken', '', {
-        httpOnly: true,
-        expires: new Date(0),
-    });
+    clearAuthCookies(res);
 
     res.status(StatusCodes.OK).json({
         success: true,
-        message: 'Logged out successfully',
+        message: 'Logout successful',
     });
 };
 
 /**
- * @desc    Refresh access token
- * @route   POST /api/v1/auth/refresh-token
- * @access  Public (requires refresh token)
- */
-export const refreshToken = async (req, res) => {
-    // Get refresh token from cookie or header
-    const refreshToken =
-        req.signedCookies.refreshToken || req.headers['x-refresh-token'];
-
-    if (!refreshToken) {
-        throw new UnauthenticatedError('Refresh token not provided');
-    }
-
-    // Verify refresh token
-    const decoded = await jwt.verifyRefreshToken(refreshToken);
-
-    // Get user
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-        throw new UnauthenticatedError('User not found');
-    }
-
-    if (user.status !== 'active') {
-        throw new UnauthenticatedError('Account is not active');
-    }
-
-    // Create new token user object
-    const tokenUser = createTokenUser(user);
-
-    // Create new access token
-    const newAccessToken = jwt.createAccessToken(tokenUser);
-
-    // Optionally rotate refresh token (recommended for security)
-    const newRefreshToken = await jwt.rotateRefreshToken(
-        refreshToken,
-        tokenUser
-    );
-
-    // Update refresh token cookie
-    res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'development',
-        signed: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        sameSite: 'strict',
-    });
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        accessToken: newAccessToken,
-        user: tokenUser,
-    });
-};
-
-/**
- * @desc    Get current user
- * @route   GET /api/v1/auth/me
- * @access  Private
- */
-export const getCurrentUser = async (req, res) => {
-    // User is attached to req by authenticate middleware
-    const user = await User.findById(req.user.userId).select('-password');
-
-    if (!user) {
-        throw new NotFoundError('User not found');
-    }
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        user,
-    });
-};
-
-/**
- * @desc    Forgot password - Send reset email
+ * @desc    Forgot password - send reset email
  * @route   POST /api/v1/auth/forgot-password
  * @access  Public
  */
@@ -320,48 +239,33 @@ export const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-        // Don't reveal if user exists or not (security)
-        res.status(StatusCodes.OK).json({
-            success: true,
-            message:
-                'If an account exists with that email, a password reset link has been sent.',
-        });
-        return;
-    }
+    if (user) {
+        // Generate password reset token
+        const passwordResetToken = crypto.randomBytes(40).toString('hex');
 
-    // Create reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.passwordResetToken = createHash(resetToken);
-    user.passwordResetExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
-    await user.save();
+        // Hash the token before saving to database
+        const hashedToken = createHash(passwordResetToken);
 
-    // Send reset email
-    const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
+        // Save hashed token to user
+        user.passwordResetToken = hashedToken;
+        user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+        await user.save();
 
-    try {
+        // Send email with unhashed token
+        const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
         await sendResetPasswordEmail({
             name: user.name,
             email: user.email,
-            token: resetToken,
+            token: passwordResetToken,
             origin,
         });
-
-        res.status(StatusCodes.OK).json({
-            success: true,
-            message:
-                'If an account exists with that email, a password reset link has been sent.',
-        });
-    } catch (error) {
-        // Clear reset token if email fails
-        user.passwordResetToken = undefined;
-        user.passwordResetExpiry = undefined;
-        await user.save();
-
-        throw new BadRequestError(
-            'Failed to send password reset email. Please try again.'
-        );
     }
+
+    // Always send success message (security best practice)
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Password reset email sent. Please check your email.',
+    });
 };
 
 /**
@@ -378,141 +282,107 @@ export const resetPassword = async (req, res) => {
         );
     }
 
-    const user = await User.findOne({ email }).select(
-        '+passwordResetToken +passwordResetExpiry'
-    );
-
-    if (!user) {
-        throw new UnauthenticatedError('Invalid or expired reset token');
-    }
-
-    // Hash token and compare
-    const hashedToken = createHash(token);
-
-    if (user.passwordResetToken !== hashedToken) {
-        throw new UnauthenticatedError('Invalid or expired reset token');
-    }
-
-    if (user.passwordResetExpiry < Date.now()) {
-        throw new UnauthenticatedError('Reset token has expired');
-    }
-
-    // Update password
-    user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpiry = undefined;
-    user.passwordChangedAt = Date.now();
-    await user.save();
-
-    // Revoke all existing refresh tokens (force re-login on all devices)
-    await RefreshToken.revokeAllForUser(user._id);
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message:
-            'Password reset successfully! Please login with your new password.',
-    });
-};
-
-/**
- * @desc    Update password (for logged in users)
- * @route   PATCH /api/v1/auth/update-password
- * @access  Private
- */
-export const updatePassword = async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
+    if (password.length < 6) {
         throw new BadRequestError(
-            'Please provide current password and new password'
+            'Password must be at least 6 characters long'
         );
     }
 
-    // Get user with password
-    const user = await User.findById(req.user.userId).select('+password');
+    const user = await User.findOne({ email });
 
     if (!user) {
         throw new NotFoundError('User not found');
     }
 
-    // Verify current password
-    const isPasswordCorrect = await user.comparePassword(currentPassword);
+    // Hash the provided token to compare with stored hash
+    const hashedToken = createHash(token);
 
-    if (!isPasswordCorrect) {
-        throw new UnauthenticatedError('Current password is incorrect');
+    // Check if token matches and is not expired
+    if (
+        user.passwordResetToken !== hashedToken ||
+        user.passwordResetExpires < Date.now()
+    ) {
+        throw new UnauthenticatedError('Invalid or expired reset token');
     }
 
     // Update password
-    user.password = newPassword;
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
     await user.save();
 
-    // Revoke all refresh tokens except current session
-    const currentRefreshToken = req.signedCookies.refreshToken;
-    if (currentRefreshToken) {
-        await RefreshToken.updateMany(
-            {
-                user: user._id,
-                token: { $ne: currentRefreshToken },
-                isRevoked: false,
-            },
-            {
-                isRevoked: true,
-                revokedAt: new Date(),
-            }
-        );
+    // Invalidate all existing refresh tokens
+    await RefreshToken.deleteMany({ user: user._id });
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Password reset successful. You can now login.',
+    });
+};
+
+/**
+ * @desc    Get current user
+ * @route   GET /api/v1/auth/me
+ * @access  Private
+ */
+export const getCurrentUser = async (req, res) => {
+    const user = await User.findById(req.user.userId).select('-password');
+
+    if (!user) {
+        throw new NotFoundError('User not found');
     }
 
     res.status(StatusCodes.OK).json({
         success: true,
-        message: 'Password updated successfully',
+        user,
     });
 };
 
 /**
- * @desc    Get active sessions
- * @route   GET /api/v1/auth/sessions
- * @access  Private
+ * @desc    Refresh access token
+ * @route   POST /api/v1/auth/refresh-token
+ * @access  Public (requires refresh token in cookie)
  */
-export const getActiveSessions = async (req, res) => {
-    const sessions = await RefreshToken.getActiveSessions(req.user.userId);
+export const refreshAccessToken = async (req, res) => {
+    const { refreshToken } = req.signedCookies;
+
+    if (!refreshToken) {
+        throw new UnauthenticatedError('No refresh token provided');
+    }
+
+    // Verify refresh token
+    let payload;
+    try {
+        payload = verifyJWT(refreshToken);
+    } catch (error) {
+        throw new UnauthenticatedError('Invalid refresh token');
+    }
+
+    // Check if refresh token exists in database
+    const existingToken = await RefreshToken.findOne({
+        refreshToken,
+        user: payload.userId,
+    });
+
+    if (!existingToken || !existingToken.isValid) {
+        throw new UnauthenticatedError('Invalid refresh token');
+    }
+
+    // Get user
+    const user = await User.findById(payload.userId);
+
+    if (!user || !user.isActive) {
+        throw new UnauthenticatedError('User not found or inactive');
+    }
+
+    // Create new access token
+    const accessToken = createAccessToken(user);
+
+    // Attach new access token to cookies
+    attachCookiesToResponse({ res, accessToken, refreshToken });
 
     res.status(StatusCodes.OK).json({
         success: true,
-        count: sessions.length,
-        sessions,
+        message: 'Access token refreshed successfully',
     });
-};
-
-/**
- * @desc    Revoke all sessions (logout from all devices)
- * @route   POST /api/v1/auth/revoke-all-sessions
- * @access  Private
- */
-export const revokeAllSessions = async (req, res) => {
-    await RefreshToken.revokeAllForUser(req.user.userId);
-
-    // Clear current cookie
-    res.cookie('refreshToken', '', {
-        httpOnly: true,
-        expires: new Date(0),
-    });
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'All sessions revoked successfully. Please login again.',
-    });
-};
-
-export default {
-    register,
-    verifyEmail,
-    login,
-    logout,
-    refreshToken,
-    getCurrentUser,
-    forgotPassword,
-    resetPassword,
-    updatePassword,
-    getActiveSessions,
-    revokeAllSessions,
 };

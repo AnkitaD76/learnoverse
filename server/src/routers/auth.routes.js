@@ -1,16 +1,13 @@
 import express from 'express';
 import {
     register,
-    verifyEmail,
     login,
     logout,
-    refreshToken,
-    getCurrentUser,
+    verifyEmail,
     forgotPassword,
     resetPassword,
-    updatePassword,
-    getActiveSessions,
-    revokeAllSessions,
+    getCurrentUser,
+    refreshAccessToken,
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 
@@ -18,19 +15,14 @@ const router = express.Router();
 
 // Public routes
 router.post('/register', register);
-router.post('/verify-email', verifyEmail);
 router.post('/login', login);
+router.post('/verify-email', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
-router.post('/refresh-token', refreshToken);
+router.post('/refresh-token', refreshAccessToken);
 
-// Protected routes (require authentication)
-router.use(authenticate); // All routes below require authentication
-
-router.get('/me', getCurrentUser);
-router.post('/logout', logout);
-router.patch('/update-password', updatePassword);
-router.get('/sessions', getActiveSessions);
-router.post('/revoke-all-sessions', revokeAllSessions);
+// Protected routes
+router.post('/logout', authenticate, logout);
+router.get('/me', authenticate, getCurrentUser);
 
 export default router;
