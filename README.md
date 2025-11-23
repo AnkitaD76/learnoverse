@@ -406,25 +406,6 @@ curl -X GET http://localhost:3000/api/v1/users/profile \
 3. Update API base URL in `client/src/api/client.js` to your backend URL
 4. Configure environment variables if needed
 
-### Environment-Specific Configuration
-
-**Production Backend (.env):**
-```env
-NODE_ENV=production
-PORT=3000
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=your-production-secret
-JWT_REFRESH_SECRET=your-production-refresh-secret
-FRONTEND_URL=https://your-frontend-domain.com
-COOKIE_SECURE=true
-COOKIE_DOMAIN=your-domain.com
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-```
-
----
 
 ## 📝 Development Workflow
 
@@ -516,59 +497,7 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
-
-This project is licensed under the ISC License.
-
----
-
 ## 👨‍💻 Author
 
 **AnkitaD76**
 - GitHub: [@AnkitaD76](https://github.com/AnkitaD76)
-
----
-
-## 🙏 Acknowledgments
-
-- Built with [React](https://reactjs.org/)
-- Backend powered by [Express](https://expressjs.com/)
-- Database by [MongoDB](https://www.mongodb.com/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-
----
-
-## 📞 Support
-
-If you have any questions or need help, please:
-1. Check the documentation in the `server/` and `client/` folders
-2. Review the [AUTH_DOCUMENTATION.md](server/AUTH_DOCUMENTATION.md)
-3. Open an issue on GitHub
-
----
-
-## 🗺️ Roadmap
-
-### Current Features ✅
-- User authentication and authorization
-- Email verification
-- Password reset
-- Role-based access control
-- User profile management
-- Session management
-
-### Planned Features 🚧
-- Course management
-- Enrollment system
-- Assignment submission
-- Quiz/Assessment module
-- Discussion forums
-- Real-time notifications
-- File upload/download
-- Analytics dashboard
-- Mobile responsive improvements
-- Dark mode
-
----
-
-**Made with ❤️ for the learning community**
