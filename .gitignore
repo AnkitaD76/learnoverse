@@ -10,7 +10,9 @@
 # testing
 /coverage
 
-server*
+# Ignore old server backups
+/server_old
+/server_v1_backup
 
 # next.js
 /.next/
