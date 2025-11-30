@@ -8,6 +8,7 @@ import VerifyEmailPage from '../pages/VerifyEmail/page';
 import ForgotPasswordPage from '../pages/ForgotPassword/page';
 import ResetPasswordPage from '../pages/ResetPassword/page';
 import DashboardPage from '../pages/Dashboard/page';
+import PostsPage from '../pages/Posts.jsx';
 
 export const AppRouter = () => {
   return (
@@ -28,6 +29,7 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/posts" element={<ProtectedRoute><PostsPage /></ProtectedRoute>} />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
