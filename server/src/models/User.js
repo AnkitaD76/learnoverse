@@ -107,6 +107,29 @@ const UserSchema = new mongoose.Schema(
       maxlength: 1000,
       default: null,
     },
+    // Social links
+    linkedin: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function (v) {
+          if (v === null || v === '') return true;
+          return validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true });
+        },
+        message: 'Please provide a valid URL for LinkedIn',
+      },
+    },
+    website: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function (v) {
+          if (v === null || v === '') return true;
+          return validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true });
+        },
+        message: 'Please provide a valid website URL',
+      },
+    },
 
     // Learning Progress
     enrolledCourses: [

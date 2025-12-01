@@ -74,6 +74,8 @@ export const updateUser = async (req, res) => {
         bio,
         interests,
         avater,
+        linkedin,
+        website,
         dateOfBirth,
         gender,
     } = req.body;
@@ -106,6 +108,8 @@ export const updateUser = async (req, res) => {
     if (bio) user.bio = bio;
     if (interests) user.interests = interests;
     if (avater) user.avater = avater;
+    if (linkedin) user.linkedin = linkedin;
+    if (website) user.website = website;
     if (dateOfBirth) user.dateOfBirth = dateOfBirth;
     if (gender) user.gender = gender;
 

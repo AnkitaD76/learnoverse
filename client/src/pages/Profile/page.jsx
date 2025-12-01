@@ -18,6 +18,8 @@ const ProfilePage = () => {
     name: user?.name || '',
     phone: user?.phone || '',
     bio: user?.bio || '',
+    linkedin: user?.linkedin || '',
+    website: user?.website || '',
     gender: user?.gender || '',
     dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
     city: user?.city || '',
@@ -65,6 +67,8 @@ const ProfilePage = () => {
       if (formData.institution) payload.institution = formData.institution;
       if (formData.fieldOfStudy) payload.fieldOfStudy = formData.fieldOfStudy;
       if (formData.interests.length > 0) payload.interests = formData.interests;
+      if (formData.linkedin) payload.linkedin = formData.linkedin;
+      if (formData.website) payload.website = formData.website;
 
       await apiClient.patch('/users/updateUser', payload);
       await refreshUser();
@@ -265,6 +269,23 @@ const ProfilePage = () => {
                     value={formData.bio}
                     onChange={e => handleChange('bio', e.target.value)}
                     rows={3}
+                  />
+                </div>
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-[#4A4A4A]">Social Links</h4>
+                  <Input
+                    type="url"
+                    label="LinkedIn Profile URL"
+                    placeholder="https://www.linkedin.com/in/your-profile"
+                    value={formData.linkedin}
+                    onChange={e => handleChange('linkedin', e.target.value)}
+                  />
+                  <Input
+                    type="url"
+                    label="Website URL"
+                    placeholder="https://your-website.example"
+                    value={formData.website}
+                    onChange={e => handleChange('website', e.target.value)}
                   />
                 </div>
               </div>
