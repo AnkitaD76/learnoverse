@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import apiClient, {
-  setAccessToken,
-  clearAccessToken,
-} from '../api/client';
+import { useNavigate, useLocation } from 'react-router-dom';
+import apiClient, { setAccessToken, clearAccessToken } from '../api/client';
 
 const SessionContext = createContext(null);
 
@@ -20,6 +17,7 @@ export const SessionProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Initialize session on mount
   useEffect(() => {
@@ -44,10 +42,27 @@ export const SessionProvider = ({ children }) => {
   }, []); // Listen for session expiration events
   useEffect(() => {
     const handleSessionExpired = () => {
+      // Don't redirect to login if user is on a public auth page
+      const publicRoutes = [
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/reset-password',
+        '/verify-email',
+        '/',
+      ];
+      const isPublicRoute = publicRoutes.some(route =>
+        location.pathname.startsWith(route)
+      );
+
       setUser(null);
       setIsAuthenticated(false);
       clearAccessToken();
-      navigate('/login', { replace: true });
+
+      // Only redirect to login if not already on a public route
+      if (!isPublicRoute) {
+        navigate('/login', { replace: true });
+      }
     };
 
     window.addEventListener('auth:session-expired', handleSessionExpired);
@@ -55,7 +70,7 @@ export const SessionProvider = ({ children }) => {
     return () => {
       window.removeEventListener('auth:session-expired', handleSessionExpired);
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const login = async (email, password) => {
     try {
