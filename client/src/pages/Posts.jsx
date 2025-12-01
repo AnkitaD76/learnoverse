@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
-// import { SessionContext } from '../contexts/SessionContext';
+import { useState, useEffect, useContext } from 'react';
+import { useSession } from '../contexts/SessionContext';
 
 const API_URL = 'http://localhost:3000/api/v1/posts';
 
 function Posts() {
-  // const { session } = useContext(SessionContext);
+  const {user} = useSession()
   const [posts, setPosts] = useState([]);
   const [text, setText] = useState('');
   const [commentText, setCommentText] = useState({});
@@ -21,7 +21,7 @@ function Posts() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.token}`
+        'Authorization': `Bearer ${user.token}`
       },
       body: JSON.stringify({ text })
     });
@@ -35,7 +35,7 @@ function Posts() {
   const handleLike = async (id) => {
     const res = await fetch(`${API_URL}/${id}/like`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${session?.token}` }
+      headers: { 'Authorization': `Bearer ${user.token}` }
     });
     if (res.ok) {
       const updated = await res.json();
@@ -48,7 +48,7 @@ function Posts() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.token}`
+        'Authorization': `Bearer ${user.token}`
       },
       body: JSON.stringify({ text: commentText[id] })
     });
