@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { SessionContext } from '../contexts/SessionContext';
+// import { SessionContext } from '../contexts/SessionContext';
 
 const API_URL = 'http://localhost:3000/api/v1/posts';
 
 function Posts() {
-  const { session } = useContext(SessionContext);
+  // const { session } = useContext(SessionContext);
   const [posts, setPosts] = useState([]);
   const [text, setText] = useState('');
   const [commentText, setCommentText] = useState({});
