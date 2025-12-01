@@ -24,6 +24,7 @@ export const getAllUsers = async (req, res) => {
     if (isActive !== undefined) {
         queryObject.isActive = isActive === 'true';
     }
+    // not change
 
     if (search) {
         queryObject.$or = [
