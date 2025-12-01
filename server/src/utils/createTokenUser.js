@@ -1,10 +1,9 @@
-
-export const createTokenUser = (user) => {
-  return {
-    userId: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    isVerified: user.isVerified,
-  };
+export const createTokenUser = user => {
+    return {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+    };
 };

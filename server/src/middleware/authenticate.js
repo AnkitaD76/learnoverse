@@ -63,7 +63,6 @@ export const authenticate = async (req, res, next) => {
     }
 };
 
-
 export const requireVerification = (req, res, next) => {
     if (!req.user) {
         throw new UnauthenticatedError('Authentication required');
