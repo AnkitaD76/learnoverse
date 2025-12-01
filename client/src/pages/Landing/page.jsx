@@ -91,7 +91,7 @@ const LandingPage = () => {
                 <Link to="/register">
                   <Button
                     size="lg"
-                    className="w-full bg-white text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
+                    className="w-full bg-white !text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
                   >
                     Start Teaching Today
                   </Button>
@@ -305,7 +305,7 @@ const LandingPage = () => {
             <Link to="/register">
               <Button
                 size="lg"
-                className="w-full bg-white text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
+                className="w-full bg-white !text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
               >
                 Get Started Free
               </Button>
