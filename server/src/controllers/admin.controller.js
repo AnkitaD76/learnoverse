@@ -64,7 +64,7 @@ export const getSingleUser = async (req, res) => {
 /**
  * @desc    Update user role (Admin)
  * @route   PATCH /api/v1/admin/users/:id/role
- * @access  Private/Admin
+ * @access  Private/Admin only for admin
  */
 export const updateUserRole = async (req, res) => {
     const { role } = req.body;
