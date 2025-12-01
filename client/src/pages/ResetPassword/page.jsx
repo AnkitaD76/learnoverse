@@ -13,7 +13,7 @@ const ResetPasswordPage = () => {
 
   const token = searchParams.get('token') || '';
   const emailFromUrl = searchParams.get('email') || '';
-  
+
   const [email, setEmail] = useState(emailFromUrl);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,7 +29,9 @@ const ResetPasswordPage = () => {
 
     // Validate token and email
     if (!token || !email) {
-      setErrors({ general: 'Invalid reset link. Please request a new password reset.' });
+      setErrors({
+        general: 'Invalid reset link. Please request a new password reset.',
+      });
       setIsLoading(false);
       return;
     }
@@ -63,6 +65,14 @@ const ResetPasswordPage = () => {
       }, 2000);
     } catch (err) {
       const errorMessage =
+        err.response?.data?.message ||
+        'Password reset failed. Please try again.';
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -104,13 +114,6 @@ const ResetPasswordPage = () => {
             onChange={e => setEmail(e.target.value)}
             required
             disabled={!!emailFromUrl}
-          />nput
-            type="text"
-            label="Reset Token"
-            placeholder="Enter reset token from email"
-            value={token}
-            onChange={e => setToken(e.target.value)}
-            required
           />
 
           <NewPasswordInput
