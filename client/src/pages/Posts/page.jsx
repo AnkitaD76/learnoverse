@@ -31,9 +31,9 @@ const PostsPage = () => {
 
   const handleCreatePost = async text => {
     try {
-      const response = await apiClient.post('/posts', { text });
-      const newPost = response.data.post || response.data;
-      setPosts([newPost, ...posts]);
+      await apiClient.post('/posts', { text });
+      // Refresh the posts list to get the newly created post with all populated data
+      await fetchPosts();
       return { success: true };
     } catch (err) {
       return {

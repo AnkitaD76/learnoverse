@@ -6,6 +6,10 @@ export const createPost = async (req, res) => {
             user: req.user.userId,
             text: req.body.text,
         });
+
+        // Populate user data before sending response
+        await post.populate('user', 'name email');
+
         res.status(201).json(post);
     } catch (err) {
         res.status(400).json({ error: err.message });
