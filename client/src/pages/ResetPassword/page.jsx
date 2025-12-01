@@ -11,8 +11,10 @@ const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [email, setEmail] = useState(searchParams.get('email') || '');
-  const [token, setToken] = useState(searchParams.get('token') || '');
+  const token = searchParams.get('token') || '';
+  const emailFromUrl = searchParams.get('email') || '';
+  
+  const [email, setEmail] = useState(emailFromUrl);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +27,13 @@ const ResetPasswordPage = () => {
     setErrors({});
     setMessage('');
 
+    // Validate token and email
+    if (!token || !email) {
+      setErrors({ general: 'Invalid reset link. Please request a new password reset.' });
+      setIsLoading(false);
+      return;
+    }
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
@@ -33,8 +42,8 @@ const ResetPasswordPage = () => {
     }
 
     // Validate password length
-    if (password.length < 8) {
-      setErrors({ password: 'Password must be at least 8 characters' });
+    if (password.length < 6) {
+      setErrors({ password: 'Password must be at least 6 characters' });
       setIsLoading(false);
       return;
     }
@@ -54,13 +63,6 @@ const ResetPasswordPage = () => {
       }, 2000);
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || 'Failed to reset password';
-      setErrors({ general: errorMessage });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
@@ -70,6 +72,16 @@ const ResetPasswordPage = () => {
         <p className="mb-6 text-center text-sm text-gray-600">
           Enter your new password below
         </p>
+
+        {!token || !emailFromUrl ? (
+          <div className="mb-4 rounded-lg bg-yellow-100 p-3 text-sm text-yellow-700">
+            Invalid reset link. Please request a new password reset from the{' '}
+            <Link to="/forgot-password" className="font-semibold underline">
+              forgot password page
+            </Link>
+            .
+          </div>
+        ) : null}
 
         {message && (
           <div className="mb-4 rounded-lg bg-green-100 p-3 text-sm text-green-700">
@@ -91,9 +103,8 @@ const ResetPasswordPage = () => {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-          />
-
-          <Input
+            disabled={!!emailFromUrl}
+          />nput
             type="text"
             label="Reset Token"
             placeholder="Enter reset token from email"
