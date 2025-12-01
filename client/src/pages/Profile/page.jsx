@@ -20,6 +20,7 @@ const ProfilePage = () => {
     bio: user?.bio || '',
     linkedin: user?.linkedin || '',
     website: user?.website || '',
+    github: user?.github || '',
     gender: user?.gender || '',
     dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
     city: user?.city || '',
@@ -69,6 +70,7 @@ const ProfilePage = () => {
       if (formData.interests.length > 0) payload.interests = formData.interests;
       if (formData.linkedin) payload.linkedin = formData.linkedin;
       if (formData.website) payload.website = formData.website;
+      if (formData.github) payload.github = formData.github;
 
       await apiClient.patch('/users/updateUser', payload);
       await refreshUser();
@@ -181,6 +183,16 @@ const ProfilePage = () => {
               className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:underline"
             >
               Website
+            </a>
+          )}
+          {user?.github && (
+            <a
+              href={user.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-sm text-gray-800 hover:underline"
+            >
+              GitHub
             </a>
           )}
         </div>
@@ -311,6 +323,13 @@ const ProfilePage = () => {
                     placeholder="https://your-website.example"
                     value={formData.website}
                     onChange={e => handleChange('website', e.target.value)}
+                  />
+                  <Input
+                    type="url"
+                    label="GitHub Profile URL"
+                    placeholder="https://github.com/your-username"
+                    value={formData.github}
+                    onChange={e => handleChange('github', e.target.value)}
                   />
                 </div>
               </div>

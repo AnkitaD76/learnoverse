@@ -130,6 +130,17 @@ const UserSchema = new mongoose.Schema(
         message: 'Please provide a valid website URL',
       },
     },
+    github: {
+      type: String,
+      default: null,
+      validate: {
+        validator: function (v) {
+          if (v === null || v === '') return true;
+          return validator.isURL(v, { protocols: ['http', 'https'], require_protocol: true });
+        },
+        message: 'Please provide a valid GitHub profile URL',
+      },
+    },
 
     // Learning Progress
     enrolledCourses: [
