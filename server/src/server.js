@@ -11,12 +11,16 @@ import connectDB from './db/connectDB.js';
 import notFoundMiddleware from './middleware/not-found.js';
 import { errorHandlerMiddleware } from './middleware/error-handler.js';
 
+// Routers
+import authRoutes from './routers/auth.routes.js';
+import userRoutes from './routers/user.routes.js';
+import postRoutes from './routers/post.routes.js';
+import adminRoutes from './routers/admin.routes.js';
+import courseRoutes from './routers/course.routes.js';
+
 const app = express();
 
-// Security Middleware
-// app.use(helmet()); // Adds various HTTP headers for security
-
-// CORS configuration
+// CORS
 app.use(
     cors({
         origin: process.env.CORS_ORIGINS?.split(',') || [
@@ -28,35 +32,30 @@ app.use(
     })
 );
 
-// Body Parser Middleware
+// Body parsers
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.JWT_SECRET));
 
-// Import routes
-import authRoutes from './routers/auth.routes.js';
-import userRoutes from './routers/user.routes.js';
-import postRoutes from './routers/post.routes.js';
-import adminRoutes from './routers/admin.routes.js';
-import courseRouter from './routers/course.routes.js';
-
-// Routes
+// Test route
 app.get('/', (req, res) => {
     res.send('<h1>Learnoverse API</h1>');
 });
 
-// API Routes
+// API Routes (CORRECT ORDER)
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/courses', courseRouter);
+app.use('/api/v1/courses', courseRoutes);
 
+// Error Handlers (MUST BE LAST)
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
+
 const start = async () => {
     try {
         await connectDB(MONGO_URI);

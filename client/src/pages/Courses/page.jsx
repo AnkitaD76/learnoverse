@@ -46,7 +46,7 @@ const CoursesPage = () => {
             Browse Courses
           </h1>
           <p className="text-sm text-[#4A4A4A]">
-            Explore learning opportunities, powered by orange vibes 🧡
+            Explore learning opportunities 
           </p>
         </div>
         <Link to="/courses/create">
