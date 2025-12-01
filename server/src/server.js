@@ -38,6 +38,7 @@ import authRoutes from './routers/auth.routes.js';
 import userRoutes from './routers/user.routes.js';
 import postRoutes from './routers/post.routes.js';
 import adminRoutes from './routers/admin.routes.js';
+import courseRouter from './routers/course.routes.js';
 
 // Routes
 app.get('/', (req, res) => {
@@ -49,6 +50,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/courses', courseRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
