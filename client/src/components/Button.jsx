@@ -16,12 +16,12 @@ export const Button = ({
   };
 
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-[#FF6A00] text-white hover:bg-[#E55F00] focus:ring-[#FF6A00]',
     secondary:
-      'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
+      'bg-gray-200 text-[#1A1A1A] hover:bg-gray-300 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     outline:
-      'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-500',
+      'border-2 border-[#043F7B] text-[#043F7B] hover:bg-blue-50 focus:ring-[#043F7B]',
   };
 
   return (

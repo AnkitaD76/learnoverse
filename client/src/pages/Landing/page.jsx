@@ -73,7 +73,7 @@ const LandingPage = () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 py-20 sm:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#FF6A00] via-[#E55F00] to-[#043F7B] py-20 sm:py-32">
         <div className="bg-grid-white/[0.05] absolute inset-0 bg-[size:20px_20px]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
@@ -82,7 +82,7 @@ const LandingPage = () => {
                 Empower Your
                 <span className="block text-yellow-300">Teaching Journey</span>
               </h1>
-              <p className="mt-6 text-xl text-blue-100">
+              <p className="mt-6 text-xl text-white opacity-90">
                 Join the world's leading edtech marketplace. Create courses,
                 offer services, and trade educational resources with millions of
                 learners worldwide.
@@ -91,7 +91,7 @@ const LandingPage = () => {
                 <Link to="/register">
                   <Button
                     size="lg"
-                    className="w-full bg-white text-blue-600 hover:bg-gray-100 sm:w-auto"
+                    className="w-full bg-white text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
                   >
                     Start Teaching Today
                   </Button>
@@ -100,7 +100,7 @@ const LandingPage = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-white text-white hover:bg-white hover:text-blue-600 sm:w-auto"
+                    className="w-full border-white text-white hover:bg-white hover:text-[#FF6A00] sm:w-auto"
                   >
                     Browse Courses
                   </Button>
@@ -126,7 +126,7 @@ const LandingPage = () => {
                     </div>
                   </div>
                   <div className="rounded-lg bg-white/20 p-4">
-                    <div className="h-40 rounded-lg bg-gradient-to-br from-blue-400 to-purple-400" />
+                    <div className="h-40 rounded-lg bg-gradient-to-br from-[#FF6A00] to-[#043F7B]" />
                     <div className="mt-3 h-3 w-full rounded bg-white/40" />
                     <div className="mt-2 h-3 w-3/4 rounded bg-white/30" />
                   </div>
@@ -140,8 +140,8 @@ const LandingPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="absolute -right-6 -bottom-6 h-32 w-32 rounded-full bg-yellow-400 opacity-20 blur-3xl" />
-              <div className="absolute -top-6 -left-6 h-32 w-32 rounded-full bg-pink-400 opacity-20 blur-3xl" />
+              <div className="absolute -right-6 -bottom-6 h-32 w-32 rounded-full bg-[#FF6A00] opacity-20 blur-3xl" />
+              <div className="absolute -top-6 -left-6 h-32 w-32 rounded-full bg-[#1EB5A6] opacity-20 blur-3xl" />
             </div>
           </div>
         </div>
@@ -153,10 +153,10 @@ const LandingPage = () => {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-4xl font-bold text-blue-600">
+                <div className="text-4xl font-bold text-[#FF6A00]">
                   {stat.value}
                 </div>
-                <div className="mt-2 text-sm text-gray-600">{stat.label}</div>
+                <div className="mt-2 text-sm text-[#4A4A4A]">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -167,10 +167,10 @@ const LandingPage = () => {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-bold text-[#1A1A1A] sm:text-4xl">
               Everything You Need to Succeed
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-[#4A4A4A]">
               Powerful tools and features designed for educators and learners
             </p>
           </div>
@@ -193,51 +193,51 @@ const LandingPage = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
+      <section className="bg-gradient-to-br from-orange-50 to-blue-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-bold text-[#1A1A1A] sm:text-4xl">
               Start Earning in 3 Simple Steps
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-[#4A4A4A]">
               Join thousands of successful instructors
             </p>
           </div>
 
           <div className="mt-16 grid gap-8 md:grid-cols-3">
             <div className="relative">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FF6A00] text-2xl font-bold text-white">
                 1
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-gray-900">
+              <h3 className="mt-6 text-xl font-semibold text-[#1A1A1A]">
                 Sign Up Free
               </h3>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-[#4A4A4A]">
                 Create your instructor account in minutes. No credit card
                 required.
               </p>
             </div>
 
             <div className="relative">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-600 text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#E55F00] text-2xl font-bold text-white">
                 2
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-gray-900">
+              <h3 className="mt-6 text-xl font-semibold text-[#1A1A1A]">
                 Create Content
               </h3>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-[#4A4A4A]">
                 Upload your courses, set up services, or list marketplace items.
               </p>
             </div>
 
             <div className="relative">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-pink-600 text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#043F7B] text-2xl font-bold text-white">
                 3
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-gray-900">
-                Get Paid
+              <h3 className="mt-6 text-xl font-semibold text-[#1A1A1A]">
+                Earn & Grow
               </h3>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-[#4A4A4A]">
                 Receive instant payouts as students enroll in your offerings.
               </p>
             </div>
@@ -247,7 +247,7 @@ const LandingPage = () => {
             <Link to="/register">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-[#FF6A00] to-[#043F7B] hover:from-[#E55F00] hover:to-[#032D5A]"
               >
                 Become an Instructor
               </Button>
@@ -260,10 +260,10 @@ const LandingPage = () => {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-bold text-[#1A1A1A] sm:text-4xl">
               Success Stories
             </h2>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-[#4A4A4A]">
               See what our instructors are saying
             </p>
           </div>
@@ -274,15 +274,15 @@ const LandingPage = () => {
                 <div className="flex items-center space-x-4">
                   <div className="text-4xl">{testimonial.avatar}</div>
                   <div>
-                    <div className="font-semibold text-gray-900">
+                    <div className="font-semibold text-[#1A1A1A]">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-[#4A4A4A]">
                       {testimonial.role}
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 text-gray-600 italic">
+                <p className="mt-4 text-[#4A4A4A] italic">
                   "{testimonial.text}"
                 </p>
                 <div className="mt-4 flex text-yellow-400">⭐⭐⭐⭐⭐</div>
@@ -293,19 +293,19 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-20">
+      <section className="bg-gradient-to-r from-[#FF6A00] to-[#043F7B] py-20">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">
             Ready to Transform Your Teaching Career?
           </h2>
-          <p className="mt-4 text-xl text-blue-100">
+          <p className="mt-4 text-xl text-orange-100">
             Join Learnoverse today and start earning from your expertise
           </p>
           <div className="mt-8 flex flex-col justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
             <Link to="/register">
               <Button
                 size="lg"
-                className="w-full bg-white text-blue-600 hover:bg-gray-100 sm:w-auto"
+                className="w-full bg-white text-[#FF6A00] hover:bg-gray-100 sm:w-auto"
               >
                 Get Started Free
               </Button>
@@ -314,13 +314,13 @@ const LandingPage = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full border-white text-white hover:bg-white hover:text-blue-600 sm:w-auto"
+                className="w-full border-white text-white hover:bg-white hover:text-[#FF6A00] sm:w-auto"
               >
                 Contact Sales
               </Button>
             </Link>
           </div>
-          <p className="mt-4 text-sm text-blue-100">
+          <p className="mt-4 text-sm text-orange-100">
             No credit card required • 14-day money-back guarantee
           </p>
         </div>

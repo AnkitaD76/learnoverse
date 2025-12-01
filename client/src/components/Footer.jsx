@@ -4,13 +4,13 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-[#1A1A1A] text-gray-300">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF6A00]">
                 <span className="text-xl font-bold text-white">L</span>
               </div>
               <span className="text-xl font-bold text-white">Learnoverse</span>
@@ -24,7 +24,7 @@ export const Footer = () => {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-blue-400"
+                className="transition-colors hover:text-[#FF6A00]"
               >
                 <svg
                   className="h-6 w-6"
@@ -38,7 +38,7 @@ export const Footer = () => {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-blue-400"
+                className="transition-colors hover:text-[#FF6A00]"
               >
                 <svg
                   className="h-6 w-6"
@@ -56,7 +56,7 @@ export const Footer = () => {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-blue-400"
+                className="transition-colors hover:text-[#FF6A00]"
               >
                 <svg
                   className="h-6 w-6"
@@ -74,7 +74,7 @@ export const Footer = () => {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-blue-400"
+                className="transition-colors hover:text-[#FF6A00]"
               >
                 <svg
                   className="h-6 w-6"

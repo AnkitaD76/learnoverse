@@ -38,10 +38,10 @@ export const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF6A00]">
                 <span className="text-xl font-bold text-white">L</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-xl font-bold text-[#1A1A1A]">
                 Learnoverse
               </span>
             </Link>
@@ -53,7 +53,7 @@ export const Header = () => {
               <Link
                 key={route.path}
                 to={route.path}
-                className="text-gray-700 transition-colors hover:text-blue-600"
+                className="text-[#4A4A4A] transition-colors hover:text-[#FF6A00]"
               >
                 {route.name}
               </Link>
@@ -66,9 +66,9 @@ export const Header = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 rounded-full focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+                  className="flex items-center space-x-2 rounded-full focus:ring-2 focus:ring-[#FF6A00] focus:ring-offset-2 focus:outline-none"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600 font-semibold text-white">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF6A00] font-semibold text-white">
                     {getInitials(user.name)}
                   </div>
                   <svg
@@ -140,10 +140,7 @@ export const Header = () => {
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
+                  <Button size="sm" className="bg-[#FF6A00] hover:bg-[#E55F00]">
                     Get Started
                   </Button>
                 </Link>
@@ -156,7 +153,7 @@ export const Header = () => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-inset"
+              className="inline-flex items-center justify-center rounded-md p-2 text-[#4A4A4A] hover:bg-gray-100 hover:text-[#1A1A1A] focus:ring-2 focus:ring-[#FF6A00] focus:outline-none focus:ring-inset"
               aria-expanded="false"
             >
               <span className="sr-only">Open main menu</span>
@@ -244,7 +241,7 @@ export const Header = () => {
                       </Button>
                     </Link>
                     <Link to="/register" className="block">
-                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                      <Button className="w-full bg-[#FF6A00] hover:bg-[#E55F00]">
                         Get Started
                       </Button>
                     </Link>

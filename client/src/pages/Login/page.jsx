@@ -31,7 +31,7 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-800">
+        <h1 className="mb-6 text-center text-2xl font-bold text-[#1A1A1A]">
           Welcome Back
         </h1>
 
@@ -51,9 +51,9 @@ const LoginPage = () => {
           onSubmit={handleSubmit}
         />
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-[#4A4A4A]">
           Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-[#043F7B] hover:underline">
             Register
           </Link>
         </p>

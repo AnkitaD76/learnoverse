@@ -9,6 +9,8 @@ import VerifyEmailPage from '../pages/VerifyEmail/page';
 import ForgotPasswordPage from '../pages/ForgotPassword/page';
 import ResetPasswordPage from '../pages/ResetPassword/page';
 import DashboardPage from '../pages/Dashboard/page';
+import ProfilePage from '../pages/Profile/page';
+import SettingsPage from '../pages/Settings/page';
 import PostsPage from '../pages/Posts/page';
 
 export const AppRouter = () => {
@@ -28,6 +30,22 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />

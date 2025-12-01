@@ -33,10 +33,10 @@ const ForgotPasswordPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
-        <h1 className="mb-2 text-center text-2xl font-bold text-gray-800">
+        <h1 className="mb-2 text-center text-2xl font-bold text-[#1A1A1A]">
           Forgot Password
         </h1>
-        <p className="mb-6 text-center text-sm text-gray-600">
+        <p className="mb-6 text-center text-sm text-[#4A4A4A]">
           Enter your email to receive a password reset link
         </p>
 
@@ -62,9 +62,9 @@ const ForgotPasswordPage = () => {
           <SendButton isLoading={isLoading} />
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-[#4A4A4A]">
           Remember your password?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-[#043F7B] hover:underline">
             Login
           </Link>
         </p>
