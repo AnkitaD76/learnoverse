@@ -160,6 +160,31 @@ const ProfilePage = () => {
           </p>
         </div>
 
+        {/* Profile quick links */}
+        <div className="mb-6 flex items-center gap-4">
+          {user?.linkedin && (
+            <a
+              href={user.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:underline"
+            >
+              LinkedIn
+            </a>
+          )}
+
+          {user?.website && (
+            <a
+              href={user.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:underline"
+            >
+              Website
+            </a>
+          )}
+        </div>
+
         {/* Tabs */}
         <div className="mb-6 border-b border-gray-200">
           <div className="flex space-x-8">
