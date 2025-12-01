@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 
 // Pages
+import LandingPage from '../pages/Landing/page';
 import LoginPage from '../pages/Login/page';
 import RegisterPage from '../pages/Register/page';
 import VerifyEmailPage from '../pages/VerifyEmail/page';
@@ -14,6 +15,7 @@ export const AppRouter = () => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
@@ -31,9 +33,8 @@ export const AppRouter = () => {
       />
       <Route path="/posts" element={<PostsPage />} />
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Redirect unknown routes to landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
