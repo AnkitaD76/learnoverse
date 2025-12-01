@@ -4,8 +4,7 @@ import { useSession } from '../../contexts/SessionContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Button from '../../components/Button';
 //kkkk
-
-///;;;;;;;;;;
+///];;;;
 
 export default function ViewProfile() {
   const { userId } = useParams();
