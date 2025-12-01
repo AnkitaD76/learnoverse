@@ -2,6 +2,7 @@ import { User } from '../models/index.js';
 import { StatusCodes } from 'http-status-codes';
 import { NotFoundError, BadRequestError } from '../errors/index.js';
 import { checkPermissions } from '../utils/checkPermissions.js';
+import path from 'path';
 
 /**
  * @desc    Get all users
@@ -120,6 +121,34 @@ export const updateUser = async (req, res) => {
     res.status(StatusCodes.OK).json({
         success: true,
         message: 'User profile updated successfully',
+        user,
+    });
+};
+
+/**
+ * @desc Upload avatar image
+ * @route PATCH /api/v1/users/uploadAvatar
+ * @access Private
+ */
+export const uploadAvatar = async (req, res) => {
+    if (!req.file) {
+        throw new BadRequestError('No file uploaded');
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) throw new NotFoundError('User not found');
+
+    // Save relative path e.g. /uploads/avatars/filename.jpg
+    const avatarPath = `/uploads/avatars/${req.file.filename}`;
+
+    // Optionally remove old avatar file - skipped for simplicity
+    user.avatar = avatarPath;
+    await user.save();
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Avatar uploaded',
+        avatar: avatarPath,
         user,
     });
 };

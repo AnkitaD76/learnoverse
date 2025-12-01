@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './db/connectDB.js';
+import path from 'path';
+import fs from 'fs';
 
 // Error Handlers
 import notFoundMiddleware from './middleware/not-found.js';
@@ -32,6 +34,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(cookieParser(process.env.JWT_SECRET));
+
+// Serve uploaded files (avatars)
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Ensure uploads/avatars directory exists
+const uploadsAvatarsDir = path.join(process.cwd(), 'uploads', 'avatars');
+if (!fs.existsSync(uploadsAvatarsDir)) {
+    fs.mkdirSync(uploadsAvatarsDir, { recursive: true });
+}
 
 // Import routes
 import authRoutes from './routers/auth.routes.js';
