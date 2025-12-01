@@ -1,3 +1,8 @@
+import CoursesPage from '../pages/courses/page';
+import CourseDetailPage from '../pages/coursedetails/page';
+import CreateCoursePage from '../pages/CreateCourse/page';
+
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -49,6 +54,34 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* 🔸 Course Routes (protected) */}
+      <Route
+        path="/courses"
+        element={
+          <ProtectedRoute>
+            <CoursesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/create"
+        element={
+          <ProtectedRoute>
+            <CreateCoursePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId"
+        element={
+          <ProtectedRoute>
+            <CourseDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Posts (public or protect if you want) */}
       <Route path="/posts" element={<PostsPage />} />
 
       {/* Redirect unknown routes to landing */}
