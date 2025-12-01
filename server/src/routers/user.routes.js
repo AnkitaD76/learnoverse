@@ -16,7 +16,7 @@ const router = express.Router();
 router.use(authenticate);
 
 // User's own profile routes
-router.get('/showMe', showCurrentUser);
+router.get('/showMe', showCurrentUser); // localhost:3000/api/v1/users/showMe
 router.patch('/updateUser', updateUser);
 router.patch('/updateUserPassword', updateUserPassword);
 

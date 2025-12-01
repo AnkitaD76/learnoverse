@@ -1,5 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
 import { User } from '../models/index.js';
+import { StatusCodes } from 'http-status-codes';
 import { NotFoundError, BadRequestError } from '../errors/index.js';
 import { checkPermissions } from '../utils/checkPermissions.js';
 

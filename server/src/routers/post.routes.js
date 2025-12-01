@@ -1,15 +1,21 @@
-const express = require('express');
+import express from 'express';
+import { authenticate } from '../middleware/authenticate.js';
+import {
+    commentPost,
+    likePost,
+    getPosts,
+    createPost,
+} from '../controllers/post.controller.js';
+
 const router = express.Router();
-const { authenticate } = require('../middleware/authenticate');
-const postController = require('../controllers/post.controller');
 
 // Create a post
-router.post('/', authenticate, postController.createPost);
+router.post('/', authenticate, createPost);
 // Get all posts
-router.get('/', postController.getPosts);
+router.get('/', getPosts);
 // Like a post
-router.post('/:id/like', authenticate, postController.likePost);
+router.post('/:id/like', authenticate, likePost);
 // Comment on a post
-router.post('/:id/comment', authenticate, postController.commentPost);
+router.post('/:id/comment', authenticate, commentPost);
 
-module.exports = router;
+export default router;
