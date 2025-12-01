@@ -37,6 +37,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 import authRoutes from './routers/auth.routes.js';
 import userRoutes from './routers/user.routes.js';
 import adminRoutes from './routers/admin.routes.js';
+import profileRoutes from './routers/profile.routes.js';
 
 // Routes
 app.get('/', (req, res) => {
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/profiles', profileRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
