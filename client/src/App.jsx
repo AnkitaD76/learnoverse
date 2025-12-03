@@ -3,9 +3,7 @@ import { SessionProvider } from './contexts/SessionContext';
 import { AppRouter } from './router';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-//kkkk
-//lll
-// added by Israt
+
 function App() {
   return (
     <BrowserRouter>
