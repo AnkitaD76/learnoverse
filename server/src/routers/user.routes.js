@@ -10,7 +10,7 @@ import {
 } from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/authenticate.js';
 import { authorizeRoles } from '../middleware/authorization.js';
-import upload from '../middleware/upload.js';
+import upload from '../middleware/uploadCloud.js';
 
 const router = express.Router();
 

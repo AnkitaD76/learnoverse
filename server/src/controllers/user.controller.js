@@ -2,7 +2,8 @@ import { User } from '../models/index.js';
 import { StatusCodes } from 'http-status-codes';
 import { NotFoundError, BadRequestError } from '../errors/index.js';
 import { checkPermissions } from '../utils/checkPermissions.js';
-import path from 'path';
+import cloudinary from '../config/cloudinaryConfig.js';
+import { Readable } from 'stream';
 
 /**
  * @desc    Get all users
@@ -126,7 +127,7 @@ export const updateUser = async (req, res) => {
 };
 
 /**
- * @desc Upload avatar image
+ * @desc Upload avatar image to Cloudinary
  * @route PATCH /api/v1/users/uploadAvatar
  * @access Private
  */
@@ -138,18 +139,41 @@ export const uploadAvatar = async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) throw new NotFoundError('User not found');
 
-    // Save relative path e.g. /uploads/avatars/filename.jpg
-    const avatarPath = `/uploads/avatars/${req.file.filename}`;
+    // Upload to Cloudinary using buffer stream
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'learnoverse/avatars',
+                public_id: `${req.user.userId}-${Date.now()}`,
+                resource_type: 'auto',
+                quality: 'auto',
+            },
+            async (error, result) => {
+                if (error) {
+                    reject(new BadRequestError(`Upload failed: ${error.message}`));
+                    return;
+                }
 
-    // Optionally remove old avatar file - skipped for simplicity
-    user.avatar = avatarPath;
-    await user.save();
+                try {
+                    // Save Cloudinary secure_url to database
+                    user.avatar = result.secure_url;
+                    await user.save();
 
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Avatar uploaded',
-        avatar: avatarPath,
-        user,
+                    res.status(StatusCodes.OK).json({
+                        success: true,
+                        message: 'Avatar uploaded successfully',
+                        avatar: result.secure_url,
+                        user,
+                    });
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            }
+        );
+
+        // Pipe file buffer to Cloudinary stream
+        Readable.from(req.file.buffer).pipe(stream);
     });
 };
 
