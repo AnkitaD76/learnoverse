@@ -146,7 +146,7 @@ export const updateUserPassword = async (req, res) => {
     if (!isPasswordCorrect) {
         throw new BadRequestError('Current password is incorrect');
     }
-
+ 
     user.password = newPassword;
     await user.save();
 
