@@ -94,7 +94,10 @@ Content-Type: application/json
   "country": "USA",
   "city": "New York",
   "bio": "Full-stack developer and educator",
-  "interests": ["web development", "teaching", "coding"]
+  "interests": ["web development", "teaching", "coding"],
+  "linkedin": "https://www.linkedin.com/in/your-profile",
+  "website": "https://your-website.example",
+  "github": "https://github.com/your-username"
 }
 
 ### 12. Update User Password

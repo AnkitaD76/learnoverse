@@ -4,11 +4,14 @@ import { Card } from '../../components/Card';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import apiClient from '../../api/client';
+import { useRef } from 'react';
 
 const ProfilePage = () => {
   const { user, refreshUser } = useSession();
   const [activeTab, setActiveTab] = useState('personal');
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [interestInput, setInterestInput] = useState('');
@@ -18,6 +21,9 @@ const ProfilePage = () => {
     name: user?.name || '',
     phone: user?.phone || '',
     bio: user?.bio || '',
+    linkedin: user?.linkedin || '',
+    website: user?.website || '',
+    github: user?.github || '',
     gender: user?.gender || '',
     dateOfBirth: user?.dateOfBirth ? user.dateOfBirth.split('T')[0] : '',
     city: user?.city || '',
@@ -65,6 +71,9 @@ const ProfilePage = () => {
       if (formData.institution) payload.institution = formData.institution;
       if (formData.fieldOfStudy) payload.fieldOfStudy = formData.fieldOfStudy;
       if (formData.interests.length > 0) payload.interests = formData.interests;
+      if (formData.linkedin) payload.linkedin = formData.linkedin;
+      if (formData.website) payload.website = formData.website;
+      if (formData.github) payload.github = formData.github;
 
       await apiClient.patch('/users/updateUser', payload);
       await refreshUser();
@@ -75,6 +84,31 @@ const ProfilePage = () => {
       const errorMessage =
         err.response?.data?.message || 'Failed to update profile';
       setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAvatarChange = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const uploadAvatar = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const { data } = await apiClient.patch('/users/uploadAvatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      await refreshUser();
+      setAvatarPreview(data.avatar);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to upload avatar');
     } finally {
       setIsLoading(false);
     }
@@ -154,6 +188,73 @@ const ProfilePage = () => {
           <p className="mt-2 text-[#4A4A4A]">
             Manage your account information and preferences
           </p>
+        </div>
+
+        {/* Profile quick links */}
+        <div className="mb-6 flex items-center gap-4">
+          {user?.linkedin && (
+            <a
+              href={user.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:underline"
+            >
+              LinkedIn
+            </a>
+          )}
+
+          {user?.website && (
+            <a
+              href={user.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 hover:underline"
+            >
+              Website
+            </a>
+          )}
+          {user?.github && (
+            <a
+              href={user.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-sm text-gray-800 hover:underline"
+            >
+              GitHub
+            </a>
+          )}
+        </div>
+
+        {/* Avatar upload */}
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-medium text-[#4A4A4A]">Profile Image</label>
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100">
+              {avatarPreview ? (
+                // If preview is a blob url or uploaded path
+                <img src={avatarPreview} alt="avatar" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">No image</div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+                id="avatarInput"
+              />
+              <label htmlFor="avatarInput" className="cursor-pointer rounded-lg bg-white px-3 py-2 text-sm text-[#1A1A1A] border border-gray-200 hover:bg-gray-50">
+                Choose Image
+              </label>
+              <Button type="button" onClick={uploadAvatar} isLoading={isLoading}>
+                Upload
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -265,6 +366,30 @@ const ProfilePage = () => {
                     value={formData.bio}
                     onChange={e => handleChange('bio', e.target.value)}
                     rows={3}
+                  />
+                </div>
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-[#4A4A4A]">Social Links</h4>
+                  <Input
+                    type="url"
+                    label="LinkedIn Profile URL"
+                    placeholder="https://www.linkedin.com/in/your-profile"
+                    value={formData.linkedin}
+                    onChange={e => handleChange('linkedin', e.target.value)}
+                  />
+                  <Input
+                    type="url"
+                    label="Website URL"
+                    placeholder="https://your-website.example"
+                    value={formData.website}
+                    onChange={e => handleChange('website', e.target.value)}
+                  />
+                  <Input
+                    type="url"
+                    label="GitHub Profile URL"
+                    placeholder="https://github.com/your-username"
+                    value={formData.github}
+                    onChange={e => handleChange('github', e.target.value)}
                   />
                 </div>
               </div>

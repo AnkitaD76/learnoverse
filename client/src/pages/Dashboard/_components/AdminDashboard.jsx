@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../../../components/Card';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
+import { Button } from '../../../components/Button';
 import apiClient from '../../../api/client';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -23,6 +26,21 @@ export const AdminDashboard = () => {
 
     fetchDashboardData();
   }, []);
+
+  const handleDeleteUser = async (userId) => {
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/admin/users/${userId}`);
+      // Refresh stats after deletion
+      const response = await apiClient.get('/admin/stats');
+      setStats(response.data.stats);
+      setDeleteConfirm(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -107,16 +125,58 @@ export const AdminDashboard = () => {
           <h3 className="mb-3 text-lg font-semibold text-gray-800">
             Recent Users
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {stats?.recentUsers?.slice(0, 5).map(user => (
-              <div key={user._id} className="flex justify-between text-sm">
-                <span className="text-gray-800">{user.name}</span>
-                <span className="text-gray-600 capitalize">{user.role}</span>
+              <div key={user._id} className="flex items-center justify-between rounded-lg border border-gray-200 p-2">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold capitalize text-gray-600">{user.role}</span>
+                  <button
+                    onClick={() => setDeleteConfirm(user)}
+                    className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </Card>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <Card className="w-full max-w-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-800">Delete User?</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Are you sure you want to delete <strong>{deleteConfirm.name}</strong>? This action cannot be undone.
+            </p>
+            <p className="mt-1 text-xs text-gray-500">{deleteConfirm.email}</p>
+
+            <div className="mt-6 flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <Button
+                variant="danger"
+                onClick={() => handleDeleteUser(deleteConfirm._id)}
+                isLoading={isDeleting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
