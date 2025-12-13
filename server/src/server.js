@@ -17,6 +17,7 @@ import userRoutes from './routers/user.routes.js';
 import postRoutes from './routers/post.routes.js';
 import adminRoutes from './routers/admin.routes.js';
 import courseRoutes from './routers/course.routes.js';
+import dashboardRoutes from './routers/dashboard.routes.js';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/courses', courseRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Error Handlers (MUST BE LAST)
 app.use(notFoundMiddleware);
