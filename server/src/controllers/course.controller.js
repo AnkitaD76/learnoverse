@@ -175,6 +175,40 @@ export const deleteCourse = async (req, res) => {
 };
 
 /**
+ * GET /api/v1/courses/:id/enrollments
+ * Get all enrolled students for a course
+ * Only admin or course instructor can view
+ */
+export const getCourseEnrollments = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new NotFoundError('Course not found');
+  }
+
+  // Check if user is admin or the course instructor
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to view enrollments for this course');
+  }
+
+  const enrollments = await Enrollment.find({
+    course: courseId,
+    status: 'enrolled',
+  })
+    .populate('user', 'name email avatar')
+    .sort('-enrolledAt');
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    count: enrollments.length,
+    enrollments,
+  });
+};
+
+/**
  * GET /api/v1/courses/my-enrollments
  */
 export const getMyEnrollments = async (req, res) => {

@@ -5,6 +5,7 @@ import {
   getCourseById,
   createCourse,
   deleteCourse,
+  getCourseEnrollments,
   enrollInCourse,
   withdrawFromCourse,
   getMyEnrollments,
@@ -19,6 +20,7 @@ router.get('/:id', getCourseById);
 // Protected actions
 router.post('/', authenticate, requireVerification, createCourse);
 router.delete('/:id', authenticate, requireVerification, deleteCourse);
+router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
 router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
 router.get('/me/enrollments', authenticate, requireVerification, getMyEnrollments);
