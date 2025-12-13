@@ -1,23 +1,18 @@
-import { BrowserRouter } from 'react-router-dom';
 import { SessionProvider } from './contexts/SessionContext';
-import { AppRouter } from './router';
+import { AppRouter } from './router/index.jsx';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 
-function App() {
+export default function App() {
   return (
-    <BrowserRouter>
-      <SessionProvider>
-        <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">
-            <AppRouter />
-          </main>
-          <Footer />
-        </div>
-      </SessionProvider>
-    </BrowserRouter>
+    <SessionProvider>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1">
+          <AppRouter />
+        </main>
+        <Footer />
+      </div>
+    </SessionProvider>
   );
 }
-
-export default App;

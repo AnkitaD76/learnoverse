@@ -24,3 +24,21 @@ export const withdrawFromCourse = async courseId => {
   const res = await apiClient.post(`/courses/${courseId}/withdraw`);
   return res.data;
 };
+
+// ✅ NEW: My enrollments (shows progress)
+export const fetchMyEnrollments = async () => {
+  const res = await apiClient.get('/courses/me/enrollments');
+  return res.data;
+};
+
+// ✅ NEW: My created courses
+export const fetchMyCreatedCourses = async () => {
+  const res = await apiClient.get('/courses/me/created');
+  return res.data;
+};
+
+// ✅ NEW: mark lesson complete (for progress later)
+export const markLessonComplete = async (courseId, lessonId) => {
+  const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`);
+  return res.data;
+};

@@ -1,6 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import { Course, Enrollment } from '../models/index.js';
-import { BadRequestError, NotFoundError, UnauthorizedError } from '../errors/index.js';
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} from '../errors/index.js';
 
 /**
  * GET /api/v1/courses
@@ -13,15 +17,15 @@ export const getCourses = async (req, res) => {
 
   if (category) query.category = category;
   if (level) query.level = level;
-  if (search) {
-    query.title = { $regex: search, $options: 'i' };
-  }
+  if (search) query.title = { $regex: search, $options: 'i' };
 
   const courses = await Course.find(query)
     .populate('instructor', 'name email')
     .sort('-createdAt');
 
-  res.status(StatusCodes.OK).json({ success: true, count: courses.length, courses });
+  res
+    .status(StatusCodes.OK)
+    .json({ success: true, count: courses.length, courses });
 };
 
 /**
@@ -33,9 +37,7 @@ export const getCourseById = async (req, res) => {
     'name email'
   );
 
-  if (!course) {
-    throw new NotFoundError('Course not found');
-  }
+  if (!course) throw new NotFoundError('Course not found');
 
   res.status(StatusCodes.OK).json({ success: true, course });
 };
@@ -53,9 +55,7 @@ export const createCourse = async (req, res) => {
 
   const { title, description, category, level, pricePoints, skillTags } = req.body;
 
-  if (!title) {
-    throw new BadRequestError('Title is required');
-  }
+  if (!title) throw new BadRequestError('Title is required');
 
   const course = await Course.create({
     title,
@@ -84,7 +84,6 @@ export const enrollInCourse = async (req, res) => {
   const course = await Course.findById(courseId);
   if (!course) throw new NotFoundError('Course not found');
 
-  // Instructors can't enroll in their own course
   if (String(course.instructor) === String(userId)) {
     throw new BadRequestError('Instructors cannot enroll in their own course');
   }
@@ -96,10 +95,9 @@ export const enrollInCourse = async (req, res) => {
   }
 
   if (!enrollment) {
-    enrollment = await Enrollment.create({
-      user: userId,
-      course: courseId,
-    });
+    enrollment = await Enrollment.create({ user: userId, course: courseId });
+    course.enrollCount += 1;
+    await course.save();
   } else {
     enrollment.status = 'enrolled';
     enrollment.enrolledAt = new Date();
@@ -107,10 +105,10 @@ export const enrollInCourse = async (req, res) => {
     enrollment.refundIssued = false;
     enrollment.refundAmount = 0;
     await enrollment.save();
-  }
 
-  course.enrollCount += 1;
-  await course.save();
+    course.enrollCount += 1;
+    await course.save();
+  }
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -121,7 +119,6 @@ export const enrollInCourse = async (req, res) => {
 
 /**
  * POST /api/v1/courses/:id/withdraw
- * (simple refund flag)
  */
 export const withdrawFromCourse = async (req, res) => {
   const userId = req.user.userId;
@@ -136,46 +133,19 @@ export const withdrawFromCourse = async (req, res) => {
   enrollment.status = 'withdrawn';
   enrollment.withdrawnAt = new Date();
   enrollment.refundIssued = true;
-  enrollment.refundAmount = 0; // You can plug real payment logic later
+  enrollment.refundAmount = 0;
 
   await enrollment.save();
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'You have withdrawn from the course. Refund will be processed.',
+    message: 'You have withdrawn from the course.',
     enrollment,
   });
 };
 
 /**
- * DELETE /api/v1/courses/:id
- * Only admin or course instructor can delete
- */
-export const deleteCourse = async (req, res) => {
-  const { role, userId } = req.user;
-  const courseId = req.params.id;
-
-  const course = await Course.findById(courseId);
-
-  if (!course) {
-    throw new NotFoundError('Course not found');
-  }
-
-  // Check if user is admin or the course instructor
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-    throw new UnauthorizedError('You do not have permission to delete this course');
-  }
-
-  await Course.findByIdAndDelete(courseId);
-
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: 'Course deleted successfully',
-  });
-};
-
-/**
- * GET /api/v1/courses/my-enrollments
+ * GET /api/v1/courses/me/enrollments
  */
 export const getMyEnrollments = async (req, res) => {
   const userId = req.user.userId;
@@ -183,10 +153,29 @@ export const getMyEnrollments = async (req, res) => {
   const enrollments = await Enrollment.find({
     user: userId,
     status: 'enrolled',
-  }).populate('course');
+  })
+    .populate('course')
+    .sort('-createdAt');
 
   res.status(StatusCodes.OK).json({
     success: true,
     enrollments,
+  });
+};
+
+/**
+ * ✅ NEW
+ * GET /api/v1/courses/me/created
+ */
+export const getMyCreatedCourses = async (req, res) => {
+  const userId = req.user.userId;
+
+  const courses = await Course.find({ instructor: userId })
+    .sort('-createdAt')
+    .populate('instructor', 'name email');
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    courses,
   });
 };

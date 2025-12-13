@@ -5,6 +5,7 @@ import { useSession } from '../contexts/SessionContext';
 
 const navigationRoutes = [
   { name: 'Courses', path: '/courses' },
+  { name: 'My Courses', path: '/my-courses' }, // ✅ NEW
   { name: 'Posts', path: '/posts' },
   { name: 'Marketplace', path: '/marketplace' },
   { name: 'About', path: '/about' },
@@ -60,19 +61,21 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* Desktop CTA Buttons / User Menu */}
+          {/* Desktop User Menu */}
           <div className="hidden md:flex md:items-center md:space-x-4">
             {isAuthenticated && user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 rounded-full focus:ring-2 focus:ring-[#FF6A00] focus:ring-offset-2 focus:outline-none"
+                  className="flex items-center space-x-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FF6A00] focus:ring-offset-2"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF6A00] font-semibold text-white">
                     {getInitials(user.name)}
                   </div>
                   <svg
-                    className={`h-4 w-4 text-gray-600 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                    className={`h-4 w-4 text-gray-600 transition-transform ${
+                      isUserMenuOpen ? 'rotate-180' : ''
+                    }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -92,7 +95,7 @@ export const Header = () => {
                       className="fixed inset-0 z-10"
                       onClick={() => setIsUserMenuOpen(false)}
                     />
-                    <div className="ring-opacity-5 absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black">
+                    <div className="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
                       <div className="border-b border-gray-100 px-4 py-2">
                         <p className="text-sm font-semibold text-gray-900">
                           {user.name}
@@ -101,6 +104,7 @@ export const Header = () => {
                           {user.email}
                         </p>
                       </div>
+
                       <Link
                         to="/dashboard"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -108,6 +112,15 @@ export const Header = () => {
                       >
                         Dashboard
                       </Link>
+
+                      <Link
+                        to="/my-courses"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        My Courses
+                      </Link>
+
                       <Link
                         to="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -115,6 +128,7 @@ export const Header = () => {
                       >
                         Profile
                       </Link>
+
                       <Link
                         to="/settings"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -122,6 +136,7 @@ export const Header = () => {
                       >
                         Settings
                       </Link>
+
                       <button
                         onClick={handleLogout}
                         className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
@@ -153,10 +168,8 @@ export const Header = () => {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-[#4A4A4A] hover:bg-gray-100 hover:text-[#1A1A1A] focus:ring-2 focus:ring-[#FF6A00] focus:outline-none focus:ring-inset"
-              aria-expanded="false"
+              className="inline-flex items-center justify-center rounded-md p-2 text-[#4A4A4A] hover:bg-gray-100 hover:text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#FF6A00] focus:ring-inset"
             >
-              <span className="sr-only">Open main menu</span>
               {!isMobileMenuOpen ? (
                 <svg
                   className="h-6 w-6"
@@ -198,7 +211,8 @@ export const Header = () => {
                 <Link
                   key={route.path}
                   to={route.path}
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-[#FF6A00]"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {route.name}
                 </Link>
@@ -215,35 +229,30 @@ export const Header = () => {
                         {user.email}
                       </p>
                     </div>
-                    <Link to="/dashboard" className="block">
-                      <Button variant="outline" className="w-full">
-                        Dashboard
-                      </Button>
+
+                    <Link to="/dashboard" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">Dashboard</Button>
                     </Link>
-                    <Link to="/profile" className="block">
-                      <Button variant="outline" className="w-full">
-                        Profile
-                      </Button>
+
+                    <Link to="/my-courses" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">My Courses</Button>
                     </Link>
-                    <Button
-                      onClick={handleLogout}
-                      variant="danger"
-                      className="w-full"
-                    >
+
+                    <Link to="/profile" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">Profile</Button>
+                    </Link>
+
+                    <Button onClick={handleLogout} variant="danger" className="w-full">
                       Logout
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Link to="/login" className="block">
-                      <Button variant="outline" className="w-full">
-                        Login
-                      </Button>
+                    <Link to="/login" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">Login</Button>
                     </Link>
-                    <Link to="/register" className="block">
-                      <Button className="w-full bg-[#FF6A00] hover:bg-[#E55F00]">
-                        Get Started
-                      </Button>
+                    <Link to="/register" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full bg-[#FF6A00] hover:bg-[#E55F00]">Get Started</Button>
                     </Link>
                   </>
                 )}
