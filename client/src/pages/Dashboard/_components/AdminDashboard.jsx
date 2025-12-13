@@ -4,6 +4,7 @@ import { LoadingSpinner } from '../../../components/LoadingSpinner';
 import { Button } from '../../../components/Button';
 import apiClient from '../../../api/client';
 import { CoursesManagement } from './CoursesManagement';
+import { UsersManagement } from './UsersManagement';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);

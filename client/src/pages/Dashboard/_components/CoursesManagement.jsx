@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../../../components/Card';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
 import { Button } from '../../../components/Button';
+import { EnrolledUsersModal } from './EnrolledStudentsModal';
 import apiClient from '../../../api/client';
 
 export const CoursesManagement = () => {
@@ -11,6 +12,7 @@ export const CoursesManagement = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
+  const [viewingEnrolledUsers, setViewingEnrolledUsers] = useState(null);
 
   useEffect(() => {
     fetchCourses();
@@ -119,6 +121,12 @@ export const CoursesManagement = () => {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
+                    onClick={() => setViewingEnrolledUsers(course)}
+                    className="rounded bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+                  >
+                    Users
+                  </button>
+                  <button
                     onClick={() => setEditingCourse(course)}
                     className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
                   >
@@ -184,6 +192,14 @@ export const CoursesManagement = () => {
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Enrolled Users Modal */}
+      {viewingEnrolledUsers && (
+        <EnrolledUsersModal
+          course={viewingEnrolledUsers}
+          onClose={() => setViewingEnrolledUsers(null)}
+        />
       )}
     </div>
   );
