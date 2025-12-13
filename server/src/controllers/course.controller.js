@@ -148,6 +148,33 @@ export const withdrawFromCourse = async (req, res) => {
 };
 
 /**
+ * DELETE /api/v1/courses/:id
+ * Only admin or course instructor can delete
+ */
+export const deleteCourse = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+
+  const course = await Course.findById(courseId);
+
+  if (!course) {
+    throw new NotFoundError('Course not found');
+  }
+
+  // Check if user is admin or the course instructor
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to delete this course');
+  }
+
+  await Course.findByIdAndDelete(courseId);
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Course deleted successfully',
+  });
+};
+
+/**
  * GET /api/v1/courses/my-enrollments
  */
 export const getMyEnrollments = async (req, res) => {

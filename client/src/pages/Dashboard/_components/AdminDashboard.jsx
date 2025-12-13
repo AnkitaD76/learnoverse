@@ -3,6 +3,7 @@ import { Card } from '../../../components/Card';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
 import { Button } from '../../../components/Button';
 import apiClient from '../../../api/client';
+import { CoursesManagement } from './CoursesManagement';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -10,6 +11,7 @@ export const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -62,90 +64,119 @@ export const AdminDashboard = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-gray-800">Admin Dashboard</h2>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-600">
-              {stats?.statistics?.totalUsers || 0}
-            </p>
-            <p className="mt-1 text-sm text-gray-600">Total Users</p>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-600">
-              {stats?.statistics?.studentCount || 0}
-            </p>
-            <p className="mt-1 text-sm text-gray-600">Students</p>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-purple-600">
-              {stats?.statistics?.instructorCount || 0}
-            </p>
-            <p className="mt-1 text-sm text-gray-600">Instructors</p>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-red-600">
-              {stats?.statistics?.adminCount || 0}
-            </p>
-            <p className="mt-1 text-sm text-gray-600">Admins</p>
-          </div>
-        </Card>
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+            activeTab === 'overview'
+              ? 'border-b-2 border-blue-600 text-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('courses')}
+          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+            activeTab === 'courses'
+              ? 'border-b-2 border-blue-600 text-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Courses
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card>
-          <h3 className="mb-3 text-lg font-semibold text-gray-800">
-            Verification Status
-          </h3>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Verified Users:</span>
-              <span className="font-semibold">
-                {stats?.statistics?.verifiedUsers || 0}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Unverified Users:</span>
-              <span className="font-semibold">
-                {stats?.statistics?.unverifiedUsers || 0}
-              </span>
-            </div>
-          </div>
-        </Card>
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <Card>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-blue-600">
+                  {stats?.statistics?.totalUsers || 0}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">Total Users</p>
+              </div>
+            </Card>
 
-        <Card>
-          <h3 className="mb-3 text-lg font-semibold text-gray-800">
-            Recent Users
-          </h3>
-          <div className="space-y-3">
-            {stats?.recentUsers?.slice(0, 5).map(user => (
-              <div key={user._id} className="flex items-center justify-between rounded-lg border border-gray-200 p-2">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+            <Card>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-600">
+                  {stats?.statistics?.studentCount || 0}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">Students</p>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-purple-600">
+                  {stats?.statistics?.instructorCount || 0}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">Instructors</p>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="text-center">
+                <p className="text-3xl font-bold text-red-600">
+                  {stats?.statistics?.adminCount || 0}
+                </p>
+                <p className="mt-1 text-sm text-gray-600">Admins</p>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card>
+              <h3 className="mb-3 text-lg font-semibold text-gray-800">
+                Verification Status
+              </h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Verified Users:</span>
+                  <span className="font-semibold">
+                    {stats?.statistics?.verifiedUsers || 0}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold capitalize text-gray-600">{user.role}</span>
-                  <button
-                    onClick={() => setDeleteConfirm(user)}
-                    className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
-                  >
-                    Delete
-                  </button>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Unverified Users:</span>
+                  <span className="font-semibold">
+                    {stats?.statistics?.unverifiedUsers || 0}
+                  </span>
                 </div>
               </div>
-            ))}
+            </Card>
+
+            <Card>
+              <h3 className="mb-3 text-lg font-semibold text-gray-800">
+                Recent Users
+              </h3>
+              <div className="space-y-3">
+                {stats?.recentUsers?.slice(0, 5).map(user => (
+                  <div key={user._id} className="flex items-center justify-between rounded-lg border border-gray-200 p-2">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold capitalize text-gray-600">{user.role}</span>
+                      <button
+                        onClick={() => setDeleteConfirm(user)}
+                        className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
-        </Card>
-      </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
@@ -177,6 +208,9 @@ export const AdminDashboard = () => {
           </Card>
         </div>
       )}
+
+      {/* Courses Tab */}
+      {activeTab === 'courses' && <CoursesManagement />}
     </div>
   );
 };
