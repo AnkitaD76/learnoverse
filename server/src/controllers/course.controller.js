@@ -189,8 +189,20 @@ export const getCourseEnrollments = async (req, res) => {
     throw new NotFoundError('Course not found');
   }
 
-  // Check if user is admin or the course instructor
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+  // Check if user is admin, course instructor, or enrolled in the course
+  let isAuthorized = role === 'admin' || String(course.instructor) === String(userId);
+  
+  if (!isAuthorized) {
+    // Check if user is enrolled in the course
+    const enrollment = await Enrollment.findOne({
+      course: courseId,
+      user: userId,
+      status: 'enrolled',
+    });
+    isAuthorized = !!enrollment;
+  }
+
+  if (!isAuthorized) {
     throw new UnauthorizedError('You do not have permission to view enrollments for this course');
   }
 
