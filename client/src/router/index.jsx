@@ -1,5 +1,6 @@
 import CoursesPage from '../pages/courses/page';
-import CourseDetailPage from '../pages/coursedetails/page';
+import CourseDetailPage from '../pages/CourseDetails/page';
+import CourseContentPage from '../pages/CourseContent/page';
 import CreateCoursePage from '../pages/CreateCourse/page';
 
 
@@ -77,6 +78,14 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <CourseDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId/content"
+        element={
+          <ProtectedRoute>
+            <CourseContentPage />
           </ProtectedRoute>
         }
       />

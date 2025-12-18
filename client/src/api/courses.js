@@ -24,3 +24,8 @@ export const withdrawFromCourse = async courseId => {
   const res = await apiClient.post(`/courses/${courseId}/withdraw`);
   return res.data;
 };
+
+export const fetchCourseEnrollments = async courseId => {
+  const res = await apiClient.get(`/courses/${courseId}/enrollments`);
+  return res.data;
+};
