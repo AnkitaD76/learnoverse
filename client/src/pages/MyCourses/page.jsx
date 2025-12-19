@@ -111,7 +111,7 @@ const MyCoursesPage = () => {
                     <ProgressBar percent={item.progress?.percent || 0} />
                   </div>
 
-                  <Link to={`/courses/${item.course?._id}`}>
+                  <Link to={`/courses/${item.course?._id}/content`}>
                     <Button size="sm" className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">
                       Open
                     </Button>

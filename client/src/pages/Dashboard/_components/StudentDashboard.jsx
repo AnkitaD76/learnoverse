@@ -32,7 +32,6 @@ export const StudentDashboard = () => {
     load();
   }, []);
 
-  const enrolledCourses = data?.enrolledCourses || [];
   const recommendations = data?.recommendedCourses || [];
   const skillSwapMatches = data?.skillSwapMatches || [];
   const stats = data?.stats || {};
@@ -98,47 +97,47 @@ export const StudentDashboard = () => {
         </p>
       )}
 
-      {/* Enrolled Courses */}
+      {/* Recommendations */}
       <Card>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Your Courses
+            Recommended for You
           </h2>
-          <Link
-            to="/courses"
-            className="text-sm font-medium text-[#FF6A00] hover:underline"
-          >
-            View all
-          </Link>
         </div>
-        {enrolledCourses.length === 0 ? (
+        {recommendations.length === 0 ? (
           <p className="text-sm text-[#4A4A4A]">
-            You’re not enrolled in any courses yet. Start by exploring the
-            catalog!
+            No recommendations yet. Enroll in some courses to get smarter
+            suggestions.
           </p>
         ) : (
-          <div className="space-y-3">
-            {enrolledCourses.map(({ course, _id }) => (
+          <div className="grid gap-4 md:grid-cols-2">
+            {recommendations.map(course => (
               <div
-                key={_id}
-                className="flex items-center justify-between rounded-lg border border-[#E5E5E5] p-3"
+                key={course._id}
+                className="rounded-lg border border-[#E5E5E5] p-4"
               >
-                <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">
-                    {course?.title}
-                  </p>
-                  <p className="text-xs text-[#4A4A4A]">
-                    {course?.category} · {course?.level}
-                  </p>
+                <p className="text-sm font-semibold text-[#1A1A1A]">
+                  {course.title}
+                </p>
+                <p className="mt-1 text-xs text-[#4A4A4A]">
+                  {course.category} · {course.level}
+                </p>
+                <p className="mt-1 text-xs text-[#4A4A4A]">
+                  Instructor: {course.instructor?.name}
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[#FF6A00]">
+                    {course.pricePoints} pts
+                  </span>
+                  <Link to={`/courses/${course._id}`}>
+                    <Button
+                      size="sm"
+                      className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                    >
+                      View
+                    </Button>
+                  </Link>
                 </div>
-                <Link to={`/courses/${course?._id}/content`}>
-                  <Button
-                    size="sm"
-                    className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                  >
-                    Continue
-                  </Button>
-                </Link>
               </div>
             ))}
           </div>
