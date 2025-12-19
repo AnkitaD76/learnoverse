@@ -8,14 +8,14 @@ import {
     getWalletStatistics,
     getUserWalletDetails,
 } from '../controllers/adminWallet.controller.js';
-import { authenticateUser } from '../middleware/authenticate.js';
-import { authorizePermissions } from '../middleware/authorization.js';
+import { authenticate } from '../middleware/authenticate.js';
+import { authorizeRoles } from '../middleware/authorization.js';
 
 const router = express.Router();
-
+ 
 /**
  * ADMIN WALLET ROUTES
- *
+ * 
  * All routes require:
  * 1. Authentication
  * 2. Admin role
@@ -31,8 +31,8 @@ const router = express.Router();
  */
 
 // All routes require authentication and admin role
-router.use(authenticateUser);
-router.use(authorizePermissions('admin'));
+router.use(authenticate);
+router.use(authorizeRoles('admin'));
 
 // Exchange rate management
 router.post('/exchange-rates', setExchangeRate);

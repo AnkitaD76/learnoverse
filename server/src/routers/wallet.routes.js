@@ -7,7 +7,7 @@ import {
     sellPoints,
     getPayoutRequests,
 } from '../controllers/wallet.controller.js';
-import { authenticateUser } from '../middleware/authenticate.js';
+import { authenticate } from '../middleware/authenticate.js';
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ const router = express.Router();
  */
 
 // All wallet routes require authentication
-router.use(authenticateUser);
+router.use(authenticate);
 
 // Get wallet balance and summary
 router.get('/balance', getWalletBalance);

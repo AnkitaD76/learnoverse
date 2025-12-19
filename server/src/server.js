@@ -32,6 +32,7 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(',').map(s =>
     s.trim()
 ) || [
     'http://localhost:5173',
+    'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
 ];
@@ -78,7 +79,10 @@ const start = async () => {
         await connectDB(MONGO_URI);
 
         // Seed initial exchange rates (only runs if none exist)
-        await seedExchangeRates();
+        app.listen(port, () => {
+            console.log(`🚀 Server running on port ${port}...`);
+        });
+        // await seedExchangeRates();
     } catch (error) {
         console.error('❌ Server startup error:', error);
         process.exit(1);
