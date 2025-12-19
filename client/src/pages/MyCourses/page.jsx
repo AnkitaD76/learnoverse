@@ -160,7 +160,7 @@ const MyCoursesPage = () => {
                     </p>
                   </div>
 
-                  <Link to={`/courses/${course._id}`}>
+                  <Link to={`/courses/${course._id}/content`}>
                     <Button size="sm" className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">
                       View
                     </Button>

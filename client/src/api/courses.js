@@ -47,3 +47,18 @@ export const markLessonComplete = async (courseId, lessonId) => {
   const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`);
   return res.data;
 };
+
+export const addCourseLesson = async (courseId, payload) => {
+  const res = await apiClient.post(`/courses/${courseId}/lessons`, payload);
+  return res.data;
+};
+
+export const updateCourseLesson = async (courseId, lessonId, payload) => {
+  const res = await apiClient.patch(`/courses/${courseId}/lessons/${lessonId}`, payload);
+  return res.data;
+};
+
+export const deleteCourseLesson = async (courseId, lessonId) => {
+  const res = await apiClient.delete(`/courses/${courseId}/lessons/${lessonId}`);
+  return res.data;
+};

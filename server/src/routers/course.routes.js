@@ -14,6 +14,9 @@ import {
     getMyCreatedCourses,
     deleteCourse,
     getCourseEnrollments,
+  addLessonToCourse,
+  updateLessonInCourse,
+  deleteLessonFromCourse,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -50,23 +53,7 @@ router.get('/:id', getCourseById);
 router.post('/', authenticate, requireVerification, createCourse);
 router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
-router.post(
-    '/:id/enroll-with-points',
-    authenticate,
-    requireVerification,
-    enrollInCourseWithPoints
-);
-router.post(
-    '/:id/withdraw',
-    authenticate,
-    requireVerification,
-    withdrawFromCourse
-);
-router.get(
-    '/:id/enrollments',
-    authenticate,
-    requireVerification,
-    getCourseEnrollments
-);
+router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
+router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
 
 export default router;

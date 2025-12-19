@@ -18,6 +18,7 @@ import CoursesPage from '../pages/courses/page';
 import CourseDetailPage from '../pages/CourseDetails/page';
 import CourseContentPage from '../pages/CourseContent/page';
 import CreateCoursePage from '../pages/CreateCourse/page';
+import ManageLessonsPage from '../pages/ManageLessons/page';
 
 // ✅ NEW: My Courses
 import MyCoursesPage from '../pages/MyCourses/page';
@@ -102,6 +103,14 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <CourseContentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId/manage-lessons"
+        element={
+          <ProtectedRoute>
+            <ManageLessonsPage />
           </ProtectedRoute>
         }
       />
