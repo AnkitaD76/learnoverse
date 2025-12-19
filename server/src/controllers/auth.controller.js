@@ -293,6 +293,7 @@ export const resetPassword = async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
+    console.log('resetLog');
 
     res.status(StatusCodes.OK).json({
         success: true,
