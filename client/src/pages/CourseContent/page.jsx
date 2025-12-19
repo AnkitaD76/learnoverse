@@ -125,20 +125,6 @@ const CourseContentPage = () => {
           <p className="mt-4 text-sm text-[#4A4A4A]">
             Course lessons and materials will be available here. Coming soon!
           </p>
-          <div className="mt-6 space-y-3">
-            <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
-              <p className="font-medium text-[#1A1A1A]">📚 Module 1: Introduction</p>
-              <p className="mt-1 text-sm text-[#4A4A4A]">Getting started with the basics</p>
-            </div>
-            <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
-              <p className="font-medium text-[#1A1A1A]">📚 Module 2: Core Concepts</p>
-              <p className="mt-1 text-sm text-[#4A4A4A]">Deep dive into key topics</p>
-            </div>
-            <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
-              <p className="font-medium text-[#1A1A1A]">📚 Module 3: Advanced Topics</p>
-              <p className="mt-1 text-sm text-[#4A4A4A]">Master advanced techniques</p>
-            </div>
-          </div>
         </Card>
 
         {/* Enrollments */}
