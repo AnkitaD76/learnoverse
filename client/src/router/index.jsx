@@ -22,6 +22,9 @@ import CreateCoursePage from '../pages/CreateCourse/page';
 // ✅ NEW: My Courses
 import MyCoursesPage from '../pages/MyCourses/page';
 
+// ✅ NEW: Student Enrolled
+import StudentEnrolledPage from '../pages/StudentEnrolled/page';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -99,6 +102,14 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <CourseContentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId/enrolled-students"
+        element={
+          <ProtectedRoute>
+            <StudentEnrolledPage />
           </ProtectedRoute>
         }
       />

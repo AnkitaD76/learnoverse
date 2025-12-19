@@ -181,8 +181,6 @@ export const deleteCourse = async (req, res) => {
 };
 
 /**
-<<<<<<< HEAD
-=======
  * GET /api/v1/courses/:id/enrollments
  * Get all enrolled students for a course
  * Only admin or course instructor can view
@@ -229,7 +227,6 @@ export const getCourseEnrollments = async (req, res) => {
 };
 
 /**
->>>>>>> 618ae80c8785cc51aaeb46b50103e6a39a7e6932
  * GET /api/v1/courses/my-enrollments
  */
 export const getMyEnrollments = async (req, res) => {
