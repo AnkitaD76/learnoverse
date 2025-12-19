@@ -2,17 +2,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-<<<<<<< HEAD
-import { fetchCourseById, addCourseLesson, updateCourseLesson, deleteCourseLesson } from '../../api/courses';
-import { createLessonLiveSession } from '../../api/courses';
-=======
 import {
   fetchCourseById,
   addCourseLesson,
   updateCourseLesson,
   deleteCourseLesson,
+  createLessonLiveSession,
 } from '../../api/courses';
->>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
 import { Input } from '../../components/Input';
 
 const ManageLessonsPage = () => {
@@ -169,7 +165,6 @@ const ManageLessonsPage = () => {
                     )}
                   </div>
                   <div className="flex gap-2">
-<<<<<<< HEAD
                     {lesson.type === 'live' && (
                       lesson.live?.roomName ? (
                         <a href={`https://meet.jit.si/${lesson.live.roomName}`} target="_blank" rel="noopener noreferrer" className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700">Open Session</a>
@@ -182,7 +177,6 @@ const ManageLessonsPage = () => {
                     ) : null}
                     <button onClick={() => startEdit(lesson)} className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700">Edit</button>
                     <button onClick={() => handleDelete(lesson._id)} className="rounded bg-red-100 px-3 py-1 text-xs text-red-700">Delete</button>
-=======
                     <button
                       onClick={() => startEdit(lesson)}
                       className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700"
@@ -195,7 +189,6 @@ const ManageLessonsPage = () => {
                     >
                       Delete
                     </button>
->>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
                   </div>
                 </div>
               </Card>
