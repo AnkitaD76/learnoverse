@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { getTransactionHistory, getPayoutRequests } from '../../api/wallet';
 import TransactionItem from '../../components/wallet/TransactionItem';
 import StatusBadge from '../../components/wallet/StatusBadge';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 /**
  * TRANSACTION HISTORY PAGE

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../contexts/WalletContext';
 import ExchangeRateSelector from '../../components/wallet/ExchangeRateSelector';
 import ConfirmationModal from '../../components/wallet/ConfirmationModal';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 /**
  * BUY POINTS PAGE

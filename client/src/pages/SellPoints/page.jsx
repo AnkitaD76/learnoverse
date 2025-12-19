@@ -4,7 +4,7 @@ import { useWallet } from '../../contexts/WalletContext';
 import ExchangeRateSelector from '../../components/wallet/ExchangeRateSelector';
 import ConfirmationModal from '../../components/wallet/ConfirmationModal';
 import BalanceCard from '../../components/wallet/BalanceCard';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 /**
  * SELL POINTS PAGE

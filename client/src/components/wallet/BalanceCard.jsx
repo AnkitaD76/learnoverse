@@ -1,5 +1,5 @@
 import { useWallet } from '../../contexts/WalletContext';
-import LoadingSpinner from '../LoadingSpinner';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 /**
  * BALANCE CARD

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useWallet } from '../../contexts/WalletContext';
 import BalanceCard from '../../components/wallet/BalanceCard';
 import TransactionItem from '../../components/wallet/TransactionItem';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 /**
  * WALLET DASHBOARD
