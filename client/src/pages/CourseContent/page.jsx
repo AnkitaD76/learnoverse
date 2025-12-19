@@ -3,16 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-<<<<<<< HEAD
-import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson, createLessonLiveSession } from '../../api/courses';
-=======
 import {
   fetchCourseById,
   withdrawFromCourse,
   fetchCourseEnrollments,
   addCourseLesson,
+  createLessonLiveSession,
 } from '../../api/courses';
->>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
 import { useSession } from '../../contexts/SessionContext';
 
 const CourseContentPage = () => {
@@ -224,7 +221,7 @@ const CourseContentPage = () => {
                   key={lesson._id || index}
                   className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 transition hover:bg-white"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="font-medium text-[#1A1A1A]">
                         {lesson.order + 1}. {lesson.title}
@@ -246,7 +243,6 @@ const CourseContentPage = () => {
                         </p>
                       )}
                     </div>
-<<<<<<< HEAD
                     {lesson.type === 'live' ? (
                       lesson.live?.roomName ? (
                         <button
@@ -256,7 +252,6 @@ const CourseContentPage = () => {
                           Join Live
                         </button>
                       ) : (
-                        // if owner, allow create; otherwise disabled
                         (user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) ? (
                           <button
                             onClick={() => handleCreateLive(lesson)}
@@ -276,14 +271,6 @@ const CourseContentPage = () => {
                         Start
                       </button>
                     )}
-=======
-                    <button
-                      onClick={() => setViewingLesson(lesson)}
-                      className="flex-shrink-0 rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00]"
-                    >
-                      Start
-                    </button>
->>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
                   </div>
                 </div>
               ))}
