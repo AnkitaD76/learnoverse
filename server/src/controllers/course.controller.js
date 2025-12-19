@@ -261,3 +261,97 @@ export const getMyCreatedCourses = async (req, res) => {
     courses,
   });
 };
+
+/**
+ * POST /api/v1/courses/:id/lessons
+ * Add a lesson to an existing course (only instructor or admin)
+ */
+export const addLessonToCourse = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+
+  const { title, type, contentUrl, textContent, live } = req.body;
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new NotFoundError('Course not found');
+
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to modify this course');
+  }
+
+  if (!title || !title.trim()) {
+    throw new BadRequestError('Lesson title is required');
+  }
+
+  const order = Array.isArray(course.lessons) ? course.lessons.length : 0;
+  const lesson = { title: title.trim(), type: type || 'video', order };
+
+  if (lesson.type === 'video') lesson.contentUrl = contentUrl || '';
+  if (lesson.type === 'text') lesson.textContent = textContent || '';
+  if (lesson.type === 'live') lesson.live = live || {};
+
+  course.lessons = course.lessons || [];
+  course.lessons.push(lesson);
+
+  await course.save();
+
+  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson added' });
+};
+
+/**
+ * PATCH /api/v1/courses/:id/lessons/:lessonId
+ * Update a lesson inside a course (only instructor or admin)
+ */
+export const updateLessonInCourse = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+  const lessonId = req.params.lessonId;
+
+  const { title, type, contentUrl, textContent, live, order } = req.body;
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new NotFoundError('Course not found');
+
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to modify this course');
+  }
+
+  const lesson = course.lessons.id(lessonId);
+  if (!lesson) throw new NotFoundError('Lesson not found');
+
+  if (title !== undefined) lesson.title = title;
+  if (type !== undefined) lesson.type = type;
+  if (contentUrl !== undefined) lesson.contentUrl = contentUrl;
+  if (textContent !== undefined) lesson.textContent = textContent;
+  if (live !== undefined) lesson.live = live;
+  if (order !== undefined) lesson.order = order;
+
+  await course.save();
+
+  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson updated' });
+};
+
+/**
+ * DELETE /api/v1/courses/:id/lessons/:lessonId
+ * Remove a lesson from a course (only instructor or admin)
+ */
+export const deleteLessonFromCourse = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+  const lessonId = req.params.lessonId;
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new NotFoundError('Course not found');
+
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to modify this course');
+  }
+
+  const lesson = course.lessons.id(lessonId);
+  if (!lesson) throw new NotFoundError('Lesson not found');
+
+  lesson.remove();
+  await course.save();
+
+  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson deleted' });
+};

@@ -10,6 +10,9 @@ import {
   getMyCreatedCourses,
   deleteCourse,
   getCourseEnrollments,
+  addLessonToCourse,
+  updateLessonInCourse,
+  deleteLessonFromCourse,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -38,6 +41,10 @@ router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
 router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
 router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
+// Add lesson (instructor/admin)
+router.post('/:id/lessons', authenticate, requireVerification, addLessonToCourse);
+router.patch('/:id/lessons/:lessonId', authenticate, requireVerification, updateLessonInCourse);
+router.delete('/:id/lessons/:lessonId', authenticate, requireVerification, deleteLessonFromCourse);
 
 export default router;
 
