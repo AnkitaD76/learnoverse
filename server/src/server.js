@@ -4,7 +4,10 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import connectDB from './db/connectDB.js';
+import setupMessaging from './socket/messages.js';
 
 // Error Handlers
 import notFoundMiddleware from './middleware/not-found.js';
@@ -64,13 +67,27 @@ app.use('/api/v1/skill-swap', skillSwapRoutes);
 // Error Handlers (MUST BE LAST)
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
+
 const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 const start = async () => {
   try {
     await connectDB(MONGO_URI);
-    app.listen(port, () =>
+    
+    // Create HTTP server for Socket.io
+    const httpServer = createServer(app);
+    const io = new Server(httpServer, {
+      cors: {
+        origin: allowedOrigins,
+        credentials: true,
+      },
+    });
+
+    // Setup messaging
+    setupMessaging(io);
+
+    httpServer.listen(port, () =>
       console.log(`🚀 Server is listening on port ${port}...`)
     );
   } catch (error) {
