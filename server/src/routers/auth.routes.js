@@ -18,7 +18,7 @@ router.post('/login', login);
 // VERIFY EMAIL
 router.post('/verify-email', verifyEmail);
 
-// FORGOT PASSWORD
+// FORGOT PASSWORD 
 router.post('/forgot-password', forgotPassword);
 
 // RESET PASSWORD
