@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { fetchCourseById, addCourseLesson, updateCourseLesson, deleteCourseLesson } from '../../api/courses';
+import { createLessonLiveSession } from '../../api/courses';
 import { Input } from '../../components/Input';
 
 const ManageLessonsPage = () => {
@@ -128,8 +129,21 @@ const ManageLessonsPage = () => {
                   <div>
                     <p className="font-medium">{lesson.order + 1}. {lesson.title}</p>
                     <p className="text-xs text-[#4A4A4A]">{lesson.type}</p>
+                    {lesson.type === 'live' && (
+                      <p className="text-xs text-[#4A4A4A]">Room: {lesson.live?.roomName || 'Not created'}</p>
+                    )}
                   </div>
                   <div className="flex gap-2">
+                    {lesson.type === 'live' && (
+                      lesson.live?.roomName ? (
+                        <a href={`https://meet.jit.si/${lesson.live.roomName}`} target="_blank" rel="noopener noreferrer" className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700">Open Session</a>
+                      ) : (
+                        <button onClick={async () => { try { await createLessonLiveSession(courseId, lesson._id); alert('Live session created'); await load(); } catch (err) { console.error(err); alert(err.response?.data?.message || 'Failed to create live session'); } }} className="rounded bg-red-100 px-3 py-1 text-xs text-red-700">Create Session</button>
+                      )
+                    )}
+                    {lesson.type === 'live' && lesson.live?.roomName ? (
+                      <button onClick={() => { window.location.href = `https://meet.jit.si/${lesson.live.roomName}`; }} className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700">Open Session</button>
+                    ) : null}
                     <button onClick={() => startEdit(lesson)} className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700">Edit</button>
                     <button onClick={() => handleDelete(lesson._id)} className="rounded bg-red-100 px-3 py-1 text-xs text-red-700">Delete</button>
                   </div>

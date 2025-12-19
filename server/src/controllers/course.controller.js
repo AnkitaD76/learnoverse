@@ -355,3 +355,38 @@ export const deleteLessonFromCourse = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson deleted' });
 };
+
+/**
+ * POST /api/v1/courses/:id/lessons/:lessonId/create-live
+ * Create a Jitsi live session (roomName + joinCode) for a lesson (instructor/admin only)
+ */
+export const createLiveSessionInLesson = async (req, res) => {
+  const { role, userId } = req.user;
+  const courseId = req.params.id;
+  const lessonId = req.params.lessonId;
+
+  const { startTime } = req.body || {};
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new NotFoundError('Course not found');
+
+  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+    throw new UnauthorizedError('You do not have permission to modify this course');
+  }
+
+  const lesson = course.lessons.id(lessonId);
+  if (!lesson) throw new NotFoundError('Lesson not found');
+
+  // generate a unique room name and a short join code
+  const roomName = `learnoverse-${courseId}-${Date.now().toString(36)}`;
+  const joinCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+
+  lesson.live = lesson.live || {};
+  lesson.live.roomName = roomName;
+  lesson.live.joinCode = joinCode;
+  if (startTime) lesson.live.startTime = new Date(startTime);
+
+  await course.save();
+
+  res.status(StatusCodes.OK).json({ success: true, course, message: 'Live session created', roomName, joinCode });
+};

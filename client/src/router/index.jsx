@@ -19,6 +19,7 @@ import CourseDetailPage from '../pages/CourseDetails/page';
 import CourseContentPage from '../pages/CourseContent/page';
 import CreateCoursePage from '../pages/CreateCourse/page';
 import ManageLessonsPage from '../pages/ManageLessons/page';
+import LiveSessionPage from '../pages/LiveSession/page';
 
 // ✅ NEW: My Courses
 import MyCoursesPage from '../pages/MyCourses/page';
@@ -111,6 +112,14 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <ManageLessonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId/lessons/:lessonId/live"
+        element={
+          <ProtectedRoute>
+            <LiveSessionPage />
           </ProtectedRoute>
         }
       />

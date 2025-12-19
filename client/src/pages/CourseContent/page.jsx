@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson } from '../../api/courses';
+import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson, createLessonLiveSession } from '../../api/courses';
 import { useSession } from '../../contexts/SessionContext';
 
 const CourseContentPage = () => {
@@ -55,6 +55,36 @@ const CourseContentPage = () => {
     load();
   }, [courseId]);
 
+  // Poll course data so students see live session link without manual refresh
+  useEffect(() => {
+    // only poll for non-owners when any live lesson exists without a room
+    const shouldPoll = () => {
+      if (!course) return false;
+      if (!user) return false;
+      const isOwner = user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id));
+      if (isOwner) return false;
+      return (course.lessons || []).some(l => l.type === 'live' && !l.live?.roomName);
+    };
+
+    if (!shouldPoll()) return;
+
+    let cancelled = false;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetchCourseById(courseId);
+        if (cancelled) return;
+        if (res?.course) setCourse(res.course);
+      } catch (err) {
+        console.error('CourseContent polling error', err);
+      }
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [course, courseId, user]);
+
   const handleWithdraw = async () => {
     try {
       setActionLoading(true);
@@ -85,6 +115,22 @@ const CourseContentPage = () => {
   if (!course) {
     return <p className="text-sm text-red-600">Course not found.</p>;
   }
+
+  const handleCreateLive = async (lesson) => {
+    try {
+      const res = await createLessonLiveSession(courseId, lesson._id);
+      // refresh
+      const updated = await fetchCourseById(courseId);
+      setCourse(updated.course);
+      setViewingLesson(updated.course.lessons.find(l => String(l._id) === String(lesson._id)));
+      setInfo('Live session created');
+      // open jitsi
+      if (res.roomName) { window.location.href = `https://meet.jit.si/${res.roomName}`; }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to create live session');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -171,18 +217,41 @@ const CourseContentPage = () => {
                           {lesson.contentUrl}
                         </p>
                       )}
-                      {lesson.type === 'live' && lesson.live?.roomName && (
+                      {lesson.type === 'live' && (
                         <p className="mt-2 text-xs text-[#4A4A4A]">
-                          Room: {lesson.live.roomName}
+                          {lesson.live?.roomName ? `Room: ${lesson.live.roomName}` : 'Live session not created yet'}
                         </p>
                       )}
                     </div>
-                    <button 
-                      onClick={() => setViewingLesson(lesson)}
-                      className="rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00] flex-shrink-0"
-                    >
-                      Start
-                    </button>
+                    {lesson.type === 'live' ? (
+                      lesson.live?.roomName ? (
+                        <button
+                          onClick={() => { window.location.href = `https://meet.jit.si/${lesson.live.roomName}`; }}
+                          className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 flex-shrink-0"
+                        >
+                          Join Live
+                        </button>
+                      ) : (
+                        // if owner, allow create; otherwise disabled
+                        (user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) ? (
+                          <button
+                            onClick={() => handleCreateLive(lesson)}
+                            className="rounded bg-red-500 px-3 py-1 text-sm font-medium text-white hover:bg-red-600 flex-shrink-0"
+                          >
+                            Create & Join
+                          </button>
+                        ) : (
+                          <button disabled className="rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-400 flex-shrink-0">Live</button>
+                        )
+                      )
+                    ) : (
+                      <button 
+                        onClick={() => setViewingLesson(lesson)}
+                        className="rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00] flex-shrink-0"
+                      >
+                        Start
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
