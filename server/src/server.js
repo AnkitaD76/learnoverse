@@ -23,6 +23,7 @@ import courseRoutes from './routers/course.routes.js';
 import dashboardRoutes from './routers/dashboard.routes.js';
 import walletRoutes from './routers/wallet.routes.js';
 import adminWalletRoutes from './routers/adminWallet.routes.js';
+import qaRoutes from './routers/qa.routes.js';
 
 // (Optional: only keep these if you really have these router files)
 import notificationsRoutes from './routers/notifications.routes.js';
@@ -66,6 +67,7 @@ app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/admin/wallet', adminWalletRoutes);
+app.use('/api/v1/qa', qaRoutes);
 
 // Optional modules (keep only if you created these endpoints)
 app.use('/api/v1/notifications', notificationsRoutes);
@@ -79,36 +81,35 @@ const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 const start = async () => {
-  try {
-    // 1. Connect DB ONCE
-    await connectDB(MONGO_URI);
+    try {
+        // 1. Connect DB ONCE
+        await connectDB(MONGO_URI);
 
-    // 2. Create HTTP server
-    const httpServer = createServer(app);
+        // 2. Create HTTP server
+        const httpServer = createServer(app);
 
-    // 3. Attach Socket.IO
-    const io = new Server(httpServer, {
-      cors: {
-        origin: allowedOrigins,
-        credentials: true,
-      },
-    });
+        // 3. Attach Socket.IO
+        const io = new Server(httpServer, {
+            cors: {
+                origin: allowedOrigins,
+                credentials: true,
+            },
+        });
 
-    // 4. Setup socket logic
-    setupMessaging(io);
+        // 4. Setup socket logic
+        setupMessaging(io);
 
-    // 5. Start server ONCE
-    httpServer.listen(port, () => {
-      console.log(`🚀 Server running on port ${port}...`);
-    });
+        // 5. Start server ONCE
+        httpServer.listen(port, () => {
+            console.log(`🚀 Server running on port ${port}...`);
+        });
 
-    // Optional: seed once
-    // await seedExchangeRates();
-
-  } catch (error) {
-    console.error('❌ Server startup error:', error);
-    process.exit(1);
-  }
+        // Optional: seed once
+        // await seedExchangeRates();
+    } catch (error) {
+        console.error('❌ Server startup error:', error);
+        process.exit(1);
+    }
 };
 
 start();

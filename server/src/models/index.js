@@ -8,3 +8,9 @@ export { default as Wallet } from './Wallet.js';
 export { default as Transaction } from './Transaction.js';
 export { default as ExchangeRate } from './ExchangeRate.js';
 export { default as PayoutRequest } from './PayoutRequest.js';
+
+// Q&A System Models
+export { default as Question } from './Question.js';
+export { default as Answer } from './Answer.js';
+export { default as Vote } from './Vote.js';
+export { default as Tag } from './Tag.js';

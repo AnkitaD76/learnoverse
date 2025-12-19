@@ -6,6 +6,7 @@ import { useSession } from '../contexts/SessionContext';
 const navigationRoutes = [
   { name: 'Courses', path: '/courses' },
   { name: 'My Courses', path: '/my-courses' },
+  { name: 'Q&A', path: '/qa' },
   { name: 'Posts', path: '/posts' },
   { name: 'Marketplace', path: '/marketplace' },
   { name: 'About', path: '/about' },
