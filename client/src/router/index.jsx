@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-=======
-import CoursesPage from '../pages/courses/page';
-import CourseDetailPage from '../pages/CourseDetails/page';
-import CourseContentPage from '../pages/CourseContent/page';
-import CreateCoursePage from '../pages/CreateCourse/page';
-
-
->>>>>>> 618ae80c8785cc51aaeb46b50103e6a39a7e6932
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 
@@ -24,7 +15,8 @@ import PostsPage from '../pages/Posts/page';
 
 // Courses
 import CoursesPage from '../pages/courses/page';
-import CourseDetailPage from '../pages/coursedetails/page';
+import CourseDetailPage from '../pages/CourseDetails/page';
+import CourseContentPage from '../pages/CourseContent/page';
 import CreateCoursePage from '../pages/CreateCourse/page';
 
 // ✅ NEW: My Courses
