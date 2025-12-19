@@ -3,487 +3,713 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson } from '../../api/courses';
+import {
+    fetchCourseById,
+    withdrawFromCourse,
+    fetchCourseEnrollments,
+    addCourseLesson,
+} from '../../api/courses';
 import { useSession } from '../../contexts/SessionContext';
 
 const CourseContentPage = () => {
-  const { courseId } = useParams();
-  const navigate = useNavigate();
-  const [course, setCourse] = useState(null);
-  const [enrolledUsers, setEnrolledUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [enrollmentsLoading, setEnrollmentsLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [info, setInfo] = useState(null);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [viewingLesson, setViewingLesson] = useState(null);
-  const [showAddLesson, setShowAddLesson] = useState(false);
-  const [newLesson, setNewLesson] = useState({ title: '', type: 'video', contentUrl: '', textContent: '', live: { startTime: '', roomName: '' } });
-  const { user } = useSession();
+    const { courseId } = useParams();
+    const navigate = useNavigate();
+    const [course, setCourse] = useState(null);
+    const [enrolledUsers, setEnrolledUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [enrollmentsLoading, setEnrollmentsLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [info, setInfo] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [viewingLesson, setViewingLesson] = useState(null);
+    const [showAddLesson, setShowAddLesson] = useState(false);
+    const [newLesson, setNewLesson] = useState({
+        title: '',
+        type: 'video',
+        contentUrl: '',
+        textContent: '',
+        live: { startTime: '', roomName: '' },
+    });
+    const { user } = useSession();
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetchCourseById(courseId);
-        console.log('📚 Course loaded:', res.course);
-        setCourse(res.course);
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setIsLoading(true);
+                const res = await fetchCourseById(courseId);
+                console.log('📚 Course loaded:', res.course);
+                setCourse(res.course);
 
-        // Fetch enrolled students
+                // Fetch enrolled students
+                try {
+                    const enrollmentsRes =
+                        await fetchCourseEnrollments(courseId);
+                    console.log('👥 Enrollments loaded:', enrollmentsRes);
+                    setEnrolledUsers(enrollmentsRes.enrollments || []);
+                } catch (enrollErr) {
+                    console.error('❌ Failed to load enrollments:', enrollErr);
+                    setEnrolledUsers([]);
+                }
+            } catch (err) {
+                console.error('❌ Error:', err);
+                setError(
+                    err.response?.data?.message ||
+                        err.response?.data?.msg ||
+                        'Failed to load course'
+                );
+            } finally {
+                setIsLoading(false);
+                setEnrollmentsLoading(false);
+            }
+        };
+
+        load();
+    }, [courseId]);
+
+    const handleWithdraw = async () => {
         try {
-          const enrollmentsRes = await fetchCourseEnrollments(courseId);
-          console.log('👥 Enrollments loaded:', enrollmentsRes);
-          setEnrolledUsers(enrollmentsRes.enrollments || []);
-        } catch (enrollErr) {
-          console.error('❌ Failed to load enrollments:', enrollErr);
-          setEnrolledUsers([]);
+            setActionLoading(true);
+            setError(null);
+            const res = await withdrawFromCourse(courseId);
+            setInfo(res.message || 'Withdrawn successfully');
+            setShowConfirm(false);
+            // Navigate to courses page after 1 second
+            setTimeout(() => {
+                navigate('/courses');
+            }, 1000);
+        } catch (err) {
+            console.error(err);
+            setError(
+                err.response?.data?.message ||
+                    err.response?.data?.msg ||
+                    'Failed to withdraw'
+            );
+        } finally {
+            setActionLoading(false);
         }
-      } catch (err) {
-        console.error('❌ Error:', err);
-        setError(
-          err.response?.data?.message ||
-            err.response?.data?.msg ||
-            'Failed to load course'
-        );
-      } finally {
-        setIsLoading(false);
-        setEnrollmentsLoading(false);
-      }
     };
 
-    load();
-  }, [courseId]);
-
-  const handleWithdraw = async () => {
-    try {
-      setActionLoading(true);
-      setError(null);
-      const res = await withdrawFromCourse(courseId);
-      setInfo(res.message || 'Withdrawn successfully');
-      setShowConfirm(false);
-      // Navigate to courses page after 1 second
-      setTimeout(() => {
-        navigate('/courses');
-      }, 1000);
-    } catch (err) {
-      console.error(err);
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.msg ||
-          'Failed to withdraw'
-      );
-    } finally {
-      setActionLoading(false);
+    if (isLoading) {
+        return <p className="text-sm text-[#4A4A4A]">Loading course...</p>;
     }
-  };
 
-  if (isLoading) {
-    return <p className="text-sm text-[#4A4A4A]">Loading course...</p>;
-  }
+    if (!course) {
+        return <p className="text-sm text-red-600">Course not found.</p>;
+    }
 
-  if (!course) {
-    return <p className="text-sm text-red-600">Course not found.</p>;
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* Course Header */}
-        <Card className="border-l-4 border-l-[#FF6A00]">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-[#1A1A1A]">
-                {course.title}
-              </h1>
-              <p className="mt-2 text-sm text-[#4A4A4A]">
-                {course.description || 'No description provided.'}
-              </p>
-              <div className="mt-4 flex gap-4">
-                <div>
-                  <p className="text-xs text-[#4A4A4A]">Category</p>
-                  <p className="font-semibold text-[#1A1A1A]">{course.category}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-[#4A4A4A]">Level</p>
-                  <p className="font-semibold text-[#1A1A1A]">{course.level}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-[#4A4A4A]">Points</p>
-                  <p className="font-semibold text-[#FF6A00]">{course.pricePoints}</p>
-                </div>
-                {/* Owner actions: add lesson/live */}
-                {user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id)) && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => navigate(`/courses/${courseId}/manage-lessons`)}
-                      className="bg-[#06b6d4] text-white hover:bg-[#0891b2]"
-                    >
-                      Manage Lessons
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Instructor Info */}
-        <Card>
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">Instructor</h2>
-          <div className="mt-4">
-            <p className="font-medium text-[#1A1A1A]">
-              {course.instructor?.name || 'Unknown'}
-            </p>
-            <p className="text-sm text-[#4A4A4A]">
-              {course.instructor?.email || 'No email available'}
-            </p>
-          </div>
-        </Card>
-
-        {/* Course Content */}
-        <Card>
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">Course Content</h2>
-          {!course.lessons || course.lessons.length === 0 ? (
-            <p className="mt-4 text-sm text-[#4A4A4A]">
-              No lessons added yet.
-            </p>
-          ) : (
-            <div className="mt-6 space-y-3">
-              {course.lessons.map((lesson, index) => (
-                <div
-                  key={lesson._id || index}
-                  className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 hover:bg-white transition"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="font-medium text-[#1A1A1A]">
-                        {lesson.order + 1}. {lesson.title}
-                      </p>
-                      <p className="mt-1 text-xs text-[#4A4A4A] capitalize">
-                        {lesson.type === 'video' && '▶ Video Lesson'}
-                        {lesson.type === 'text' && '📄 Text Lesson'}
-                        {lesson.type === 'live' && '🔴 Live Session'}
-                        {lesson.type === 'quiz' && '❓ Quiz'}
-                      </p>
-                      {lesson.type === 'video' && lesson.contentUrl && (
-                        <p className="mt-2 text-xs text-[#FF6A00] truncate">
-                          {lesson.contentUrl}
-                        </p>
-                      )}
-                      {lesson.type === 'live' && lesson.live?.roomName && (
-                        <p className="mt-2 text-xs text-[#4A4A4A]">
-                          Room: {lesson.live.roomName}
-                        </p>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => setViewingLesson(lesson)}
-                      className="rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00] flex-shrink-0"
-                    >
-                      Start
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        {/* Enrollments */}
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-[#1A1A1A]">
-              Students Enrolled ({course?.enrollCount || enrolledUsers.length})
-            </h2>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => navigate(`/courses/${courseId}/enrolled-students`)}
-                variant="secondary"
-                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
-              >
-                View All Students
-              </Button>
-              <Button
-                onClick={() => setShowConfirm(true)}
-                variant="secondary"
-                className="border border-red-600 text-red-600 hover:bg-red-50"
-                isLoading={actionLoading}
-              >
-                Withdraw from Course
-              </Button>
-            </div>
-          </div>
-
-          {enrollmentsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <LoadingSpinner size="medium" />
-            </div>
-          ) : enrolledUsers.length === 0 ? (
-            <p className="text-sm text-[#4A4A4A]">No students enrolled yet.</p>
-          ) : (
-            <p className="text-sm text-[#4A4A4A]">
-              {enrolledUsers.length} student{enrolledUsers.length !== 1 ? 's' : ''} enrolled. Click "View All Students" to see details.
-            </p>
-          )}
-        </Card>
-
-        {/* Messages */}
-        {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-        {info && (
-          <div className="rounded-lg bg-green-50 p-4 text-sm text-green-600">
-            {info}
-          </div>
-        )}
-
-        {/* Withdrawal Confirmation Modal */}
-        {showConfirm && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-            <Card className="w-full max-w-sm p-6">
-              <h3 className="text-lg font-semibold text-[#1A1A1A]">
-                Withdraw from Course?
-              </h3>
-              <p className="mt-3 text-sm text-[#4A4A4A]">
-                Are you sure you want to withdraw from <strong>{course.title}</strong>?
-                This action cannot be undone.
-              </p>
-
-              <div className="mt-6 flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  disabled={actionLoading}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <Button
-                  onClick={handleWithdraw}
-                  isLoading={actionLoading}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Confirm Withdraw
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Lesson Viewer Modal */}
-        {viewingLesson && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-semibold text-[#1A1A1A]">
-                  {viewingLesson.order + 1}. {viewingLesson.title}
-                </h2>
-                <button
-                  onClick={() => setViewingLesson(null)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {/* Video Lesson */}
-                {viewingLesson.type === 'video' && (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">▶ Video Lesson</p>
-                    {viewingLesson.contentUrl ? (
-                      <div className="space-y-3">
-                        <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
-                          <p className="text-sm font-medium text-[#1A1A1A] mb-2">Video URL:</p>
-                          <a
-                            href={viewingLesson.contentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#FF6A00] hover:underline break-all text-sm"
-                          >
-                            {viewingLesson.contentUrl}
-                          </a>
+    return (
+        <div className="min-h-screen bg-gray-50 p-4">
+            <div className="mx-auto max-w-4xl space-y-6">
+                {/* Course Header */}
+                <Card className="border-l-4 border-l-[#FF6A00]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                            <h1 className="text-3xl font-bold text-[#1A1A1A]">
+                                {course.title}
+                            </h1>
+                            <p className="mt-2 text-sm text-[#4A4A4A]">
+                                {course.description ||
+                                    'No description provided.'}
+                            </p>
+                            <div className="mt-4 flex gap-4">
+                                <div>
+                                    <p className="text-xs text-[#4A4A4A]">
+                                        Category
+                                    </p>
+                                    <p className="font-semibold text-[#1A1A1A]">
+                                        {course.category}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-[#4A4A4A]">
+                                        Level
+                                    </p>
+                                    <p className="font-semibold text-[#1A1A1A]">
+                                        {course.level}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-[#4A4A4A]">
+                                        Points
+                                    </p>
+                                    <p className="font-semibold text-[#FF6A00]">
+                                        {course.pricePoints}
+                                    </p>
+                                </div>
+                                {/* Owner actions: add lesson/live */}
+                                {user &&
+                                    (user.role === 'admin' ||
+                                        String(user._id) ===
+                                            String(course.instructor?._id)) && (
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/courses/${courseId}/manage-lessons`
+                                                    )
+                                                }
+                                                className="bg-[#06b6d4] text-white hover:bg-[#0891b2]"
+                                            >
+                                                Manage Lessons
+                                            </Button>
+                                        </div>
+                                    )}
+                            </div>
                         </div>
-                        <Button
-                          onClick={() => window.open(viewingLesson.contentUrl, '_blank')}
-                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                        >
-                          Open Video
-                        </Button>
-                      </div>
+                    </div>
+                </Card>
+
+                {/* Instructor Info */}
+                <Card>
+                    <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                        Instructor
+                    </h2>
+                    <div className="mt-4">
+                        <p className="font-medium text-[#1A1A1A]">
+                            {course.instructor?.name || 'Unknown'}
+                        </p>
+                        <p className="text-sm text-[#4A4A4A]">
+                            {course.instructor?.email || 'No email available'}
+                        </p>
+                    </div>
+                </Card>
+
+                {/* Course Content */}
+                <Card>
+                    <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                        Course Content
+                    </h2>
+                    {!course.lessons || course.lessons.length === 0 ? (
+                        <p className="mt-4 text-sm text-[#4A4A4A]">
+                            No lessons added yet.
+                        </p>
                     ) : (
-                      <p className="text-sm text-[#4A4A4A]">No video URL provided.</p>
+                        <div className="mt-6 space-y-3">
+                            {course.lessons.map((lesson, index) => (
+                                <div
+                                    key={lesson._id || index}
+                                    className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 transition hover:bg-white"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex-1">
+                                            <p className="font-medium text-[#1A1A1A]">
+                                                {lesson.order + 1}.{' '}
+                                                {lesson.title}
+                                            </p>
+                                            <p className="mt-1 text-xs text-[#4A4A4A] capitalize">
+                                                {lesson.type === 'video' &&
+                                                    '▶ Video Lesson'}
+                                                {lesson.type === 'text' &&
+                                                    '📄 Text Lesson'}
+                                                {lesson.type === 'live' &&
+                                                    '🔴 Live Session'}
+                                                {lesson.type === 'quiz' &&
+                                                    '❓ Quiz'}
+                                            </p>
+                                            {lesson.type === 'video' &&
+                                                lesson.contentUrl && (
+                                                    <p className="mt-2 truncate text-xs text-[#FF6A00]">
+                                                        {lesson.contentUrl}
+                                                    </p>
+                                                )}
+                                            {lesson.type === 'live' &&
+                                                lesson.live?.roomName && (
+                                                    <p className="mt-2 text-xs text-[#4A4A4A]">
+                                                        Room:{' '}
+                                                        {lesson.live.roomName}
+                                                    </p>
+                                                )}
+                                        </div>
+                                        <button
+                                            onClick={() =>
+                                                setViewingLesson(lesson)
+                                            }
+                                            className="flex-shrink-0 rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00]"
+                                        >
+                                            Start
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
+                </Card>
 
-                    {/* Add Lesson Modal */}
-                    {showAddLesson && (
-                      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
-                        <Card className="w-full max-w-lg p-6">
-                          <h3 className="text-lg font-semibold text-[#1A1A1A]">Add Lesson</h3>
-
-                          <div className="space-y-3 mt-4">
-                            <input
-                              value={newLesson.title}
-                              onChange={e => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
-                              placeholder="Lesson title"
-                              className="w-full rounded border p-2"
-                            />
-
-                            <select
-                              value={newLesson.type}
-                              onChange={e => setNewLesson(prev => ({ ...prev, type: e.target.value }))}
-                              className="w-full rounded border p-2"
-                            >
-                              <option value="video">Video</option>
-                              <option value="text">Text</option>
-                              <option value="live">Live</option>
-                            </select>
-
-                            {newLesson.type === 'video' && (
-                              <input
-                                value={newLesson.contentUrl}
-                                onChange={e => setNewLesson(prev => ({ ...prev, contentUrl: e.target.value }))}
-                                placeholder="Video URL"
-                                className="w-full rounded border p-2"
-                              />
-                            )}
-
-                            {newLesson.type === 'text' && (
-                              <textarea
-                                value={newLesson.textContent}
-                                onChange={e => setNewLesson(prev => ({ ...prev, textContent: e.target.value }))}
-                                placeholder="Text content"
-                                className="w-full rounded border p-2"
-                                rows={6}
-                              />
-                            )}
-
-                            {newLesson.type === 'live' && (
-                              <div className="grid gap-2">
-                                <input
-                                  type="datetime-local"
-                                  value={newLesson.live.startTime}
-                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), startTime: e.target.value } }))}
-                                  className="w-full rounded border p-2"
-                                />
-                                <input
-                                  value={newLesson.live.roomName}
-                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), roomName: e.target.value } }))}
-                                  placeholder="Room name"
-                                  className="w-full rounded border p-2"
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4 flex gap-3 justify-end">
-                            <button
-                              onClick={() => setShowAddLesson(false)}
-                              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                            >
-                              Cancel
-                            </button>
+                {/* Enrollments */}
+                <Card>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                            Students Enrolled (
+                            {course?.enrollCount || enrolledUsers.length})
+                        </h2>
+                        <div className="flex gap-2">
                             <Button
-                              onClick={async () => {
-                                try {
-                                  const payload = {
-                                    title: newLesson.title,
-                                    type: newLesson.type,
-                                  };
-                                  if (newLesson.type === 'video') payload.contentUrl = newLesson.contentUrl;
-                                  if (newLesson.type === 'text') payload.textContent = newLesson.textContent;
-                                  if (newLesson.type === 'live') payload.live = newLesson.live;
-
-                                  await addCourseLesson(courseId, payload);
-                                  // refresh
-                                  const res = await fetchCourseById(courseId);
-                                  setCourse(res.course);
-                                  setShowAddLesson(false);
-                                  setInfo('Lesson added');
-                                } catch (err) {
-                                  console.error(err);
-                                  setError(err.response?.data?.message || 'Failed to add lesson');
+                                onClick={() =>
+                                    navigate(
+                                        `/courses/${courseId}/enrolled-students`
+                                    )
                                 }
-                              }}
-                              className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                                variant="secondary"
+                                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
                             >
-                              Add Lesson
+                                View All Students
                             </Button>
-                          </div>
-                        </Card>
-                      </div>
-                    )}
-                  </div>
-                )}
+                            <Button
+                                onClick={() => setShowConfirm(true)}
+                                variant="secondary"
+                                className="border border-red-600 text-red-600 hover:bg-red-50"
+                                isLoading={actionLoading}
+                            >
+                                Withdraw from Course
+                            </Button>
+                        </div>
+                    </div>
 
-                {/* Text Lesson */}
-                {viewingLesson.type === 'text' && (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">📄 Text Lesson</p>
-                    {viewingLesson.textContent ? (
-                      <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 whitespace-pre-wrap text-sm text-[#1A1A1A]">
-                        {viewingLesson.textContent}
-                      </div>
+                    {enrollmentsLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <LoadingSpinner size="medium" />
+                        </div>
+                    ) : enrolledUsers.length === 0 ? (
+                        <p className="text-sm text-[#4A4A4A]">
+                            No students enrolled yet.
+                        </p>
                     ) : (
-                      <p className="text-sm text-[#4A4A4A]">No text content provided.</p>
+                        <p className="text-sm text-[#4A4A4A]">
+                            {enrolledUsers.length} student
+                            {enrolledUsers.length !== 1 ? 's' : ''} enrolled.
+                            Click "View All Students" to see details.
+                        </p>
                     )}
-                  </div>
-                )}
+                </Card>
 
-                {/* Live Session */}
-                {viewingLesson.type === 'live' && (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">🔴 Live Session</p>
-                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 space-y-3">
-                      {viewingLesson.live?.roomName && (
-                        <div>
-                          <p className="text-sm font-medium text-[#1A1A1A]">Room:</p>
-                          <p className="text-sm text-[#FF6A00]">{viewingLesson.live.roomName}</p>
-                        </div>
-                      )}
-                      {viewingLesson.live?.startTime && (
-                        <div>
-                          <p className="text-sm font-medium text-[#1A1A1A]">Start Time:</p>
-                          <p className="text-sm text-[#4A4A4A]">
-                            {new Date(viewingLesson.live.startTime).toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                      <Button className="bg-[#FF6A00] text-white hover:bg-[#e85f00] w-full">
-                        Join Live Session
-                      </Button>
+                {/* Messages */}
+                {error && (
+                    <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
+                        {error}
                     </div>
-                  </div>
                 )}
-
-                {/* Quiz Lesson */}
-                {viewingLesson.type === 'quiz' && (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">❓ Quiz</p>
-                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
-                      <p className="text-sm text-[#4A4A4A]">Quiz content coming soon...</p>
+                {info && (
+                    <div className="rounded-lg bg-green-50 p-4 text-sm text-green-600">
+                        {info}
                     </div>
-                  </div>
                 )}
-              </div>
 
-              <div className="mt-6 flex gap-3 justify-end">
-                <Button
-                  onClick={() => setViewingLesson(null)}
-                  variant="secondary"
-                  className="border border-gray-300"
-                >
-                  Close
-                </Button>
-              </div>
-            </Card>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                {/* Withdrawal Confirmation Modal */}
+                {showConfirm && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <Card className="w-full max-w-sm p-6">
+                            <h3 className="text-lg font-semibold text-[#1A1A1A]">
+                                Withdraw from Course?
+                            </h3>
+                            <p className="mt-3 text-sm text-[#4A4A4A]">
+                                Are you sure you want to withdraw from{' '}
+                                <strong>{course.title}</strong>? This action
+                                cannot be undone.
+                            </p>
+
+                            <div className="mt-6 flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowConfirm(false)}
+                                    disabled={actionLoading}
+                                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <Button
+                                    onClick={handleWithdraw}
+                                    isLoading={actionLoading}
+                                    className="bg-red-600 text-white hover:bg-red-700"
+                                >
+                                    Confirm Withdraw
+                                </Button>
+                            </div>
+                        </Card>
+                    </div>
+                )}
+
+                {/* Lesson Viewer Modal */}
+                {viewingLesson && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                        <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-2xl font-semibold text-[#1A1A1A]">
+                                    {viewingLesson.order + 1}.{' '}
+                                    {viewingLesson.title}
+                                </h2>
+                                <button
+                                    onClick={() => setViewingLesson(null)}
+                                    className="text-2xl text-gray-400 hover:text-gray-600"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Video Lesson */}
+                                {viewingLesson.type === 'video' && (
+                                    <div>
+                                        <p className="mb-3 text-sm text-[#4A4A4A]">
+                                            ▶ Video Lesson
+                                        </p>
+                                        {viewingLesson.contentUrl ? (
+                                            <div className="space-y-3">
+                                                <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
+                                                    <p className="mb-2 text-sm font-medium text-[#1A1A1A]">
+                                                        Video URL:
+                                                    </p>
+                                                    <a
+                                                        href={
+                                                            viewingLesson.contentUrl
+                                                        }
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm break-all text-[#FF6A00] hover:underline"
+                                                    >
+                                                        {
+                                                            viewingLesson.contentUrl
+                                                        }
+                                                    </a>
+                                                </div>
+                                                <Button
+                                                    onClick={() =>
+                                                        window.open(
+                                                            viewingLesson.contentUrl,
+                                                            '_blank'
+                                                        )
+                                                    }
+                                                    className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                                                >
+                                                    Open Video
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-[#4A4A4A]">
+                                                No video URL provided.
+                                            </p>
+                                        )}
+
+                                        {/* Add Lesson Modal */}
+                                        {showAddLesson && (
+                                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                                <Card className="w-full max-w-lg p-6">
+                                                    <h3 className="text-lg font-semibold text-[#1A1A1A]">
+                                                        Add Lesson
+                                                    </h3>
+
+                                                    <div className="mt-4 space-y-3">
+                                                        <input
+                                                            value={
+                                                                newLesson.title
+                                                            }
+                                                            onChange={e =>
+                                                                setNewLesson(
+                                                                    prev => ({
+                                                                        ...prev,
+                                                                        title: e
+                                                                            .target
+                                                                            .value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            placeholder="Lesson title"
+                                                            className="w-full rounded border p-2"
+                                                        />
+
+                                                        <select
+                                                            value={
+                                                                newLesson.type
+                                                            }
+                                                            onChange={e =>
+                                                                setNewLesson(
+                                                                    prev => ({
+                                                                        ...prev,
+                                                                        type: e
+                                                                            .target
+                                                                            .value,
+                                                                    })
+                                                                )
+                                                            }
+                                                            className="w-full rounded border p-2"
+                                                        >
+                                                            <option value="video">
+                                                                Video
+                                                            </option>
+                                                            <option value="text">
+                                                                Text
+                                                            </option>
+                                                            <option value="live">
+                                                                Live
+                                                            </option>
+                                                        </select>
+
+                                                        {newLesson.type ===
+                                                            'video' && (
+                                                            <input
+                                                                value={
+                                                                    newLesson.contentUrl
+                                                                }
+                                                                onChange={e =>
+                                                                    setNewLesson(
+                                                                        prev => ({
+                                                                            ...prev,
+                                                                            contentUrl:
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                placeholder="Video URL"
+                                                                className="w-full rounded border p-2"
+                                                            />
+                                                        )}
+
+                                                        {newLesson.type ===
+                                                            'text' && (
+                                                            <textarea
+                                                                value={
+                                                                    newLesson.textContent
+                                                                }
+                                                                onChange={e =>
+                                                                    setNewLesson(
+                                                                        prev => ({
+                                                                            ...prev,
+                                                                            textContent:
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
+                                                                        })
+                                                                    )
+                                                                }
+                                                                placeholder="Text content"
+                                                                className="w-full rounded border p-2"
+                                                                rows={6}
+                                                            />
+                                                        )}
+
+                                                        {newLesson.type ===
+                                                            'live' && (
+                                                            <div className="grid gap-2">
+                                                                <input
+                                                                    type="datetime-local"
+                                                                    value={
+                                                                        newLesson
+                                                                            .live
+                                                                            .startTime
+                                                                    }
+                                                                    onChange={e =>
+                                                                        setNewLesson(
+                                                                            prev => ({
+                                                                                ...prev,
+                                                                                live: {
+                                                                                    ...(prev.live ||
+                                                                                        {}),
+                                                                                    startTime:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                },
+                                                                            })
+                                                                        )
+                                                                    }
+                                                                    className="w-full rounded border p-2"
+                                                                />
+                                                                <input
+                                                                    value={
+                                                                        newLesson
+                                                                            .live
+                                                                            .roomName
+                                                                    }
+                                                                    onChange={e =>
+                                                                        setNewLesson(
+                                                                            prev => ({
+                                                                                ...prev,
+                                                                                live: {
+                                                                                    ...(prev.live ||
+                                                                                        {}),
+                                                                                    roomName:
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                },
+                                                                            })
+                                                                        )
+                                                                    }
+                                                                    placeholder="Room name"
+                                                                    className="w-full rounded border p-2"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mt-4 flex justify-end gap-3">
+                                                        <button
+                                                            onClick={() =>
+                                                                setShowAddLesson(
+                                                                    false
+                                                                )
+                                                            }
+                                                            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <Button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const payload =
+                                                                        {
+                                                                            title: newLesson.title,
+                                                                            type: newLesson.type,
+                                                                        };
+                                                                    if (
+                                                                        newLesson.type ===
+                                                                        'video'
+                                                                    )
+                                                                        payload.contentUrl =
+                                                                            newLesson.contentUrl;
+                                                                    if (
+                                                                        newLesson.type ===
+                                                                        'text'
+                                                                    )
+                                                                        payload.textContent =
+                                                                            newLesson.textContent;
+                                                                    if (
+                                                                        newLesson.type ===
+                                                                        'live'
+                                                                    )
+                                                                        payload.live =
+                                                                            newLesson.live;
+
+                                                                    await addCourseLesson(
+                                                                        courseId,
+                                                                        payload
+                                                                    );
+                                                                    // refresh
+                                                                    const res =
+                                                                        await fetchCourseById(
+                                                                            courseId
+                                                                        );
+                                                                    setCourse(
+                                                                        res.course
+                                                                    );
+                                                                    setShowAddLesson(
+                                                                        false
+                                                                    );
+                                                                    setInfo(
+                                                                        'Lesson added'
+                                                                    );
+                                                                } catch (err) {
+                                                                    console.error(
+                                                                        err
+                                                                    );
+                                                                    setError(
+                                                                        err
+                                                                            .response
+                                                                            ?.data
+                                                                            ?.message ||
+                                                                            'Failed to add lesson'
+                                                                    );
+                                                                }
+                                                            }}
+                                                            className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                                                        >
+                                                            Add Lesson
+                                                        </Button>
+                                                    </div>
+                                                </Card>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Text Lesson */}
+                                {viewingLesson.type === 'text' && (
+                                    <div>
+                                        <p className="mb-3 text-sm text-[#4A4A4A]">
+                                            📄 Text Lesson
+                                        </p>
+                                        {viewingLesson.textContent ? (
+                                            <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-sm whitespace-pre-wrap text-[#1A1A1A]">
+                                                {viewingLesson.textContent}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-[#4A4A4A]">
+                                                No text content provided.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Live Session */}
+                                {viewingLesson.type === 'live' && (
+                                    <div>
+                                        <p className="mb-3 text-sm text-[#4A4A4A]">
+                                            🔴 Live Session
+                                        </p>
+                                        <div className="space-y-3 rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
+                                            {viewingLesson.live?.roomName && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-[#1A1A1A]">
+                                                        Room:
+                                                    </p>
+                                                    <p className="text-sm text-[#FF6A00]">
+                                                        {
+                                                            viewingLesson.live
+                                                                .roomName
+                                                        }
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {viewingLesson.live?.startTime && (
+                                                <div>
+                                                    <p className="text-sm font-medium text-[#1A1A1A]">
+                                                        Start Time:
+                                                    </p>
+                                                    <p className="text-sm text-[#4A4A4A]">
+                                                        {new Date(
+                                                            viewingLesson.live.startTime
+                                                        ).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            <Button className="w-full bg-[#FF6A00] text-white hover:bg-[#e85f00]">
+                                                Join Live Session
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quiz Lesson */}
+                                {viewingLesson.type === 'quiz' && (
+                                    <div>
+                                        <p className="mb-3 text-sm text-[#4A4A4A]">
+                                            ❓ Quiz
+                                        </p>
+                                        <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
+                                            <p className="text-sm text-[#4A4A4A]">
+                                                Quiz content coming soon...
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-6 flex justify-end gap-3">
+                                <Button
+                                    onClick={() => setViewingLesson(null)}
+                                    variant="secondary"
+                                    className="border border-gray-300"
+                                >
+                                    Close
+                                </Button>
+                            </div>
+                        </Card>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
 
 export default CourseContentPage;

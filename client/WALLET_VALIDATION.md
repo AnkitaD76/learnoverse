@@ -263,17 +263,17 @@ UI Reflects Backend State
 ```javascript
 // Suggested test structure
 describe('Wallet System', () => {
-  describe('BuyPoints Page', () => {
-    it('calculates points correctly based on exchange rate');
-    it('requires payment method selection');
-    it('shows confirmation before purchase');
-  });
+    describe('BuyPoints Page', () => {
+        it('calculates points correctly based on exchange rate');
+        it('requires payment method selection');
+        it('shows confirmation before purchase');
+    });
 
-  describe('WalletContext', () => {
-    it('refreshes balance after operations');
-    it('handles API errors gracefully');
-    it('prevents duplicate operations');
-  });
+    describe('WalletContext', () => {
+        it('refreshes balance after operations');
+        it('handles API errors gracefully');
+        it('prevents duplicate operations');
+    });
 });
 ```
 
@@ -320,48 +320,48 @@ The wallet system is **production-ready** on the frontend. You can:
 
 1. **Start Development**:
 
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 2. **Test Features**:
-   - Buy points with different currencies
-   - Enroll in courses using points
-   - Request payouts
-   - View transaction history
+    - Buy points with different currencies
+    - Enroll in courses using points
+    - Request payouts
+    - View transaction history
 
 3. **Customize**:
-   - Adjust exchange rates in `server/src/utils/seedDatabase.js`
-   - Modify colors in `client/src/styles/wallet.css`
-   - Add wallet link to navigation header
+    - Adjust exchange rates in `server/src/utils/seedDatabase.js`
+    - Modify colors in `client/src/styles/wallet.css`
+    - Add wallet link to navigation header
 
 ### Optional Enhancements
 
 1. **Navigation Integration**:
-   - Add "Wallet" link to `Header.jsx`
-   - Show balance badge next to link
+    - Add "Wallet" link to `Header.jsx`
+    - Show balance badge next to link
 
 2. **Admin Dashboard**:
-   - Create admin pages for payout approval
-   - Add user wallet management
-   - Transaction monitoring dashboard
+    - Create admin pages for payout approval
+    - Add user wallet management
+    - Transaction monitoring dashboard
 
 3. **Notifications**:
-   - Integrate with existing notification system
-   - Send notifications on transaction completion
-   - Alert on low balance
+    - Integrate with existing notification system
+    - Send notifications on transaction completion
+    - Alert on low balance
 
 ## Support
 
 For questions or issues:
 
 1. Check documentation:
-   - `WALLET_FRONTEND.md` - Architecture guide
-   - `WALLET_IMPLEMENTATION.md` - Implementation details
-   - `WALLET_QUICKSTART.md` - User guide
+    - `WALLET_FRONTEND.md` - Architecture guide
+    - `WALLET_IMPLEMENTATION.md` - Implementation details
+    - `WALLET_QUICKSTART.md` - User guide
 2. Review backend documentation:
-   - `server/README.md` - API endpoints
-   - `server/EXAMPLES.md` - API usage examples
+    - `server/README.md` - API endpoints
+    - `server/EXAMPLES.md` - API usage examples
 
 ---
 
