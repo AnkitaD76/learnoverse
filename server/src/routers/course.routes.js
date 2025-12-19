@@ -1,15 +1,22 @@
 import express from 'express';
-import { authenticate, requireVerification } from '../middleware/authenticate.js';
 import {
-  getCourses,
-  getCourseById,
-  createCourse,
-  enrollInCourse,
-  withdrawFromCourse,
-  getMyEnrollments,
-  getMyCreatedCourses,
-  deleteCourse,
-  getCourseEnrollments,
+    authenticate,
+    requireVerification,
+} from '../middleware/authenticate.js';
+import {
+    getCourses,
+    getCourseById,
+    createCourse,
+    enrollInCourse,
+    enrollInCourseWithPoints,
+    withdrawFromCourse,
+    getMyEnrollments,
+    getMyCreatedCourses,
+    deleteCourse,
+    getCourseEnrollments,
+  addLessonToCourse,
+  updateLessonInCourse,
+  deleteLessonFromCourse,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -21,10 +28,20 @@ const router = express.Router();
  */
 
 // ✅ My courses (enrolled)
-router.get('/me/enrollments', authenticate, requireVerification, getMyEnrollments);
+router.get(
+    '/me/enrollments',
+    authenticate,
+    requireVerification,
+    getMyEnrollments
+);
 
 // ✅ My created courses (instructor/admin)
-router.get('/me/created', authenticate, requireVerification, getMyCreatedCourses);
+router.get(
+    '/me/created',
+    authenticate,
+    requireVerification,
+    getMyCreatedCourses
+);
 
 // Public browsing
 router.get('/', getCourses);
@@ -40,4 +57,3 @@ router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCour
 router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
 
 export default router;
-

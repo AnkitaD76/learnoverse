@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments } from '../../api/courses';
+import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson } from '../../api/courses';
+import { useSession } from '../../contexts/SessionContext';
 
 const CourseContentPage = () => {
   const { courseId } = useParams();
@@ -17,6 +18,9 @@ const CourseContentPage = () => {
   const [info, setInfo] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [viewingLesson, setViewingLesson] = useState(null);
+  const [showAddLesson, setShowAddLesson] = useState(false);
+  const [newLesson, setNewLesson] = useState({ title: '', type: 'video', contentUrl: '', textContent: '', live: { startTime: '', roomName: '' } });
+  const { user } = useSession();
 
   useEffect(() => {
     const load = async () => {
@@ -108,6 +112,17 @@ const CourseContentPage = () => {
                   <p className="text-xs text-[#4A4A4A]">Points</p>
                   <p className="font-semibold text-[#FF6A00]">{course.pricePoints}</p>
                 </div>
+                {/* Owner actions: add lesson/live */}
+                {user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id)) && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => navigate(`/courses/${courseId}/manage-lessons`)}
+                      className="bg-[#06b6d4] text-white hover:bg-[#0891b2]"
+                    >
+                      Manage Lessons
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -300,6 +315,105 @@ const CourseContentPage = () => {
                       </div>
                     ) : (
                       <p className="text-sm text-[#4A4A4A]">No video URL provided.</p>
+                    )}
+
+                    {/* Add Lesson Modal */}
+                    {showAddLesson && (
+                      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+                        <Card className="w-full max-w-lg p-6">
+                          <h3 className="text-lg font-semibold text-[#1A1A1A]">Add Lesson</h3>
+
+                          <div className="space-y-3 mt-4">
+                            <input
+                              value={newLesson.title}
+                              onChange={e => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
+                              placeholder="Lesson title"
+                              className="w-full rounded border p-2"
+                            />
+
+                            <select
+                              value={newLesson.type}
+                              onChange={e => setNewLesson(prev => ({ ...prev, type: e.target.value }))}
+                              className="w-full rounded border p-2"
+                            >
+                              <option value="video">Video</option>
+                              <option value="text">Text</option>
+                              <option value="live">Live</option>
+                            </select>
+
+                            {newLesson.type === 'video' && (
+                              <input
+                                value={newLesson.contentUrl}
+                                onChange={e => setNewLesson(prev => ({ ...prev, contentUrl: e.target.value }))}
+                                placeholder="Video URL"
+                                className="w-full rounded border p-2"
+                              />
+                            )}
+
+                            {newLesson.type === 'text' && (
+                              <textarea
+                                value={newLesson.textContent}
+                                onChange={e => setNewLesson(prev => ({ ...prev, textContent: e.target.value }))}
+                                placeholder="Text content"
+                                className="w-full rounded border p-2"
+                                rows={6}
+                              />
+                            )}
+
+                            {newLesson.type === 'live' && (
+                              <div className="grid gap-2">
+                                <input
+                                  type="datetime-local"
+                                  value={newLesson.live.startTime}
+                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), startTime: e.target.value } }))}
+                                  className="w-full rounded border p-2"
+                                />
+                                <input
+                                  value={newLesson.live.roomName}
+                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), roomName: e.target.value } }))}
+                                  placeholder="Room name"
+                                  className="w-full rounded border p-2"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-4 flex gap-3 justify-end">
+                            <button
+                              onClick={() => setShowAddLesson(false)}
+                              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                              Cancel
+                            </button>
+                            <Button
+                              onClick={async () => {
+                                try {
+                                  const payload = {
+                                    title: newLesson.title,
+                                    type: newLesson.type,
+                                  };
+                                  if (newLesson.type === 'video') payload.contentUrl = newLesson.contentUrl;
+                                  if (newLesson.type === 'text') payload.textContent = newLesson.textContent;
+                                  if (newLesson.type === 'live') payload.live = newLesson.live;
+
+                                  await addCourseLesson(courseId, payload);
+                                  // refresh
+                                  const res = await fetchCourseById(courseId);
+                                  setCourse(res.course);
+                                  setShowAddLesson(false);
+                                  setInfo('Lesson added');
+                                } catch (err) {
+                                  console.error(err);
+                                  setError(err.response?.data?.message || 'Failed to add lesson');
+                                }
+                              }}
+                              className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                            >
+                              Add Lesson
+                            </Button>
+                          </div>
+                        </Card>
+                      </div>
                     )}
                   </div>
                 )}
