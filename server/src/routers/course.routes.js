@@ -9,6 +9,7 @@ import {
   getMyEnrollments,
   getMyCreatedCourses,
   deleteCourse,
+  getCourseEnrollments,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -36,6 +37,7 @@ router.post('/', authenticate, requireVerification, createCourse);
 router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
 router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
+router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
 
 export default router;
 
