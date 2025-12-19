@@ -23,14 +23,20 @@ const CourseContentPage = () => {
       try {
         setIsLoading(true);
         const res = await fetchCourseById(courseId);
+        console.log('📚 Course loaded:', res.course);
         setCourse(res.course);
 
         // Fetch enrolled students
-        setEnrollmentsLoading(true);
-        const enrollmentsRes = await fetchCourseEnrollments(courseId);
-        setEnrolledUsers(enrollmentsRes.enrollments || []);
+        try {
+          const enrollmentsRes = await fetchCourseEnrollments(courseId);
+          console.log('👥 Enrollments loaded:', enrollmentsRes);
+          setEnrolledUsers(enrollmentsRes.enrollments || []);
+        } catch (enrollErr) {
+          console.error('❌ Failed to load enrollments:', enrollErr);
+          setEnrolledUsers([]);
+        }
       } catch (err) {
-        console.error(err);
+        console.error('❌ Error:', err);
         setError(
           err.response?.data?.message ||
             err.response?.data?.msg ||
@@ -173,16 +179,25 @@ const CourseContentPage = () => {
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[#1A1A1A]">
-              Students Enrolled ({enrolledUsers.length})
+              Students Enrolled ({course?.enrollCount || enrolledUsers.length})
             </h2>
-            <Button
-              onClick={() => setShowConfirm(true)}
-              variant="secondary"
-              className="border border-red-600 text-red-600 hover:bg-red-50"
-              isLoading={actionLoading}
-            >
-              Withdraw from Course
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => navigate(`/courses/${courseId}/enrolled-students`)}
+                variant="secondary"
+                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
+              >
+                View All Students
+              </Button>
+              <Button
+                onClick={() => setShowConfirm(true)}
+                variant="secondary"
+                className="border border-red-600 text-red-600 hover:bg-red-50"
+                isLoading={actionLoading}
+              >
+                Withdraw from Course
+              </Button>
+            </div>
           </div>
 
           {enrollmentsLoading ? (
