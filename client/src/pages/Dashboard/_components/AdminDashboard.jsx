@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button';
 import apiClient from '../../../api/client';
 import { CoursesManagement } from './CoursesManagement';
 import { UsersManagement } from './UsersManagement';
+import { PendingCourses } from './PendingCourses';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -86,6 +87,16 @@ export const AdminDashboard = () => {
           }`}
         >
           Courses
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+            activeTab === 'pending'
+              ? 'border-b-2 border-blue-600 text-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Pending Courses
         </button>
       </div>
 
@@ -212,6 +223,9 @@ export const AdminDashboard = () => {
 
       {/* Courses Tab */}
       {activeTab === 'courses' && <CoursesManagement />}
+
+      {/* Pending Courses Tab */}
+      {activeTab === 'pending' && <PendingCourses />}
     </div>
   );
 };

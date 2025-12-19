@@ -92,21 +92,32 @@ const CreateCoursePage = () => {
 
         lessons: (form.lessons || [])
           .filter(l => l.title?.trim())
-          .map((l, order) => ({
-            title: l.title,
-            type: l.type,
-            order,
-            contentUrl: l.type === 'video' ? l.contentUrl : '',
-            textContent: l.type === 'text' ? l.textContent : '',
-            live:
-              l.type === 'live'
-                ? {
-                    startTime: l.live?.startTime || '',
-                    roomName: l.live?.roomName || '',
-                  }
-                : undefined,
-          })),
+          .map((l, order) => {
+            const lesson = {
+              title: l.title,
+              type: l.type,
+              order,
+            };
+            
+            if (l.type === 'video') {
+              lesson.contentUrl = l.contentUrl || '';
+            } else if (l.type === 'text') {
+              lesson.textContent = l.textContent || '';
+            } else if (l.type === 'live') {
+              lesson.live = {
+                startTime: l.live?.startTime || '',
+                roomName: l.live?.roomName || '',
+              };
+            }
+            
+            return lesson;
+          }),
       };
+
+      // Validate at least one lesson
+      if (!payload.lessons || payload.lessons.length === 0) {
+        throw new Error('Please add at least one lesson');
+      }
 
       const res = await createCourse(payload);
       const course = res.course;

@@ -53,9 +53,12 @@ export const createCourse = async (req, res) => {
     throw new UnauthorizedError('Only instructors or admins can create courses');
   }
 
-  const { title, description, category, level, pricePoints, skillTags } = req.body;
+  const { title, description, category, level, pricePoints, skillTags, lessons, skillSwapEnabled, submitForApproval } = req.body;
 
   if (!title) throw new BadRequestError('Title is required');
+
+  // Debug: log incoming lessons
+  console.log('📚 Creating course with lessons:', lessons);
 
   const course = await Course.create({
     title,
@@ -69,7 +72,13 @@ export const createCourse = async (req, res) => {
       ? skillTags.split(',').map(s => s.trim())
       : [],
     instructor: userId,
+    lessons: Array.isArray(lessons) ? lessons : [],
+    skillSwapEnabled: Boolean(skillSwapEnabled),
+    status: submitForApproval ? 'pending' : 'draft',
   });
+
+  // Debug: log saved course
+  console.log('✅ Course created with lessons:', course.lessons);
 
   res.status(StatusCodes.CREATED).json({ success: true, course });
 };

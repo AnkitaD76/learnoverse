@@ -16,6 +16,7 @@ const CourseContentPage = () => {
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [viewingLesson, setViewingLesson] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -119,12 +120,53 @@ const CourseContentPage = () => {
           </div>
         </Card>
 
-        {/* Course Content Placeholder */}
+        {/* Course Content */}
         <Card>
           <h2 className="text-lg font-semibold text-[#1A1A1A]">Course Content</h2>
-          <p className="mt-4 text-sm text-[#4A4A4A]">
-            Course lessons and materials will be available here. Coming soon!
-          </p>
+          {!course.lessons || course.lessons.length === 0 ? (
+            <p className="mt-4 text-sm text-[#4A4A4A]">
+              No lessons added yet.
+            </p>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {course.lessons.map((lesson, index) => (
+                <div
+                  key={lesson._id || index}
+                  className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 hover:bg-white transition"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-[#1A1A1A]">
+                        {lesson.order + 1}. {lesson.title}
+                      </p>
+                      <p className="mt-1 text-xs text-[#4A4A4A] capitalize">
+                        {lesson.type === 'video' && '▶ Video Lesson'}
+                        {lesson.type === 'text' && '📄 Text Lesson'}
+                        {lesson.type === 'live' && '🔴 Live Session'}
+                        {lesson.type === 'quiz' && '❓ Quiz'}
+                      </p>
+                      {lesson.type === 'video' && lesson.contentUrl && (
+                        <p className="mt-2 text-xs text-[#FF6A00] truncate">
+                          {lesson.contentUrl}
+                        </p>
+                      )}
+                      {lesson.type === 'live' && lesson.live?.roomName && (
+                        <p className="mt-2 text-xs text-[#4A4A4A]">
+                          Room: {lesson.live.roomName}
+                        </p>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => setViewingLesson(lesson)}
+                      className="rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00] flex-shrink-0"
+                    >
+                      Start
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
 
         {/* Enrollments */}
@@ -230,6 +272,117 @@ const CourseContentPage = () => {
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Confirm Withdraw
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Lesson Viewer Modal */}
+        {viewingLesson && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-semibold text-[#1A1A1A]">
+                  {viewingLesson.order + 1}. {viewingLesson.title}
+                </h2>
+                <button
+                  onClick={() => setViewingLesson(null)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Video Lesson */}
+                {viewingLesson.type === 'video' && (
+                  <div>
+                    <p className="text-sm text-[#4A4A4A] mb-3">▶ Video Lesson</p>
+                    {viewingLesson.contentUrl ? (
+                      <div className="space-y-3">
+                        <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
+                          <p className="text-sm font-medium text-[#1A1A1A] mb-2">Video URL:</p>
+                          <a
+                            href={viewingLesson.contentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#FF6A00] hover:underline break-all text-sm"
+                          >
+                            {viewingLesson.contentUrl}
+                          </a>
+                        </div>
+                        <Button
+                          onClick={() => window.open(viewingLesson.contentUrl, '_blank')}
+                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                        >
+                          Open Video
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#4A4A4A]">No video URL provided.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Text Lesson */}
+                {viewingLesson.type === 'text' && (
+                  <div>
+                    <p className="text-sm text-[#4A4A4A] mb-3">📄 Text Lesson</p>
+                    {viewingLesson.textContent ? (
+                      <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 whitespace-pre-wrap text-sm text-[#1A1A1A]">
+                        {viewingLesson.textContent}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#4A4A4A]">No text content provided.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Live Session */}
+                {viewingLesson.type === 'live' && (
+                  <div>
+                    <p className="text-sm text-[#4A4A4A] mb-3">🔴 Live Session</p>
+                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 space-y-3">
+                      {viewingLesson.live?.roomName && (
+                        <div>
+                          <p className="text-sm font-medium text-[#1A1A1A]">Room:</p>
+                          <p className="text-sm text-[#FF6A00]">{viewingLesson.live.roomName}</p>
+                        </div>
+                      )}
+                      {viewingLesson.live?.startTime && (
+                        <div>
+                          <p className="text-sm font-medium text-[#1A1A1A]">Start Time:</p>
+                          <p className="text-sm text-[#4A4A4A]">
+                            {new Date(viewingLesson.live.startTime).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+                      <Button className="bg-[#FF6A00] text-white hover:bg-[#e85f00] w-full">
+                        Join Live Session
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Quiz Lesson */}
+                {viewingLesson.type === 'quiz' && (
+                  <div>
+                    <p className="text-sm text-[#4A4A4A] mb-3">❓ Quiz</p>
+                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
+                      <p className="text-sm text-[#4A4A4A]">Quiz content coming soon...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex gap-3 justify-end">
+                <Button
+                  onClick={() => setViewingLesson(null)}
+                  variant="secondary"
+                  className="border border-gray-300"
+                >
+                  Close
                 </Button>
               </div>
             </Card>
