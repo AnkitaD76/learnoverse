@@ -25,6 +25,7 @@ export const withdrawFromCourse = async courseId => {
   return res.data;
 };
 
+<<<<<<< HEAD
 // ✅ NEW: My enrollments (shows progress)
 export const fetchMyEnrollments = async () => {
   const res = await apiClient.get('/courses/me/enrollments');
@@ -40,5 +41,9 @@ export const fetchMyCreatedCourses = async () => {
 // ✅ NEW: mark lesson complete (for progress later)
 export const markLessonComplete = async (courseId, lessonId) => {
   const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`);
+=======
+export const fetchCourseEnrollments = async courseId => {
+  const res = await apiClient.get(`/courses/${courseId}/enrollments`);
+>>>>>>> 618ae80c8785cc51aaeb46b50103e6a39a7e6932
   return res.data;
 };
