@@ -144,53 +144,6 @@ export const StudentDashboard = () => {
         )}
       </Card>
 
-      {/* Recommendations */}
-      <Card>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Recommended for You
-          </h2>
-        </div>
-        {recommendations.length === 0 ? (
-          <p className="text-sm text-[#4A4A4A]">
-            No recommendations yet. Enroll in some courses to get smarter
-            suggestions.
-          </p>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {recommendations.map(course => (
-              <div
-                key={course._id}
-                className="rounded-lg border border-[#E5E5E5] p-4"
-              >
-                <p className="text-sm font-semibold text-[#1A1A1A]">
-                  {course.title}
-                </p>
-                <p className="mt-1 text-xs text-[#4A4A4A]">
-                  {course.category} · {course.level}
-                </p>
-                <p className="mt-1 text-xs text-[#4A4A4A]">
-                  Instructor: {course.instructor?.name}
-                </p>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#FF6A00]">
-                    {course.pricePoints} pts
-                  </span>
-                  <Link to={`/courses/${course._id}`}>
-                    <Button
-                      size="sm"
-                      className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                    >
-                      View
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
       {/* Skill Swap Matches */}
       <Card>
         <div className="mb-4 flex items-center justify-between">
