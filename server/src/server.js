@@ -79,23 +79,14 @@ const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 const start = async () => {
-    try {
-        await connectDB(MONGO_URI);
-
-        // Seed initial exchange rates (only runs if none exist)
-        app.listen(port, () => {
-            console.log(`🚀 Server running on port ${port}...`);
-        });
-        // await seedExchangeRates();
-    } catch (error) {
-        console.error('❌ Server startup error:', error);
-        process.exit(1);
-    }
   try {
+    // 1. Connect DB ONCE
     await connectDB(MONGO_URI);
-    
-    // Create HTTP server for Socket.io
+
+    // 2. Create HTTP server
     const httpServer = createServer(app);
+
+    // 3. Attach Socket.IO
     const io = new Server(httpServer, {
       cors: {
         origin: allowedOrigins,
@@ -103,15 +94,21 @@ const start = async () => {
       },
     });
 
-    // Setup messaging
+    // 4. Setup socket logic
     setupMessaging(io);
 
-    httpServer.listen(port, () =>
-      console.log(`🚀 Server is listening on port ${port}...`)
-    );
+    // 5. Start server ONCE
+    httpServer.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}...`);
+    });
+
+    // Optional: seed once
+    // await seedExchangeRates();
+
   } catch (error) {
     console.error('❌ Server startup error:', error);
     process.exit(1);
   }
 };
+
 start();
