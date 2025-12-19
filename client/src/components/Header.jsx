@@ -5,7 +5,7 @@ import { useSession } from '../contexts/SessionContext';
 
 const navigationRoutes = [
     { name: 'Courses', path: '/courses' },
-    { name: 'My Courses', path: '/my-courses' }, // ✅ NEW
+    { name: 'My Courses', path: '/my-courses' },
     { name: 'Posts', path: '/posts' },
     { name: 'Marketplace', path: '/marketplace' },
     { name: 'About', path: '/about' },
@@ -37,7 +37,7 @@ export const Header = () => {
             <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         <Link to="/" className="flex items-center space-x-2">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FF6A00]">
                                 <span className="text-xl font-bold text-white">

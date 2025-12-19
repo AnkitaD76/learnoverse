@@ -65,40 +65,45 @@ const ExchangeRateSelector = ({
         setCashAmount(value);
         setActiveInput('cash');
 
-        if (value && selectedRate) {
-            const points = calculatePoints(
-                parseFloat(value),
-                selectedRate.rate
-            );
-            setPointsAmount(points.toString());
+        if (value && !isNaN(parseFloat(value)) && selectedRate) {
+            const numValue = parseFloat(value);
+            if (numValue >= 0) {
+                const points = calculatePoints(numValue, selectedRate.rate);
+                setPointsAmount(points.toString());
 
-            onAmountChange?.({
-                currency: selectedCurrency,
-                cash_amount: parseFloat(value),
-                points_amount: points,
-                rate: selectedRate.rate,
-            });
-        } else {
+                onAmountChange?.({
+                    currency: selectedCurrency,
+                    cash_amount: numValue,
+                    points_amount: points,
+                    rate: selectedRate.rate,
+                });
+            }
+        } else if (!value || value === '') {
             setPointsAmount('');
             onAmountChange?.(null);
         }
     };
 
+    
+
     const handlePointsChange = value => {
         setPointsAmount(value);
         setActiveInput('points');
 
-        if (value && selectedRate) {
-            const cash = calculateCash(parseInt(value), selectedRate.rate);
-            setCashAmount(cash.toString());
+        if (value && !isNaN(parseInt(value)) && selectedRate) {
+            const numValue = parseInt(value);
+            if (numValue >= 0) {
+                const cash = calculateCash(numValue, selectedRate.rate);
+                setCashAmount(cash.toFixed(2));
 
-            onAmountChange?.({
-                currency: selectedCurrency,
-                cash_amount: cash,
-                points_amount: parseInt(value),
-                rate: selectedRate.rate,
-            });
-        } else {
+                onAmountChange?.({
+                    currency: selectedCurrency,
+                    cash_amount: cash,
+                    points_amount: numValue,
+                    rate: selectedRate.rate,
+                });
+            }
+        } else if (!value || value === '') {
             setCashAmount('');
             onAmountChange?.(null);
         }
@@ -132,6 +137,43 @@ const ExchangeRateSelector = ({
                     <span className="rate-value">
                         {selectedRate.description}
                     </span>
+                </div>
+            )}
+
+            {/* Conversion Summary */}
+            {cashAmount && pointsAmount && (
+                <div className="conversion-summary">
+                    <div className="summary-content">
+                        {mode === 'buy' ? (
+                            <>
+                                <span className="summary-label">You Pay:</span>
+                                <span className="summary-amount">
+                                    {selectedCurrency}{' '}
+                                    {parseFloat(cashAmount).toFixed(2)}
+                                </span>
+                                <span className="summary-arrow">→</span>
+                                <span className="summary-label">You Get:</span>
+                                <span className="summary-points">
+                                    {parseInt(pointsAmount).toLocaleString()}{' '}
+                                    Points
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="summary-label">You Sell:</span>
+                                <span className="summary-points">
+                                    {parseInt(pointsAmount).toLocaleString()}{' '}
+                                    Points
+                                </span>
+                                <span className="summary-arrow">→</span>
+                                <span className="summary-label">You Get:</span>
+                                <span className="summary-amount">
+                                    {selectedCurrency}{' '}
+                                    {parseFloat(cashAmount).toFixed(2)}
+                                </span>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
 
