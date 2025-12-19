@@ -29,7 +29,7 @@ export const PendingCourses = () => {
     }
   };
 
-  const handleApproveCourse = async (courseId) => {
+  const handleApproveCourse = async courseId => {
     setActionLoading(courseId);
     try {
       await apiClient.patch(`/admin/courses/${courseId}/approve`);
@@ -42,7 +42,7 @@ export const PendingCourses = () => {
     }
   };
 
-  const handleRejectCourse = async (courseId) => {
+  const handleRejectCourse = async courseId => {
     setActionLoading(courseId);
     try {
       await apiClient.patch(`/admin/courses/${courseId}/reject`, {
@@ -79,14 +79,16 @@ export const PendingCourses = () => {
       </div>
 
       {error && (
-        <Card className="bg-red-50 border border-red-200">
+        <Card className="border border-red-200 bg-red-50">
           <p className="text-red-700">{error}</p>
         </Card>
       )}
 
       {courses.length === 0 ? (
         <Card>
-          <p className="text-center text-gray-600">No pending courses awaiting approval.</p>
+          <p className="text-center text-gray-600">
+            No pending courses awaiting approval.
+          </p>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -94,25 +96,37 @@ export const PendingCourses = () => {
             <Card key={course._id} className="border-l-4 border-l-yellow-500">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800">{course.title}</h3>
-                  <p className="mt-1 text-sm text-gray-600">{course.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {course.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {course.description}
+                  </p>
 
                   <div className="mt-3 grid grid-cols-2 gap-4 md:grid-cols-4">
                     <div>
                       <p className="text-xs text-gray-500">Category</p>
-                      <p className="font-medium text-gray-800">{course.category}</p>
+                      <p className="font-medium text-gray-800">
+                        {course.category}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Level</p>
-                      <p className="font-medium text-gray-800">{course.level}</p>
+                      <p className="font-medium text-gray-800">
+                        {course.level}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Points</p>
-                      <p className="font-medium text-gray-800">{course.pricePoints}</p>
+                      <p className="font-medium text-gray-800">
+                        {course.pricePoints}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Instructor</p>
-                      <p className="font-medium text-gray-800">{course.instructor?.name}</p>
+                      <p className="font-medium text-gray-800">
+                        {course.instructor?.name}
+                      </p>
                     </div>
                   </div>
 
@@ -121,11 +135,11 @@ export const PendingCourses = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-2 flex-shrink-0">
+                <div className="flex flex-shrink-0 flex-col gap-2">
                   <Button
                     onClick={() => handleApproveCourse(course._id)}
                     isLoading={actionLoading === course._id}
-                    className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+                    className="bg-green-600 whitespace-nowrap text-white hover:bg-green-700"
                     size="sm"
                   >
                     Approve
@@ -133,7 +147,7 @@ export const PendingCourses = () => {
                   <Button
                     onClick={() => setRejectingCourse(course)}
                     variant="secondary"
-                    className="border border-red-600 text-red-600 hover:bg-red-50 whitespace-nowrap"
+                    className="border border-red-600 whitespace-nowrap text-red-600 hover:bg-red-50"
                     size="sm"
                   >
                     Reject
@@ -147,11 +161,14 @@ export const PendingCourses = () => {
 
       {/* Reject Modal */}
       {rejectingCourse && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800">Reject Course?</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Reject Course?
+            </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to reject <strong>{rejectingCourse.title}</strong>?
+              Are you sure you want to reject{' '}
+              <strong>{rejectingCourse.title}</strong>?
             </p>
 
             <textarea
@@ -162,7 +179,7 @@ export const PendingCourses = () => {
               rows={3}
             />
 
-            <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setRejectingCourse(null);

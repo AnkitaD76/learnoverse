@@ -18,7 +18,9 @@ const ForgotPasswordPage = () => {
     setMessage('');
 
     try {
-      const response = await apiClient.post('/auth/forgot-password', { email });
+      const response = await apiClient.post('/auth/forgot-password', {
+        email,
+      });
       setMessage(response.data.message);
       setEmail('');
     } catch (err) {

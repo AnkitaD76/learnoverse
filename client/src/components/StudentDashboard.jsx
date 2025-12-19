@@ -92,18 +92,12 @@ export const StudentDashboard = () => {
       {isLoading && (
         <p className="text-sm text-[#4A4A4A]">Loading dashboard...</p>
       )}
-      {error && (
-        <p className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Enrolled Courses */}
       <Card>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Your Courses
-          </h2>
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">Your Courses</h2>
           <Link
             to="/courses"
             className="text-sm font-medium text-[#FF6A00] hover:underline"

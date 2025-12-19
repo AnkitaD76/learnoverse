@@ -74,7 +74,10 @@ export const SessionProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', {
+        email,
+        password,
+      });
       const { accessToken, user } = response.data;
 
       setAccessToken(accessToken);

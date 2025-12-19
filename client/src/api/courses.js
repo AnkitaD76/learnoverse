@@ -20,6 +20,11 @@ export const enrollInCourse = async courseId => {
   return res.data;
 };
 
+export const enrollInCourseWithPoints = async courseId => {
+  const res = await apiClient.post(`/courses/${courseId}/enroll-with-points`);
+  return res.data;
+};
+
 export const withdrawFromCourse = async courseId => {
   const res = await apiClient.post(`/courses/${courseId}/withdraw`);
   return res.data;
@@ -44,7 +49,9 @@ export const fetchMyCreatedCourses = async () => {
 
 // ✅ NEW: mark lesson complete (for progress later)
 export const markLessonComplete = async (courseId, lessonId) => {
-  const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/complete`);
+  const res = await apiClient.post(
+    `/courses/${courseId}/lessons/${lessonId}/complete`
+  );
   return res.data;
 };
 
@@ -54,12 +61,17 @@ export const addCourseLesson = async (courseId, payload) => {
 };
 
 export const updateCourseLesson = async (courseId, lessonId, payload) => {
-  const res = await apiClient.patch(`/courses/${courseId}/lessons/${lessonId}`, payload);
+  const res = await apiClient.patch(
+    `/courses/${courseId}/lessons/${lessonId}`,
+    payload
+  );
   return res.data;
 };
 
 export const deleteCourseLesson = async (courseId, lessonId) => {
-  const res = await apiClient.delete(`/courses/${courseId}/lessons/${lessonId}`);
+  const res = await apiClient.delete(
+    `/courses/${courseId}/lessons/${lessonId}`
+  );
   return res.data;
 };
 

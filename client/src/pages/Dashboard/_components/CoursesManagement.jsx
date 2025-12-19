@@ -31,7 +31,7 @@ export const CoursesManagement = () => {
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
+  const handleDeleteCourse = async courseId => {
     setIsDeleting(true);
     try {
       await apiClient.delete(`/courses/${courseId}`);
@@ -55,7 +55,9 @@ export const CoursesManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">Courses Management</h2>
+        <h2 className="text-xl font-semibold text-gray-800">
+          Courses Management
+        </h2>
         <Button onClick={fetchCourses} variant="secondary">
           Refresh
         </Button>
@@ -78,8 +80,10 @@ export const CoursesManagement = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-5 md:items-center">
                 {/* Course Title and Description */}
                 <div className="md:col-span-2">
-                  <h3 className="font-semibold text-gray-800">{course.title}</h3>
-                  <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                  <h3 className="font-semibold text-gray-800">
+                    {course.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-sm text-gray-600">
                     {course.description || 'No description'}
                   </p>
                   <div className="mt-2 flex gap-2">
@@ -101,10 +105,12 @@ export const CoursesManagement = () => {
                     {course.instructor?.name || 'Unknown'}
                   </p>
                   <p className="mt-1 text-gray-600">
-                    <span className="font-medium">Students:</span> {course.enrollCount || 0}
+                    <span className="font-medium">Students:</span>{' '}
+                    {course.enrollCount || 0}
                   </p>
                   <p className="mt-1 text-gray-600">
-                    <span className="font-medium">Points:</span> {course.pricePoints || 0}
+                    <span className="font-medium">Points:</span>{' '}
+                    {course.pricePoints || 0}
                   </p>
                 </div>
 
@@ -147,14 +153,18 @@ export const CoursesManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800">Delete Course?</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Delete Course?
+            </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to delete <strong>{deleteConfirm.title}</strong>? This action cannot be undone.
+              Are you sure you want to delete{' '}
+              <strong>{deleteConfirm.title}</strong>? This action cannot be
+              undone.
             </p>
 
-            <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
@@ -176,11 +186,12 @@ export const CoursesManagement = () => {
 
       {/* Edit Modal (Placeholder) */}
       {editingCourse && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-lg p-6">
             <h3 className="text-lg font-semibold text-gray-800">Edit Course</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Edit functionality for <strong>{editingCourse.title}</strong> coming soon.
+              Edit functionality for <strong>{editingCourse.title}</strong>{' '}
+              coming soon.
             </p>
             <div className="mt-6 flex justify-end">
               <button

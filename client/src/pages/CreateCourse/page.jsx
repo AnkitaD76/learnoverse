@@ -42,7 +42,10 @@ const CreateCoursePage = () => {
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const updateLesson = (idx, patch) => {
@@ -56,13 +59,19 @@ const CreateCoursePage = () => {
   const updateLive = (idx, patch) => {
     setForm(prev => {
       const next = [...prev.lessons];
-      next[idx] = { ...next[idx], live: { ...(next[idx].live || {}), ...patch } };
+      next[idx] = {
+        ...next[idx],
+        live: { ...(next[idx].live || {}), ...patch },
+      };
       return { ...prev, lessons: next };
     });
   };
 
   const addLesson = () => {
-    setForm(prev => ({ ...prev, lessons: [...prev.lessons, emptyLesson()] }));
+    setForm(prev => ({
+      ...prev,
+      lessons: [...prev.lessons, emptyLesson()],
+    }));
   };
 
   const removeLesson = idx => {
@@ -98,7 +107,7 @@ const CreateCoursePage = () => {
               type: l.type,
               order,
             };
-            
+
             if (l.type === 'video') {
               lesson.contentUrl = l.contentUrl || '';
             } else if (l.type === 'text') {
@@ -109,7 +118,7 @@ const CreateCoursePage = () => {
                 roomName: l.live?.roomName || '',
               };
             }
-            
+
             return lesson;
           }),
       };
@@ -219,7 +228,10 @@ const CreateCoursePage = () => {
               onChange={handleChange}
               className="h-4 w-4"
             />
-            <label htmlFor="skillSwapEnabled" className="text-sm text-[#4A4A4A]">
+            <label
+              htmlFor="skillSwapEnabled"
+              className="text-sm text-[#4A4A4A]"
+            >
               Enable Skill Swap for this course
             </label>
           </div>
@@ -240,7 +252,7 @@ const CreateCoursePage = () => {
             {form.lessons.map((lesson, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-gray-200 p-4 space-y-3"
+                className="space-y-3 rounded-lg border border-gray-200 p-4"
               >
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-semibold text-[#1A1A1A]">
@@ -260,7 +272,11 @@ const CreateCoursePage = () => {
                 <Input
                   label="Lesson Title"
                   value={lesson.title}
-                  onChange={e => updateLesson(idx, { title: e.target.value })}
+                  onChange={e =>
+                    updateLesson(idx, {
+                      title: e.target.value,
+                    })
+                  }
                   required={idx === 0}
                 />
 
@@ -271,7 +287,9 @@ const CreateCoursePage = () => {
                   <select
                     value={lesson.type}
                     onChange={e =>
-                      updateLesson(idx, { type: e.target.value })
+                      updateLesson(idx, {
+                        type: e.target.value,
+                      })
                     }
                     className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
                   >
@@ -286,7 +304,9 @@ const CreateCoursePage = () => {
                     label="Video URL"
                     value={lesson.contentUrl}
                     onChange={e =>
-                      updateLesson(idx, { contentUrl: e.target.value })
+                      updateLesson(idx, {
+                        contentUrl: e.target.value,
+                      })
                     }
                     placeholder="https://..."
                   />
@@ -300,7 +320,9 @@ const CreateCoursePage = () => {
                     <textarea
                       value={lesson.textContent}
                       onChange={e =>
-                        updateLesson(idx, { textContent: e.target.value })
+                        updateLesson(idx, {
+                          textContent: e.target.value,
+                        })
                       }
                       className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
                       rows={4}
@@ -315,19 +337,24 @@ const CreateCoursePage = () => {
                       type="datetime-local"
                       value={lesson.live?.startTime || ''}
                       onChange={e =>
-                        updateLive(idx, { startTime: e.target.value })
+                        updateLive(idx, {
+                          startTime: e.target.value,
+                        })
                       }
                     />
                     <Input
                       label="Jitsi Room Name"
                       value={lesson.live?.roomName || ''}
                       onChange={e =>
-                        updateLive(idx, { roomName: e.target.value })
+                        updateLive(idx, {
+                          roomName: e.target.value,
+                        })
                       }
                       placeholder="learnoverse-course-xyz"
                     />
-                    <p className="md:col-span-2 text-xs text-[#4A4A4A]">
-                      Note: Only enrolled students should be allowed to join. (Backend will generate a joinCode later.)
+                    <p className="text-xs text-[#4A4A4A] md:col-span-2">
+                      Note: Only enrolled students should be allowed to join.
+                      (Backend will generate a joinCode later.)
                     </p>
                   </div>
                 )}

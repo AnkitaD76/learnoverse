@@ -29,7 +29,7 @@ export const UsersManagement = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async userId => {
     setIsDeleting(true);
     try {
       await apiClient.delete(`/users/${userId}`);
@@ -42,12 +42,13 @@ export const UsersManagement = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getRoleBadgeColor = (role) => {
+  const getRoleBadgeColor = role => {
     const colors = {
       student: 'bg-blue-100 text-blue-700',
       instructor: 'bg-purple-100 text-purple-700',
@@ -67,14 +68,16 @@ export const UsersManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold text-gray-800">Users Management</h2>
+        <h2 className="text-xl font-semibold text-gray-800">
+          Users Management
+        </h2>
         <div className="flex items-center gap-2">
           <input
             type="text"
             placeholder="Search by name or email..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={e => setSearchTerm(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <Button onClick={fetchUsers} variant="secondary">
             Refresh
@@ -97,7 +100,7 @@ export const UsersManagement = () => {
       ) : (
         <div className="space-y-2 overflow-x-auto">
           {/* Table Header */}
-          <div className="hidden md:grid grid-cols-6 gap-4 px-4 py-3 bg-gray-100 rounded-lg font-semibold text-sm text-gray-700">
+          <div className="hidden grid-cols-6 gap-4 rounded-lg bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-700 md:grid">
             <div>Name</div>
             <div>Email</div>
             <div>Role</div>
@@ -112,16 +115,18 @@ export const UsersManagement = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-6 md:items-center">
                 {/* Name */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold">Name</p>
+                  <p className="text-xs font-semibold text-gray-500 md:hidden">
+                    Name
+                  </p>
                   <div className="flex items-center gap-3">
                     {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-semibold">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-xs font-semibold text-white">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -131,33 +136,45 @@ export const UsersManagement = () => {
 
                 {/* Email */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold">Email</p>
-                  <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                  <p className="text-xs font-semibold text-gray-500 md:hidden">
+                    Email
+                  </p>
+                  <p className="truncate text-sm text-gray-600">{user.email}</p>
                 </div>
 
                 {/* Role */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold">Role</p>
-                  <span className={`inline-block rounded px-2 py-1 text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                  <p className="text-xs font-semibold text-gray-500 md:hidden">
+                    Role
+                  </p>
+                  <span
+                    className={`inline-block rounded px-2 py-1 text-xs font-medium ${getRoleBadgeColor(user.role)}`}
+                  >
                     {user.role}
                   </span>
                 </div>
 
                 {/* Verification Status */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold">Status</p>
-                  <span className={`inline-block rounded px-2 py-1 text-xs font-medium ${
-                    user.isVerified
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}>
+                  <p className="text-xs font-semibold text-gray-500 md:hidden">
+                    Status
+                  </p>
+                  <span
+                    className={`inline-block rounded px-2 py-1 text-xs font-medium ${
+                      user.isVerified
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                  >
                     {user.isVerified ? 'Verified' : 'Unverified'}
                   </span>
                 </div>
 
                 {/* Joined Date */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold">Joined</p>
+                  <p className="text-xs font-semibold text-gray-500 md:hidden">
+                    Joined
+                  </p>
                   <p className="text-sm text-gray-600">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </p>
@@ -165,7 +182,9 @@ export const UsersManagement = () => {
 
                 {/* Actions */}
                 <div className="md:col-span-1">
-                  <p className="text-xs text-gray-500 md:hidden font-semibold mb-2">Actions</p>
+                  <p className="mb-2 text-xs font-semibold text-gray-500 md:hidden">
+                    Actions
+                  </p>
                   <button
                     onClick={() => setDeleteConfirm(user)}
                     className="rounded bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
@@ -181,14 +200,18 @@ export const UsersManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800">Delete User?</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Delete User?
+            </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to delete <strong>{deleteConfirm.name}</strong> ({deleteConfirm.email})? This action cannot be undone.
+              Are you sure you want to delete{' '}
+              <strong>{deleteConfirm.name}</strong> ({deleteConfirm.email})?
+              This action cannot be undone.
             </p>
 
-            <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}

@@ -227,14 +227,22 @@ const ProfilePage = () => {
 
         {/* Avatar upload */}
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium text-[#4A4A4A]">Profile Image</label>
+          <label className="mb-2 block text-sm font-medium text-[#4A4A4A]">
+            Profile Image
+          </label>
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100">
               {avatarPreview ? (
                 // If preview is a blob url or uploaded path
-                <img src={avatarPreview} alt="avatar" className="h-full w-full object-cover" />
+                <img
+                  src={avatarPreview}
+                  alt="avatar"
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">No image</div>
+                <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+                  No image
+                </div>
               )}
             </div>
 
@@ -247,10 +255,17 @@ const ProfilePage = () => {
                 className="hidden"
                 id="avatarInput"
               />
-              <label htmlFor="avatarInput" className="cursor-pointer rounded-lg bg-white px-3 py-2 text-sm text-[#1A1A1A] border border-gray-200 hover:bg-gray-50">
+              <label
+                htmlFor="avatarInput"
+                className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-[#1A1A1A] hover:bg-gray-50"
+              >
                 Choose Image
               </label>
-              <Button type="button" onClick={uploadAvatar} isLoading={isLoading}>
+              <Button
+                type="button"
+                onClick={uploadAvatar}
+                isLoading={isLoading}
+              >
                 Upload
               </Button>
             </div>
@@ -369,7 +384,9 @@ const ProfilePage = () => {
                   />
                 </div>
                 <div>
-                  <h4 className="mb-2 text-sm font-medium text-[#4A4A4A]">Social Links</h4>
+                  <h4 className="mb-2 text-sm font-medium text-[#4A4A4A]">
+                    Social Links
+                  </h4>
                   <Input
                     type="url"
                     label="LinkedIn Profile URL"

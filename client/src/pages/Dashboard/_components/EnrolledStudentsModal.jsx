@@ -16,7 +16,9 @@ export const EnrolledUsersModal = ({ course, onClose }) => {
   const fetchEnrollments = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get(`/courses/${course._id}/enrollments`);
+      const response = await apiClient.get(
+        `/courses/${course._id}/enrollments`
+      );
       setStudents(response.data.enrollments);
       setError('');
     } catch (err) {
@@ -26,26 +28,30 @@ export const EnrolledUsersModal = ({ course, onClose }) => {
     }
   };
 
-  const filteredStudents = students.filter(enrollment =>
-    enrollment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    enrollment.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStudents = students.filter(
+    enrollment =>
+      enrollment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      enrollment.user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <Card className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">{course.title}</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {students.length} user{students.length !== 1 ? 's' : ''} enrolled
+              <h3 className="text-lg font-semibold text-gray-800">
+                {course.title}
+              </h3>
+              <p className="mt-1 text-sm text-gray-600">
+                {students.length} user
+                {students.length !== 1 ? 's' : ''} enrolled
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 font-bold text-xl"
+              className="text-xl font-bold text-gray-400 hover:text-gray-600"
             >
               ✕
             </button>
@@ -53,13 +59,13 @@ export const EnrolledUsersModal = ({ course, onClose }) => {
         </div>
 
         {/* Search */}
-        <div className="border-b border-gray-200 p-4 bg-gray-50">
+        <div className="border-b border-gray-200 bg-gray-50 p-4">
           <input
             type="text"
             placeholder="Search by name or email..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
 
@@ -78,33 +84,43 @@ export const EnrolledUsersModal = ({ course, onClose }) => {
           ) : filteredStudents.length === 0 ? (
             <div className="p-6 text-center">
               <p className="text-gray-600">
-                {searchTerm ? 'No students match your search' : 'No students enrolled'}
+                {searchTerm
+                  ? 'No students match your search'
+                  : 'No students enrolled'}
               </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {filteredStudents.map(enrollment => (
-                <div key={enrollment._id} className="p-4 hover:bg-gray-50 transition">
+                <div
+                  key={enrollment._id}
+                  className="p-4 transition hover:bg-gray-50"
+                >
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
                     {enrollment.user.avatar ? (
                       <img
                         src={enrollment.user.avatar}
                         alt={enrollment.user.name}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-sm font-semibold text-white">
                         {enrollment.user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
 
                     {/* Student Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800">{enrollment.user.name}</p>
-                      <p className="text-sm text-gray-600 truncate">{enrollment.user.email}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Enrolled on {new Date(enrollment.enrolledAt).toLocaleDateString()}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-800">
+                        {enrollment.user.name}
+                      </p>
+                      <p className="truncate text-sm text-gray-600">
+                        {enrollment.user.email}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Enrolled on{' '}
+                        {new Date(enrollment.enrolledAt).toLocaleDateString()}
                       </p>
                     </div>
 
@@ -122,7 +138,7 @@ export const EnrolledUsersModal = ({ course, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50 flex justify-end">
+        <div className="flex justify-end border-t border-gray-200 bg-gray-50 p-4">
           <button
             onClick={onClose}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"

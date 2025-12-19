@@ -27,6 +27,17 @@ import MyCoursesPage from '../pages/MyCourses/page';
 // ✅ NEW: Student Enrolled
 import StudentEnrolledPage from '../pages/StudentEnrolled/page';
 
+// Wallet
+import WalletDashboard from '../pages/Wallet/page';
+import BuyPoints from '../pages/BuyPoints/page';
+import SellPoints from '../pages/SellPoints/page';
+import TransactionHistory from '../pages/TransactionHistory/page';
+
+// Q&A
+import QuestionsListPage from '../pages/QA/QuestionsListPage';
+import AskQuestionPage from '../pages/QA/AskQuestionPage';
+import QuestionDetailPage from '../pages/QA/QuestionDetailPage';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -134,6 +145,52 @@ export const AppRouter = () => {
 
       {/* Posts */}
       <Route path="/posts" element={<PostsPage />} />
+
+      {/* Q&A Routes */}
+      <Route path="/qa" element={<QuestionsListPage />} />
+      <Route
+        path="/qa/ask"
+        element={
+          <ProtectedRoute>
+            <AskQuestionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/qa/:id" element={<QuestionDetailPage />} />
+
+      {/* Wallet Routes */}
+      <Route
+        path="/wallet"
+        element={
+          <ProtectedRoute>
+            <WalletDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/wallet/buy"
+        element={
+          <ProtectedRoute>
+            <BuyPoints />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/wallet/sell"
+        element={
+          <ProtectedRoute>
+            <SellPoints />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/wallet/transactions"
+        element={
+          <ProtectedRoute>
+            <TransactionHistory />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Redirect unknown routes */}
       <Route path="*" element={<Navigate to="/" replace />} />

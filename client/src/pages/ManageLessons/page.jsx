@@ -2,8 +2,17 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+<<<<<<< HEAD
 import { fetchCourseById, addCourseLesson, updateCourseLesson, deleteCourseLesson } from '../../api/courses';
 import { createLessonLiveSession } from '../../api/courses';
+=======
+import {
+  fetchCourseById,
+  addCourseLesson,
+  updateCourseLesson,
+  deleteCourseLesson,
+} from '../../api/courses';
+>>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
 import { Input } from '../../components/Input';
 
 const ManageLessonsPage = () => {
@@ -14,7 +23,13 @@ const ManageLessonsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(null); // lessonId or 'new'
-  const [form, setForm] = useState({ title: '', type: 'video', contentUrl: '', textContent: '', live: { startTime: '', roomName: '' } });
+  const [form, setForm] = useState({
+    title: '',
+    type: 'video',
+    contentUrl: '',
+    textContent: '',
+    live: { startTime: '', roomName: '' },
+  });
 
   const load = async () => {
     try {
@@ -36,10 +51,16 @@ const ManageLessonsPage = () => {
 
   const startNew = () => {
     setEditing('new');
-    setForm({ title: '', type: 'video', contentUrl: '', textContent: '', live: { startTime: '', roomName: '' } });
+    setForm({
+      title: '',
+      type: 'video',
+      contentUrl: '',
+      textContent: '',
+      live: { startTime: '', roomName: '' },
+    });
   };
 
-  const startEdit = (lesson) => {
+  const startEdit = lesson => {
     setEditing(lesson._id);
     setForm({
       title: lesson.title || '',
@@ -85,7 +106,7 @@ const ManageLessonsPage = () => {
     }
   };
 
-  const handleDelete = async (lessonId) => {
+  const handleDelete = async lessonId => {
     if (!confirm('Delete this lesson?')) return;
     try {
       await deleteCourseLesson(courseId, lessonId);
@@ -104,36 +125,51 @@ const ManageLessonsPage = () => {
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Manage Lessons — {course.title}</h1>
-          <p className="text-sm text-[#4A4A4A]">Add, edit or remove lessons for this course.</p>
+          <h1 className="text-2xl font-semibold">
+            Manage Lessons — {course.title}
+          </h1>
+          <p className="text-sm text-[#4A4A4A]">
+            Add, edit or remove lessons for this course.
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate(-1)} variant="secondary">Back</Button>
-          <Button onClick={startNew} className="bg-[#FF6A00] text-white">+ New Lesson</Button>
+          <Button onClick={() => navigate(-1)} variant="secondary">
+            Back
+          </Button>
+          <Button onClick={startNew} className="bg-[#FF6A00] text-white">
+            + New Lesson
+          </Button>
         </div>
       </div>
 
-      {error && <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && (
+        <div className="rounded bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <h2 className="text-lg font-semibold">Lessons</h2>
-          {(!course.lessons || course.lessons.length === 0) ? (
+          {!course.lessons || course.lessons.length === 0 ? (
             <Card>
               <p className="text-sm text-[#4A4A4A]">No lessons yet.</p>
             </Card>
           ) : (
             course.lessons.map(lesson => (
-              <Card key={lesson._id} className="p-3 mb-2">
+              <Card key={lesson._id} className="mb-2 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium">{lesson.order + 1}. {lesson.title}</p>
+                    <p className="font-medium">
+                      {lesson.order + 1}. {lesson.title}
+                    </p>
                     <p className="text-xs text-[#4A4A4A]">{lesson.type}</p>
                     {lesson.type === 'live' && (
                       <p className="text-xs text-[#4A4A4A]">Room: {lesson.live?.roomName || 'Not created'}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
+<<<<<<< HEAD
                     {lesson.type === 'live' && (
                       lesson.live?.roomName ? (
                         <a href={`https://meet.jit.si/${lesson.live.roomName}`} target="_blank" rel="noopener noreferrer" className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700">Open Session</a>
@@ -146,6 +182,20 @@ const ManageLessonsPage = () => {
                     ) : null}
                     <button onClick={() => startEdit(lesson)} className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700">Edit</button>
                     <button onClick={() => handleDelete(lesson._id)} className="rounded bg-red-100 px-3 py-1 text-xs text-red-700">Delete</button>
+=======
+                    <button
+                      onClick={() => startEdit(lesson)}
+                      className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(lesson._id)}
+                      className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+                    >
+                      Delete
+                    </button>
+>>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
                   </div>
                 </div>
               </Card>
@@ -154,16 +204,42 @@ const ManageLessonsPage = () => {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold">{editing ? (editing === 'new' ? 'New Lesson' : 'Edit Lesson') : 'Select or create a lesson'}</h2>
+          <h2 className="text-lg font-semibold">
+            {editing
+              ? editing === 'new'
+                ? 'New Lesson'
+                : 'Edit Lesson'
+              : 'Select or create a lesson'}
+          </h2>
 
           {editing ? (
-            <Card className="p-4 mt-3">
+            <Card className="mt-3 p-4">
               <div className="space-y-3">
-                <Input label="Title" value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} />
+                <Input
+                  label="Title"
+                  value={form.title}
+                  onChange={e =>
+                    setForm(prev => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                />
 
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A]">Type</label>
-                  <select value={form.type} onChange={e => setForm(prev => ({ ...prev, type: e.target.value }))} className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm">
+                  <label className="block text-sm font-medium text-[#4A4A4A]">
+                    Type
+                  </label>
+                  <select
+                    value={form.type}
+                    onChange={e =>
+                      setForm(prev => ({
+                        ...prev,
+                        type: e.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
+                  >
                     <option value="video">Video</option>
                     <option value="text">Text</option>
                     <option value="live">Live</option>
@@ -171,32 +247,88 @@ const ManageLessonsPage = () => {
                 </div>
 
                 {form.type === 'video' && (
-                  <Input label="Video URL" value={form.contentUrl} onChange={e => setForm(prev => ({ ...prev, contentUrl: e.target.value }))} />
+                  <Input
+                    label="Video URL"
+                    value={form.contentUrl}
+                    onChange={e =>
+                      setForm(prev => ({
+                        ...prev,
+                        contentUrl: e.target.value,
+                      }))
+                    }
+                  />
                 )}
 
                 {form.type === 'text' && (
                   <div>
-                    <label className="block text-sm font-medium text-[#4A4A4A]">Text Content</label>
-                    <textarea value={form.textContent} onChange={e => setForm(prev => ({ ...prev, textContent: e.target.value }))} className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm" rows={8} />
+                    <label className="block text-sm font-medium text-[#4A4A4A]">
+                      Text Content
+                    </label>
+                    <textarea
+                      value={form.textContent}
+                      onChange={e =>
+                        setForm(prev => ({
+                          ...prev,
+                          textContent: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
+                      rows={8}
+                    />
                   </div>
                 )}
 
                 {form.type === 'live' && (
                   <div className="grid gap-2">
-                    <input type="datetime-local" value={form.live.startTime || ''} onChange={e => setForm(prev => ({ ...prev, live: { ...(prev.live||{}), startTime: e.target.value } }))} className="w-full rounded border p-2" />
-                    <input value={form.live.roomName || ''} onChange={e => setForm(prev => ({ ...prev, live: { ...(prev.live||{}), roomName: e.target.value } }))} placeholder="Room name" className="w-full rounded border p-2" />
+                    <input
+                      type="datetime-local"
+                      value={form.live.startTime || ''}
+                      onChange={e =>
+                        setForm(prev => ({
+                          ...prev,
+                          live: {
+                            ...(prev.live || {}),
+                            startTime: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded border p-2"
+                    />
+                    <input
+                      value={form.live.roomName || ''}
+                      onChange={e =>
+                        setForm(prev => ({
+                          ...prev,
+                          live: {
+                            ...(prev.live || {}),
+                            roomName: e.target.value,
+                          },
+                        }))
+                      }
+                      placeholder="Room name"
+                      className="w-full rounded border p-2"
+                    />
                   </div>
                 )}
 
-                <div className="flex gap-3 justify-end">
-                  <Button onClick={() => setEditing(null)} variant="secondary">Cancel</Button>
-                  <Button onClick={handleSave} className="bg-[#FF6A00] text-white">Save</Button>
+                <div className="flex justify-end gap-3">
+                  <Button onClick={() => setEditing(null)} variant="secondary">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    className="bg-[#FF6A00] text-white"
+                  >
+                    Save
+                  </Button>
                 </div>
               </div>
             </Card>
           ) : (
-            <Card className="p-4 mt-3">
-              <p className="text-sm text-[#4A4A4A]">Choose a lesson on the left or create a new one.</p>
+            <Card className="mt-3 p-4">
+              <p className="text-sm text-[#4A4A4A]">
+                Choose a lesson on the left or create a new one.
+              </p>
             </Card>
           )}
         </div>

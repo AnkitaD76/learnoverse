@@ -91,11 +91,7 @@ export const StudentDashboard = () => {
       {isLoading && (
         <p className="text-sm text-[#4A4A4A]">Loading dashboard...</p>
       )}
-      {error && (
-        <p className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Recommendations */}
       <Card>

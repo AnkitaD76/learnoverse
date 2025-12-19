@@ -39,7 +39,7 @@ const VerifyEmailPage = () => {
     const tokenToUse = tokenParam || token;
 
     if (!emailToUse || !tokenToUse) {
-      setError('Please provide both email and verification token'); 
+      setError('Please provide both email and verification token');
       return;
     }
 

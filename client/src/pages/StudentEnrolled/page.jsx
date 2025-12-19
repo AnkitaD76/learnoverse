@@ -3,11 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import CourseMessaging from '../../components/CourseMessaging';
 import { fetchCourseById, fetchCourseEnrollments } from '../../api/courses';
+import { initializeSocket } from '../../services/socketService.js';
+import { useSession } from '../../contexts/SessionContext';
+import { getAccessToken } from '../../api/client';
 
 const StudentEnrolledPage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useSession();
+
   const [course, setCourse] = useState(null);
   const [enrolledUsers, setEnrolledUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +30,10 @@ const StudentEnrolledPage = () => {
         // Fetch enrolled students
         const enrollmentsRes = await fetchCourseEnrollments(courseId);
         console.log('📋 Enrollments Response:', enrollmentsRes);
-        console.log('📋 First enrollment structure:', enrollmentsRes.enrollments?.[0]);
+        console.log(
+          '📋 First enrollment structure:',
+          enrollmentsRes.enrollments?.[0]
+        );
         setEnrolledUsers(enrollmentsRes.enrollments || []);
       } catch (err) {
         console.error('❌ Full error:', err);
@@ -42,6 +51,26 @@ const StudentEnrolledPage = () => {
     load();
   }, [courseId]);
 
+  // Initialize Socket.io separately
+  useEffect(() => {
+    if (!user?._id || !user?.name) {
+      console.log('⏳ Waiting for user data...');
+      return;
+    }
+
+    console.log('⚡ Socket init effect running with user:', {
+      _id: user._id,
+      name: user.name,
+    });
+
+    // Try to get token from apiClient (may not be available - cookies will be sent instead)
+    const token = getAccessToken();
+    console.log('🔑 Token from apiClient:', token ? 'YES ✅' : 'NO ❌');
+
+    // Initialize socket with or without token (cookies will be sent via withCredentials)
+    initializeSocket(token, user._id, user.name);
+  }, [user]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -56,11 +85,11 @@ const StudentEnrolledPage = () => {
         <div className="mx-auto max-w-4xl">
           <button
             onClick={() => navigate(-1)}
-            className="text-[#FF6A00] hover:underline text-sm font-medium mb-4"
+            className="mb-4 text-sm font-medium text-[#FF6A00] hover:underline"
           >
             ← Back
           </button>
-          <Card className="bg-red-50 border border-red-200">
+          <Card className="border border-red-200 bg-red-50">
             <p className="text-red-600">{error}</p>
           </Card>
         </div>
@@ -75,7 +104,7 @@ const StudentEnrolledPage = () => {
         <div>
           <button
             onClick={() => navigate(-1)}
-            className="text-[#FF6A00] hover:underline text-sm font-medium mb-4"
+            className="mb-4 text-sm font-medium text-[#FF6A00] hover:underline"
           >
             ← Back to Course
           </button>
@@ -83,14 +112,17 @@ const StudentEnrolledPage = () => {
             Students Enrolled in {course?.title}
           </h1>
           <p className="mt-2 text-sm text-[#4A4A4A]">
-            Total: {enrolledUsers.length} student{enrolledUsers.length !== 1 ? 's' : ''}
+            Total: {enrolledUsers.length} student
+            {enrolledUsers.length !== 1 ? 's' : ''}
           </p>
         </div>
 
         {/* Students List */}
         <Card>
           {enrolledUsers.length === 0 ? (
-            <p className="text-center text-[#4A4A4A] py-8">No students enrolled yet.</p>
+            <p className="py-8 text-center text-[#4A4A4A]">
+              No students enrolled yet.
+            </p>
           ) : (
             <div className="space-y-2">
               {enrolledUsers.map((enrollment, index) => {
@@ -98,7 +130,7 @@ const StudentEnrolledPage = () => {
                 return (
                   <div
                     key={enrollment._id}
-                    className="rounded-lg border border-[#E5E5E5] p-3 hover:bg-[#F9F9F9] transition"
+                    className="rounded-lg border border-[#E5E5E5] p-3 transition hover:bg-[#F9F9F9]"
                   >
                     <p className="font-medium text-[#1A1A1A]">
                       {index + 1}. {enrollment.user?.name || 'No name'}
@@ -113,9 +145,20 @@ const StudentEnrolledPage = () => {
           )}
         </Card>
 
+        {/* Messaging Feature */}
+        {user && (
+          <CourseMessaging
+            courseId={courseId}
+            currentUserId={user._id}
+            currentUserName={user.name}
+          />
+        )}
+
         {/* Course Info */}
         <Card>
-          <h2 className="text-lg font-semibold text-[#1A1A1A] mb-4">Course Information</h2>
+          <h2 className="mb-4 text-lg font-semibold text-[#1A1A1A]">
+            Course Information
+          </h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div>
               <p className="text-xs text-[#4A4A4A]">Category</p>
@@ -127,11 +170,15 @@ const StudentEnrolledPage = () => {
             </div>
             <div>
               <p className="text-xs text-[#4A4A4A]">Points</p>
-              <p className="font-medium text-[#FF6A00]">{course?.pricePoints}</p>
+              <p className="font-medium text-[#FF6A00]">
+                {course?.pricePoints}
+              </p>
             </div>
             <div>
               <p className="text-xs text-[#4A4A4A]">Total Enrolled</p>
-              <p className="font-medium text-[#1A1A1A]">{course?.enrollCount}</p>
+              <p className="font-medium text-[#1A1A1A]">
+                {course?.enrollCount}
+              </p>
             </div>
           </div>
         </Card>

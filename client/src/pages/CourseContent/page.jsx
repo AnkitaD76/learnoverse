@@ -3,7 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+<<<<<<< HEAD
 import { fetchCourseById, withdrawFromCourse, fetchCourseEnrollments, addCourseLesson, createLessonLiveSession } from '../../api/courses';
+=======
+import {
+  fetchCourseById,
+  withdrawFromCourse,
+  fetchCourseEnrollments,
+  addCourseLesson,
+} from '../../api/courses';
+>>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
 import { useSession } from '../../contexts/SessionContext';
 
 const CourseContentPage = () => {
@@ -19,7 +28,13 @@ const CourseContentPage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [viewingLesson, setViewingLesson] = useState(null);
   const [showAddLesson, setShowAddLesson] = useState(false);
-  const [newLesson, setNewLesson] = useState({ title: '', type: 'video', contentUrl: '', textContent: '', live: { startTime: '', roomName: '' } });
+  const [newLesson, setNewLesson] = useState({
+    title: '',
+    type: 'video',
+    contentUrl: '',
+    textContent: '',
+    live: { startTime: '', roomName: '' },
+  });
   const { user } = useSession();
 
   useEffect(() => {
@@ -148,7 +163,9 @@ const CourseContentPage = () => {
               <div className="mt-4 flex gap-4">
                 <div>
                   <p className="text-xs text-[#4A4A4A]">Category</p>
-                  <p className="font-semibold text-[#1A1A1A]">{course.category}</p>
+                  <p className="font-semibold text-[#1A1A1A]">
+                    {course.category}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-[#4A4A4A]">Level</p>
@@ -156,19 +173,25 @@ const CourseContentPage = () => {
                 </div>
                 <div>
                   <p className="text-xs text-[#4A4A4A]">Points</p>
-                  <p className="font-semibold text-[#FF6A00]">{course.pricePoints}</p>
+                  <p className="font-semibold text-[#FF6A00]">
+                    {course.pricePoints}
+                  </p>
                 </div>
                 {/* Owner actions: add lesson/live */}
-                {user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id)) && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => navigate(`/courses/${courseId}/manage-lessons`)}
-                      className="bg-[#06b6d4] text-white hover:bg-[#0891b2]"
-                    >
-                      Manage Lessons
-                    </Button>
-                  </div>
-                )}
+                {user &&
+                  (user.role === 'admin' ||
+                    String(user._id) === String(course.instructor?._id)) && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() =>
+                          navigate(`/courses/${courseId}/manage-lessons`)
+                        }
+                        className="bg-[#06b6d4] text-white hover:bg-[#0891b2]"
+                      >
+                        Manage Lessons
+                      </Button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -189,17 +212,17 @@ const CourseContentPage = () => {
 
         {/* Course Content */}
         <Card>
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">Course Content</h2>
+          <h2 className="text-lg font-semibold text-[#1A1A1A]">
+            Course Content
+          </h2>
           {!course.lessons || course.lessons.length === 0 ? (
-            <p className="mt-4 text-sm text-[#4A4A4A]">
-              No lessons added yet.
-            </p>
+            <p className="mt-4 text-sm text-[#4A4A4A]">No lessons added yet.</p>
           ) : (
             <div className="mt-6 space-y-3">
               {course.lessons.map((lesson, index) => (
                 <div
                   key={lesson._id || index}
-                  className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 hover:bg-white transition"
+                  className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 transition hover:bg-white"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
@@ -213,7 +236,7 @@ const CourseContentPage = () => {
                         {lesson.type === 'quiz' && '❓ Quiz'}
                       </p>
                       {lesson.type === 'video' && lesson.contentUrl && (
-                        <p className="mt-2 text-xs text-[#FF6A00] truncate">
+                        <p className="mt-2 truncate text-xs text-[#FF6A00]">
                           {lesson.contentUrl}
                         </p>
                       )}
@@ -223,6 +246,7 @@ const CourseContentPage = () => {
                         </p>
                       )}
                     </div>
+<<<<<<< HEAD
                     {lesson.type === 'live' ? (
                       lesson.live?.roomName ? (
                         <button
@@ -252,6 +276,14 @@ const CourseContentPage = () => {
                         Start
                       </button>
                     )}
+=======
+                    <button
+                      onClick={() => setViewingLesson(lesson)}
+                      className="flex-shrink-0 rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00]"
+                    >
+                      Start
+                    </button>
+>>>>>>> 35b1fdc142f17bf24c2a6fbf9205a83eaa2334fa
                   </div>
                 </div>
               ))}
@@ -261,13 +293,15 @@ const CourseContentPage = () => {
 
         {/* Enrollments */}
         <Card>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[#1A1A1A]">
               Students Enrolled ({course?.enrollCount || enrolledUsers.length})
             </h2>
             <div className="flex gap-2">
               <Button
-                onClick={() => navigate(`/courses/${courseId}/enrolled-students`)}
+                onClick={() =>
+                  navigate(`/courses/${courseId}/enrolled-students`)
+                }
                 variant="secondary"
                 className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
               >
@@ -292,7 +326,9 @@ const CourseContentPage = () => {
             <p className="text-sm text-[#4A4A4A]">No students enrolled yet.</p>
           ) : (
             <p className="text-sm text-[#4A4A4A]">
-              {enrolledUsers.length} student{enrolledUsers.length !== 1 ? 's' : ''} enrolled. Click "View All Students" to see details.
+              {enrolledUsers.length} student
+              {enrolledUsers.length !== 1 ? 's' : ''} enrolled. Click "View All
+              Students" to see details.
             </p>
           )}
         </Card>
@@ -311,17 +347,17 @@ const CourseContentPage = () => {
 
         {/* Withdrawal Confirmation Modal */}
         {showConfirm && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <Card className="w-full max-w-sm p-6">
               <h3 className="text-lg font-semibold text-[#1A1A1A]">
                 Withdraw from Course?
               </h3>
               <p className="mt-3 text-sm text-[#4A4A4A]">
-                Are you sure you want to withdraw from <strong>{course.title}</strong>?
-                This action cannot be undone.
+                Are you sure you want to withdraw from{' '}
+                <strong>{course.title}</strong>? This action cannot be undone.
               </p>
 
-              <div className="mt-6 flex gap-3 justify-end">
+              <div className="mt-6 flex justify-end gap-3">
                 <button
                   onClick={() => setShowConfirm(false)}
                   disabled={actionLoading}
@@ -332,7 +368,7 @@ const CourseContentPage = () => {
                 <Button
                   onClick={handleWithdraw}
                   isLoading={actionLoading}
-                  className="bg-red-600 hover:bg-red-700 text-white"
+                  className="bg-red-600 text-white hover:bg-red-700"
                 >
                   Confirm Withdraw
                 </Button>
@@ -343,15 +379,15 @@ const CourseContentPage = () => {
 
         {/* Lesson Viewer Modal */}
         {viewingLesson && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-              <div className="flex items-center justify-between mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-semibold text-[#1A1A1A]">
                   {viewingLesson.order + 1}. {viewingLesson.title}
                 </h2>
                 <button
                   onClick={() => setViewingLesson(null)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-2xl text-gray-400 hover:text-gray-600"
                 >
                   ×
                 </button>
@@ -361,48 +397,68 @@ const CourseContentPage = () => {
                 {/* Video Lesson */}
                 {viewingLesson.type === 'video' && (
                   <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">▶ Video Lesson</p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">
+                      ▶ Video Lesson
+                    </p>
                     {viewingLesson.contentUrl ? (
                       <div className="space-y-3">
-                        <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
-                          <p className="text-sm font-medium text-[#1A1A1A] mb-2">Video URL:</p>
+                        <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
+                          <p className="mb-2 text-sm font-medium text-[#1A1A1A]">
+                            Video URL:
+                          </p>
                           <a
                             href={viewingLesson.contentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#FF6A00] hover:underline break-all text-sm"
+                            className="text-sm break-all text-[#FF6A00] hover:underline"
                           >
                             {viewingLesson.contentUrl}
                           </a>
                         </div>
                         <Button
-                          onClick={() => window.open(viewingLesson.contentUrl, '_blank')}
+                          onClick={() =>
+                            window.open(viewingLesson.contentUrl, '_blank')
+                          }
                           className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
                         >
                           Open Video
                         </Button>
                       </div>
                     ) : (
-                      <p className="text-sm text-[#4A4A4A]">No video URL provided.</p>
+                      <p className="text-sm text-[#4A4A4A]">
+                        No video URL provided.
+                      </p>
                     )}
 
                     {/* Add Lesson Modal */}
                     {showAddLesson && (
-                      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                         <Card className="w-full max-w-lg p-6">
-                          <h3 className="text-lg font-semibold text-[#1A1A1A]">Add Lesson</h3>
+                          <h3 className="text-lg font-semibold text-[#1A1A1A]">
+                            Add Lesson
+                          </h3>
 
-                          <div className="space-y-3 mt-4">
+                          <div className="mt-4 space-y-3">
                             <input
                               value={newLesson.title}
-                              onChange={e => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
+                              onChange={e =>
+                                setNewLesson(prev => ({
+                                  ...prev,
+                                  title: e.target.value,
+                                }))
+                              }
                               placeholder="Lesson title"
                               className="w-full rounded border p-2"
                             />
 
                             <select
                               value={newLesson.type}
-                              onChange={e => setNewLesson(prev => ({ ...prev, type: e.target.value }))}
+                              onChange={e =>
+                                setNewLesson(prev => ({
+                                  ...prev,
+                                  type: e.target.value,
+                                }))
+                              }
                               className="w-full rounded border p-2"
                             >
                               <option value="video">Video</option>
@@ -413,7 +469,12 @@ const CourseContentPage = () => {
                             {newLesson.type === 'video' && (
                               <input
                                 value={newLesson.contentUrl}
-                                onChange={e => setNewLesson(prev => ({ ...prev, contentUrl: e.target.value }))}
+                                onChange={e =>
+                                  setNewLesson(prev => ({
+                                    ...prev,
+                                    contentUrl: e.target.value,
+                                  }))
+                                }
                                 placeholder="Video URL"
                                 className="w-full rounded border p-2"
                               />
@@ -422,7 +483,12 @@ const CourseContentPage = () => {
                             {newLesson.type === 'text' && (
                               <textarea
                                 value={newLesson.textContent}
-                                onChange={e => setNewLesson(prev => ({ ...prev, textContent: e.target.value }))}
+                                onChange={e =>
+                                  setNewLesson(prev => ({
+                                    ...prev,
+                                    textContent: e.target.value,
+                                  }))
+                                }
                                 placeholder="Text content"
                                 className="w-full rounded border p-2"
                                 rows={6}
@@ -434,12 +500,28 @@ const CourseContentPage = () => {
                                 <input
                                   type="datetime-local"
                                   value={newLesson.live.startTime}
-                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), startTime: e.target.value } }))}
+                                  onChange={e =>
+                                    setNewLesson(prev => ({
+                                      ...prev,
+                                      live: {
+                                        ...(prev.live || {}),
+                                        startTime: e.target.value,
+                                      },
+                                    }))
+                                  }
                                   className="w-full rounded border p-2"
                                 />
                                 <input
                                   value={newLesson.live.roomName}
-                                  onChange={e => setNewLesson(prev => ({ ...prev, live: { ...(prev.live||{}), roomName: e.target.value } }))}
+                                  onChange={e =>
+                                    setNewLesson(prev => ({
+                                      ...prev,
+                                      live: {
+                                        ...(prev.live || {}),
+                                        roomName: e.target.value,
+                                      },
+                                    }))
+                                  }
                                   placeholder="Room name"
                                   className="w-full rounded border p-2"
                                 />
@@ -447,7 +529,7 @@ const CourseContentPage = () => {
                             )}
                           </div>
 
-                          <div className="mt-4 flex gap-3 justify-end">
+                          <div className="mt-4 flex justify-end gap-3">
                             <button
                               onClick={() => setShowAddLesson(false)}
                               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -461,9 +543,12 @@ const CourseContentPage = () => {
                                     title: newLesson.title,
                                     type: newLesson.type,
                                   };
-                                  if (newLesson.type === 'video') payload.contentUrl = newLesson.contentUrl;
-                                  if (newLesson.type === 'text') payload.textContent = newLesson.textContent;
-                                  if (newLesson.type === 'live') payload.live = newLesson.live;
+                                  if (newLesson.type === 'video')
+                                    payload.contentUrl = newLesson.contentUrl;
+                                  if (newLesson.type === 'text')
+                                    payload.textContent = newLesson.textContent;
+                                  if (newLesson.type === 'live')
+                                    payload.live = newLesson.live;
 
                                   await addCourseLesson(courseId, payload);
                                   // refresh
@@ -473,7 +558,10 @@ const CourseContentPage = () => {
                                   setInfo('Lesson added');
                                 } catch (err) {
                                   console.error(err);
-                                  setError(err.response?.data?.message || 'Failed to add lesson');
+                                  setError(
+                                    err.response?.data?.message ||
+                                      'Failed to add lesson'
+                                  );
                                 }
                               }}
                               className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
@@ -490,13 +578,17 @@ const CourseContentPage = () => {
                 {/* Text Lesson */}
                 {viewingLesson.type === 'text' && (
                   <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">📄 Text Lesson</p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">
+                      📄 Text Lesson
+                    </p>
                     {viewingLesson.textContent ? (
-                      <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 whitespace-pre-wrap text-sm text-[#1A1A1A]">
+                      <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-sm whitespace-pre-wrap text-[#1A1A1A]">
                         {viewingLesson.textContent}
                       </div>
                     ) : (
-                      <p className="text-sm text-[#4A4A4A]">No text content provided.</p>
+                      <p className="text-sm text-[#4A4A4A]">
+                        No text content provided.
+                      </p>
                     )}
                   </div>
                 )}
@@ -504,23 +596,33 @@ const CourseContentPage = () => {
                 {/* Live Session */}
                 {viewingLesson.type === 'live' && (
                   <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">🔴 Live Session</p>
-                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4 space-y-3">
+                    <p className="mb-3 text-sm text-[#4A4A4A]">
+                      🔴 Live Session
+                    </p>
+                    <div className="space-y-3 rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
                       {viewingLesson.live?.roomName && (
                         <div>
-                          <p className="text-sm font-medium text-[#1A1A1A]">Room:</p>
-                          <p className="text-sm text-[#FF6A00]">{viewingLesson.live.roomName}</p>
+                          <p className="text-sm font-medium text-[#1A1A1A]">
+                            Room:
+                          </p>
+                          <p className="text-sm text-[#FF6A00]">
+                            {viewingLesson.live.roomName}
+                          </p>
                         </div>
                       )}
                       {viewingLesson.live?.startTime && (
                         <div>
-                          <p className="text-sm font-medium text-[#1A1A1A]">Start Time:</p>
+                          <p className="text-sm font-medium text-[#1A1A1A]">
+                            Start Time:
+                          </p>
                           <p className="text-sm text-[#4A4A4A]">
-                            {new Date(viewingLesson.live.startTime).toLocaleString()}
+                            {new Date(
+                              viewingLesson.live.startTime
+                            ).toLocaleString()}
                           </p>
                         </div>
                       )}
-                      <Button className="bg-[#FF6A00] text-white hover:bg-[#e85f00] w-full">
+                      <Button className="w-full bg-[#FF6A00] text-white hover:bg-[#e85f00]">
                         Join Live Session
                       </Button>
                     </div>
@@ -530,15 +632,17 @@ const CourseContentPage = () => {
                 {/* Quiz Lesson */}
                 {viewingLesson.type === 'quiz' && (
                   <div>
-                    <p className="text-sm text-[#4A4A4A] mb-3">❓ Quiz</p>
-                    <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-lg p-4">
-                      <p className="text-sm text-[#4A4A4A]">Quiz content coming soon...</p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">❓ Quiz</p>
+                    <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
+                      <p className="text-sm text-[#4A4A4A]">
+                        Quiz content coming soon...
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 flex gap-3 justify-end">
+              <div className="mt-6 flex justify-end gap-3">
                 <Button
                   onClick={() => setViewingLesson(null)}
                   variant="secondary"

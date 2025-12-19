@@ -39,7 +39,11 @@ const MyCoursesPage = () => {
       setCreated(crRes?.courses || []);
     } catch (e) {
       console.error(e);
-      setError(e?.response?.data?.message || e?.response?.data?.msg || 'Failed to load My Courses');
+      setError(
+        e?.response?.data?.message ||
+          e?.response?.data?.msg ||
+          'Failed to load My Courses'
+      );
     } finally {
       setLoading(false);
     }
@@ -54,24 +58,36 @@ const MyCoursesPage = () => {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-[#1A1A1A]">My Courses</h1>
-          <p className="text-sm text-[#4A4A4A]">Enrolled courses + courses you created</p>
+          <p className="text-sm text-[#4A4A4A]">
+            Enrolled courses + courses you created
+          </p>
         </div>
         <Link to="/courses">
-          <Button className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">Browse Courses</Button>
+          <Button className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">
+            Browse Courses
+          </Button>
         </Link>
       </div>
 
       <div className="flex gap-2">
         <Button
           variant={tab === 'enrolled' ? 'primary' : 'secondary'}
-          className={tab === 'enrolled' ? 'bg-[#FF6A00] text-white' : 'border border-[#FF6A00] text-[#FF6A00]'}
+          className={
+            tab === 'enrolled'
+              ? 'bg-[#FF6A00] text-white'
+              : 'border border-[#FF6A00] text-[#FF6A00]'
+          }
           onClick={() => setTab('enrolled')}
         >
           Enrolled
         </Button>
         <Button
           variant={tab === 'created' ? 'primary' : 'secondary'}
-          className={tab === 'created' ? 'bg-[#FF6A00] text-white' : 'border border-[#FF6A00] text-[#FF6A00]'}
+          className={
+            tab === 'created'
+              ? 'bg-[#FF6A00] text-white'
+              : 'border border-[#FF6A00] text-[#FF6A00]'
+          }
           onClick={() => setTab('created')}
         >
           Created
@@ -112,7 +128,10 @@ const MyCoursesPage = () => {
                   </div>
 
                   <Link to={`/courses/${item.course?._id}/content`}>
-                    <Button size="sm" className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">
+                    <Button
+                      size="sm"
+                      className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                    >
                       Open
                     </Button>
                   </Link>
@@ -150,18 +169,28 @@ const MyCoursesPage = () => {
                       {course.category} · {course.level}
                     </p>
                     <p className="mt-1 text-xs text-[#4A4A4A]">
-                      Lessons: {course.totalLessons || 0} · Enrolled: {course.enrollCount || 0}
+                      Lessons: {course.totalLessons || 0} · Enrolled:{' '}
+                      {course.enrollCount || 0}
                     </p>
                     <p className="mt-1 text-xs">
                       Status:{' '}
-                      <span className={course.isPublished ? 'text-green-700' : 'text-orange-600'}>
+                      <span
+                        className={
+                          course.isPublished
+                            ? 'text-green-700'
+                            : 'text-orange-600'
+                        }
+                      >
                         {course.isPublished ? 'Published' : 'Not Published'}
                       </span>
                     </p>
                   </div>
 
                   <Link to={`/courses/${course._id}/content`}>
-                    <Button size="sm" className="bg-[#FF6A00] text-white hover:bg-[#e85f00]">
+                    <Button
+                      size="sm"
+                      className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                    >
                       View
                     </Button>
                   </Link>

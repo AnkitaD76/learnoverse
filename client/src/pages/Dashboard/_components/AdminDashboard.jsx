@@ -31,7 +31,7 @@ export const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteUser = async userId => {
     setIsDeleting(true);
     try {
       await apiClient.delete(`/admin/users/${userId}`);
@@ -70,7 +70,7 @@ export const AdminDashboard = () => {
       <div className="flex gap-2 border-b border-gray-200">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+          className={`px-4 pb-3 text-sm font-medium transition-colors ${
             activeTab === 'overview'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -80,7 +80,7 @@ export const AdminDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('courses')}
-          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+          className={`px-4 pb-3 text-sm font-medium transition-colors ${
             activeTab === 'courses'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -90,7 +90,7 @@ export const AdminDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab('pending')}
-          className={`pb-3 px-4 text-sm font-medium transition-colors ${
+          className={`px-4 pb-3 text-sm font-medium transition-colors ${
             activeTab === 'pending'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -168,13 +168,20 @@ export const AdminDashboard = () => {
               </h3>
               <div className="space-y-3">
                 {stats?.recentUsers?.slice(0, 5).map(user => (
-                  <div key={user._id} className="flex items-center justify-between rounded-lg border border-gray-200 p-2">
+                  <div
+                    key={user._id}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 p-2"
+                  >
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {user.name}
+                      </p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold capitalize text-gray-600">{user.role}</span>
+                      <span className="text-xs font-semibold text-gray-600 capitalize">
+                        {user.role}
+                      </span>
                       <button
                         onClick={() => setDeleteConfirm(user)}
                         className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
@@ -192,15 +199,19 @@ export const AdminDashboard = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <Card className="w-full max-w-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-800">Delete User?</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Delete User?
+            </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to delete <strong>{deleteConfirm.name}</strong>? This action cannot be undone.
+              Are you sure you want to delete{' '}
+              <strong>{deleteConfirm.name}</strong>? This action cannot be
+              undone.
             </p>
             <p className="mt-1 text-xs text-gray-500">{deleteConfirm.email}</p>
 
-            <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}

@@ -46,7 +46,7 @@ const CoursesPage = () => {
             Browse Courses
           </h1>
           <p className="text-sm text-[#4A4A4A]">
-            Explore learning opportunities 
+            Explore learning opportunities
           </p>
         </div>
         <Link to="/courses/create">
@@ -93,7 +93,9 @@ const CoursesPage = () => {
         </form>
       </Card>
 
-      {isLoading && <p className="text-sm text-[#4A4A4A]">Loading courses...</p>}
+      {isLoading && (
+        <p className="text-sm text-[#4A4A4A]">Loading courses...</p>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid gap-4 md:grid-cols-2">
