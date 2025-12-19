@@ -8,6 +8,7 @@ import {
   updateCourseLesson,
   deleteCourseLesson,
   createLessonLiveSession,
+  createLessonLiveSession,
 } from '../../api/courses';
 import { Input } from '../../components/Input';
 
