@@ -8,34 +8,34 @@ import {
   withdrawFromCourse,
   getMyEnrollments,
   getMyCreatedCourses,
+  deleteCourse,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
 
+/**
+ * IMPORTANT:
+ * Put specific routes BEFORE "/:id"
+ * Otherwise "/me/enrollments" becomes id="me"
+ */
+
+// ✅ My courses (enrolled)
+router.get('/me/enrollments', authenticate, requireVerification, getMyEnrollments);
+
+// ✅ My created courses (instructor/admin)
+router.get('/me/created', authenticate, requireVerification, getMyCreatedCourses);
+
 // Public browsing
 router.get('/', getCourses);
 
-// ✅ IMPORTANT: "me" routes must come BEFORE "/:id"
-router.get(
-  '/me/enrollments',
-  authenticate,
-  requireVerification,
-  getMyEnrollments
-);
-
-router.get(
-  '/me/created',
-  authenticate,
-  requireVerification,
-  getMyCreatedCourses
-);
+// Course details
+router.get('/:id', getCourseById);
 
 // Protected actions
 router.post('/', authenticate, requireVerification, createCourse);
+router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
 router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
 
-// Single course details (keep this LAST)
-router.get('/:id', getCourseById);
-
 export default router;
+
