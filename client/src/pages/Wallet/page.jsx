@@ -95,9 +95,13 @@ const WalletDashboard = () => {
                     <LoadingSpinner />
                 ) : recentTransactions.length > 0 ? (
                     <div className="transactions-list">
-                        {recentTransactions.map(transaction => (
+                        {recentTransactions.map((transaction, index) => (
                             <TransactionItem
-                                key={transaction.transaction_id}
+                                key={
+                                    transaction.transaction_id ||
+                                    transaction._id ||
+                                    index
+                                }
                                 transaction={transaction}
                                 showDetails={false}
                             />

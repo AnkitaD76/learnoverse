@@ -58,9 +58,14 @@ const SellPoints = () => {
         },
         { id: 'paypal', name: 'PayPal', description: '1-2 business days' },
         {
-            id: 'mobile_money',
+            id: 'bkash',
             name: 'Mobile Money (bKash/Nagad)',
             description: '24 hours',
+        },
+        {
+            id: 'card',
+            name: 'Debit Card',
+            description: '1-2 business days',
         },
     ];
 
@@ -117,10 +122,12 @@ const SellPoints = () => {
                 formData.payout_details.account_holder;
         } else if (formData.payout_method === 'paypal') {
             hasRequiredDetails = formData.payout_details.paypal_email;
-        } else if (formData.payout_method === 'mobile_money') {
+        } else if (formData.payout_method === 'bkash') {
             hasRequiredDetails =
                 formData.payout_details.mobile_number &&
                 formData.payout_details.provider;
+        } else if (formData.payout_method === 'card') {
+            hasRequiredDetails = formData.payout_details.card_number;
         }
 
         return (
@@ -191,7 +198,11 @@ const SellPoints = () => {
                                 <div className="detail-row">
                                     <span>Points Sold:</span>
                                     <span className="highlight">
-                                        {transactionResult.data.payout_request.points_amount.toLocaleString()}{' '}
+                                        {(
+                                            transactionResult.data
+                                                .payout_request
+                                                ?.points_amount || 0
+                                        ).toLocaleString()}{' '}
                                         pts
                                     </span>
                                 </div>
@@ -200,18 +211,21 @@ const SellPoints = () => {
                                     <span className="highlight">
                                         {
                                             transactionResult.data
-                                                .payout_request.currency
+                                                .payout_request?.currency
                                         }{' '}
                                         {
                                             transactionResult.data
-                                                .payout_request.cash_amount
+                                                .payout_request?.cash_amount
                                         }
                                     </span>
                                 </div>
                                 <div className="detail-row">
                                     <span>New Balance:</span>
                                     <span>
-                                        {transactionResult.data.wallet.available_balance.toLocaleString()}{' '}
+                                        {(
+                                            transactionResult.data.wallet
+                                                ?.available_balance || 0
+                                        ).toLocaleString()}{' '}
                                         pts
                                     </span>
                                 </div>
@@ -220,7 +234,7 @@ const SellPoints = () => {
                                     <span className="status-pending">
                                         {
                                             transactionResult.data
-                                                .payout_request.status
+                                                .payout_request?.status
                                         }
                                     </span>
                                 </div>
@@ -229,7 +243,7 @@ const SellPoints = () => {
                                     <span className="transaction-id">
                                         {
                                             transactionResult.data
-                                                .payout_request._id
+                                                .payout_request?._id
                                         }
                                     </span>
                                 </div>
@@ -523,7 +537,7 @@ const SellPoints = () => {
                         </div>
                     )}
 
-                    {formData.payout_method === 'mobile_money' && (
+                    {formData.payout_method === 'bkash' && (
                         <div className="payout-details">
                             <h3>Mobile Money Details</h3>
                             <div className="form-group">

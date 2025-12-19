@@ -45,13 +45,15 @@ const TransactionItem = ({ transaction, showDetails = false }) => {
     };
 
     const getAmountDisplay = transaction => {
-        const isCredit = transaction.amount > 0;
+        const amount = transaction.points_amount || transaction.amount || 0;
+        const isCredit = amount > 0;
         const prefix = isCredit ? '+' : '';
-        return `${prefix}${transaction.amount.toLocaleString()}`;
+        return `${prefix}${amount.toLocaleString()}`;
     };
 
     const getAmountClass = transaction => {
-        return transaction.amount > 0 ? 'credit' : 'debit';
+        const amount = transaction.points_amount || transaction.amount || 0;
+        return amount > 0 ? 'credit' : 'debit';
     };
 
     return (
@@ -64,18 +66,28 @@ const TransactionItem = ({ transaction, showDetails = false }) => {
                 <div className="transaction-info">
                     <div className="transaction-description">
                         {transaction.description ||
-                            transaction.type.replace(/_/g, ' ')}
+                            transaction.type?.replace(/_/g, ' ') ||
+                            'Transaction'}
                     </div>
                     <div className="transaction-meta">
-                        <span
-                            className="transaction-id"
-                            title={transaction.transaction_id}
-                        >
-                            {transaction.transaction_id.slice(0, 8)}...
-                        </span>
-                        <span className="transaction-date">
-                            {formatDate(transaction.created_at)}
-                        </span>
+                        {transaction.transaction_id && (
+                            <span
+                                className="transaction-id"
+                                title={transaction.transaction_id}
+                            >
+                                {transaction.transaction_id.slice(0, 8)}...
+                            </span>
+                        )}
+                        {transaction.created_at && (
+                            <span className="transaction-date">
+                                {formatDate(transaction.created_at)}
+                            </span>
+                        )}
+                        {transaction.createdAt && !transaction.created_at && (
+                            <span className="transaction-date">
+                                {formatDate(transaction.createdAt)}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -97,7 +109,7 @@ const TransactionItem = ({ transaction, showDetails = false }) => {
                             <span>{transaction.metadata.currency}</span>
                         </div>
                     )}
-                    {transaction.metadata.cash_amount !== undefined && (
+                    {transaction.metadata.cash_amount != null && (
                         <div className="detail-row">
                             <span>Cash Amount:</span>
                             <span>
@@ -127,7 +139,7 @@ const TransactionItem = ({ transaction, showDetails = false }) => {
                             <span>{transaction.metadata.course_title}</span>
                         </div>
                     )}
-                    {transaction.balance_after !== undefined && (
+                    {transaction.balance_after != null && (
                         <div className="detail-row">
                             <span>Balance After:</span>
                             <span>

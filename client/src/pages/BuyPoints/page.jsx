@@ -43,7 +43,7 @@ const BuyPoints = () => {
 
     const paymentMethods = [
         {
-            id: 'stripe',
+            id: 'card',
             name: 'Credit/Debit Card (Stripe)',
             description: 'Instant',
         },
@@ -54,7 +54,7 @@ const BuyPoints = () => {
             description: '2-3 business days',
         },
         {
-            id: 'mobile_money',
+            id: 'bkash',
             name: 'Mobile Money (bKash/Nagad)',
             description: 'Instant',
         },
@@ -161,7 +161,10 @@ const BuyPoints = () => {
                                     <span>Points Purchased:</span>
                                     <span className="highlight">
                                         +
-                                        {transactionResult.data.transaction.amount.toLocaleString()}{' '}
+                                        {(
+                                            transactionResult.data.transaction
+                                                .points_amount || 0
+                                        ).toLocaleString()}{' '}
                                         pts
                                     </span>
                                 </div>
@@ -170,18 +173,21 @@ const BuyPoints = () => {
                                     <span>
                                         {
                                             transactionResult.data.transaction
-                                                .metadata.currency
+                                                .currency
                                         }{' '}
                                         {
                                             transactionResult.data.transaction
-                                                .metadata.cash_amount
+                                                .cash_amount
                                         }
                                     </span>
                                 </div>
                                 <div className="detail-row">
                                     <span>New Balance:</span>
                                     <span className="highlight">
-                                        {transactionResult.data.wallet.available_balance.toLocaleString()}{' '}
+                                        {(
+                                            transactionResult.data.wallet
+                                                .available_balance || 0
+                                        ).toLocaleString()}{' '}
                                         pts
                                     </span>
                                 </div>
@@ -352,7 +358,7 @@ const BuyPoints = () => {
                         </div>
                     )}
 
-                    {formData.payment_method === 'mobile_money' && (
+                    {formData.payment_method === 'bkash' && (
                         <div className="payment-details">
                             <h3>Mobile Money Details</h3>
                             <div className="form-group">

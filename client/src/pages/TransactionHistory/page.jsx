@@ -243,11 +243,14 @@ const TransactionHistory = () => {
                 </div>
             ) : view === 'transactions' ? (
                 <>
-                    {transactions.length > 0 ? (
+                    {transactions && transactions.length > 0 ? (
                         <div className="transactions-list">
                             {transactions.map(transaction => (
                                 <TransactionItem
-                                    key={transaction.transaction_id}
+                                    key={
+                                        transaction.transaction_id ||
+                                        transaction._id
+                                    }
                                     transaction={transaction}
                                     showDetails={true}
                                 />
@@ -267,7 +270,7 @@ const TransactionHistory = () => {
                 </>
             ) : (
                 <>
-                    {payoutRequests.length > 0 ? (
+                    {payoutRequests && payoutRequests.length > 0 ? (
                         <div className="payout-requests-list">
                             {payoutRequests.map(payout => (
                                 <div

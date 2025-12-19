@@ -48,13 +48,21 @@ export const getExchangeRates = async () => {
  * Buy points with mock payment
  *
  * @param {Object} data - Purchase data
- * @param {number} data.amount - Cash amount
+ * @param {number} data.cash_amount - Cash amount
  * @param {string} data.currency - Currency code (USD, BDT, EUR, GBP)
  * @param {string} data.payment_method - Payment method (CARD, BKASH, PAYPAL, BANK_TRANSFER)
  * @param {Object} data.payment_details - Payment details (mock)
  */
 export const buyPoints = async data => {
-    const response = await apiClient.post('/wallet/buy-points', data);
+    // Backend expects 'amount' not 'cash_amount', and uppercase payment method
+    const requestData = {
+        amount: data.cash_amount,
+        currency: data.currency,
+        payment_method: data.payment_method.toUpperCase(),
+        payment_details: data.payment_details,
+    };
+
+    const response = await apiClient.post('/wallet/buy-points', requestData);
     return response.data;
 };
 
@@ -62,13 +70,21 @@ export const buyPoints = async data => {
  * Sell points for cash (request payout)
  *
  * @param {Object} data - Payout data
- * @param {number} data.points - Points to sell
+ * @param {number} data.points_amount - Points to sell
  * @param {string} data.currency - Currency code
  * @param {string} data.payout_method - Payout method
  * @param {Object} data.payout_details - Payout account details
  */
 export const sellPoints = async data => {
-    const response = await apiClient.post('/wallet/sell-points', data);
+    // Backend expects 'points' not 'points_amount', and uppercase payout method
+    const requestData = {
+        points: data.points_amount,
+        currency: data.currency,
+        payout_method: data.payout_method.toUpperCase(),
+        payout_details: data.payout_details,
+    };
+
+    const response = await apiClient.post('/wallet/sell-points', requestData);
     return response.data;
 };
 
