@@ -3,12 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import CourseMessaging from '../../components/CourseMessaging';
 import { fetchCourseById, fetchCourseEnrollments } from '../../api/courses';
+import { initializeSocket } from '../../services/socketService.js';
+import { useSession } from '../../contexts/SessionContext';
+import { getAccessToken } from '../../api/client';
 
 const StudentEnrolledPage = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
-    const [course, setCourse] = useState(null);
+    const { user } = useSession();
+  
+
+  const [course, setCourse] = useState(null);
     const [enrolledUsers, setEnrolledUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -44,6 +51,23 @@ const StudentEnrolledPage = () => {
 
         load();
     }, [courseId]);
+
+  // Initialize Socket.io separately
+  useEffect(() => {
+    if (!user?._id || !user?.name) {
+      console.log('⏳ Waiting for user data...');
+      return;
+    }
+    
+    console.log('⚡ Socket init effect running with user:', { _id: user._id, name: user.name });
+    
+    // Try to get token from apiClient (may not be available - cookies will be sent instead)
+    const token = getAccessToken();
+    console.log('🔑 Token from apiClient:', token ? 'YES ✅' : 'NO ❌');
+    
+    // Initialize socket with or without token (cookies will be sent via withCredentials)
+    initializeSocket(token, user._id, user.name);
+  }, [user]);
 
     if (isLoading) {
         return (
@@ -120,6 +144,11 @@ const StudentEnrolledPage = () => {
                         </div>
                     )}
                 </Card>
+
+        {/* Messaging Feature */}
+        {user && (
+          <CourseMessaging courseId={courseId} currentUserId={user._id} currentUserName={user.name} />
+        )}
 
                 {/* Course Info */}
                 <Card>
