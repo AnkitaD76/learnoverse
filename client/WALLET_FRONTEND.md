@@ -142,28 +142,28 @@ const newBalance = wallet.points_balance + purchasedPoints; // NO!
 ```javascript
 // Purchase points flow
 const buyPoints = async purchaseData => {
-    // 1. Prevent double submit
-    if (pendingOperation)
-        return { success: false, error: 'Operation in progress' };
+  // 1. Prevent double submit
+  if (pendingOperation)
+    return { success: false, error: 'Operation in progress' };
 
-    try {
-        setPendingOperation('buy');
+  try {
+    setPendingOperation('buy');
 
-        // 2. Call backend API
-        const data = await walletApi.buyPoints(purchaseData);
+    // 2. Call backend API
+    const data = await walletApi.buyPoints(purchaseData);
 
-        // 3. Refresh wallet to get updated balance
-        await refreshWallet();
+    // 3. Refresh wallet to get updated balance
+    await refreshWallet();
 
-        return { success: true, data };
-    } catch (err) {
-        // 4. Handle errors
-        setError(err.response?.data?.message || 'Failed to purchase points');
-        return { success: false, error: errorMessage };
-    } finally {
-        // 5. Clear pending state
-        setPendingOperation(null);
-    }
+    return { success: true, data };
+  } catch (err) {
+    // 4. Handle errors
+    setError(err.response?.data?.message || 'Failed to purchase points');
+    return { success: false, error: errorMessage };
+  } finally {
+    // 5. Clear pending state
+    setPendingOperation(null);
+  }
 };
 ```
 
@@ -172,12 +172,12 @@ const buyPoints = async purchaseData => {
 ```javascript
 // Refresh wallet when user logs in/out
 useEffect(() => {
-    if (isAuthenticated) {
-        refreshWallet();
-        refreshExchangeRates();
-    } else {
-        setWallet(null);
-    }
+  if (isAuthenticated) {
+    refreshWallet();
+    refreshExchangeRates();
+  } else {
+    setWallet(null);
+  }
 }, [isAuthenticated]);
 ```
 
@@ -231,13 +231,13 @@ useEffect(() => {
 
 ```jsx
 {
-    transactions.map(tx => (
-        <TransactionItem
-            key={tx.transaction_id}
-            transaction={tx}
-            showDetails={true}
-        />
-    ));
+  transactions.map(tx => (
+    <TransactionItem
+      key={tx.transaction_id}
+      transaction={tx}
+      showDetails={true}
+    />
+  ));
 }
 ```
 
@@ -338,11 +338,11 @@ useEffect(() => {
 
 ```jsx
 <ExchangeRateSelector
-    mode="buy"
-    onAmountChange={data => {
-        setFormData(prev => ({ ...prev, ...data }));
-    }}
-    defaultCurrency="USD"
+  mode="buy"
+  onAmountChange={data => {
+    setFormData(prev => ({ ...prev, ...data }));
+  }}
+  defaultCurrency="USD"
 />
 ```
 
@@ -452,8 +452,8 @@ useEffect(() => {
 
 - Tab navigation (Transactions | Payout Requests)
 - Filters:
-    - Type (purchase, sale, enrollment, refund)
-    - Status (all, pending, completed, failed)
+  - Type (purchase, sale, enrollment, refund)
+  - Status (all, pending, completed, failed)
 - Pagination (20 per page)
 - TransactionItem list with details
 - Payout request list with status
@@ -525,24 +525,24 @@ User → SellPoints Page → ExchangeRateSelector → ConfirmationModal
 const [pendingOperation, setPendingOperation] = useState(null);
 
 const buyPoints = async data => {
-    // Prevent double submit
-    if (pendingOperation) {
-        return { success: false, error: 'Another operation is in progress' };
-    }
+  // Prevent double submit
+  if (pendingOperation) {
+    return { success: false, error: 'Another operation is in progress' };
+  }
 
-    setPendingOperation('buy');
-    try {
-        // ... API call
-    } finally {
-        setPendingOperation(null);
-    }
+  setPendingOperation('buy');
+  try {
+    // ... API call
+  } finally {
+    setPendingOperation(null);
+  }
 };
 ```
 
 ```jsx
 // In UI
 <button disabled={pendingOperation}>
-    {pendingOperation ? 'Processing...' : 'Buy Points'}
+  {pendingOperation ? 'Processing...' : 'Buy Points'}
 </button>
 ```
 
@@ -552,9 +552,9 @@ const buyPoints = async data => {
 
 ```jsx
 <ConfirmationModal
-    requiresExplicitConfirm={true} // User must type "CONFIRM"
-    isDestructive={true} // Red styling
-    message="⚠️ This action cannot be undone. Points will be debited immediately."
+  requiresExplicitConfirm={true} // User must type "CONFIRM"
+  isDestructive={true} // Red styling
+  message="⚠️ This action cannot be undone. Points will be debited immediately."
 />
 ```
 
@@ -569,8 +569,8 @@ await refreshWallet(); // Get fresh balance from backend
 
 // ❌ WRONG: Don't update locally
 setWallet(prev => ({
-    ...prev,
-    points_balance: prev.points_balance + purchasedPoints,
+  ...prev,
+  points_balance: prev.points_balance + purchasedPoints,
 }));
 ```
 
@@ -581,19 +581,19 @@ setWallet(prev => ({
 ```javascript
 // Result screen
 {
-    transactionResult.success ? (
-        <>
-            <h1>Purchase Successful!</h1>
-            <div>Transaction ID: {result.data.transaction.transaction_id}</div>
-            <div>New Balance: {result.data.wallet.available_balance} pts</div>
-        </>
-    ) : (
-        <>
-            <h1>Purchase Failed</h1>
-            <p>{transactionResult.error}</p>
-            <button onClick={handleRetry}>Try Again</button>
-        </>
-    );
+  transactionResult.success ? (
+    <>
+      <h1>Purchase Successful!</h1>
+      <div>Transaction ID: {result.data.transaction.transaction_id}</div>
+      <div>New Balance: {result.data.wallet.available_balance} pts</div>
+    </>
+  ) : (
+    <>
+      <h1>Purchase Failed</h1>
+      <p>{transactionResult.error}</p>
+      <button onClick={handleRetry}>Try Again</button>
+    </>
+  );
 }
 ```
 
@@ -604,22 +604,22 @@ setWallet(prev => ({
 ```javascript
 // Check sufficient balance before allowing action
 const isFormValid = () => {
-    return (
-        formData.points_amount > 0 &&
-        hasSufficientBalance(formData.points_amount) &&
-        formData.payout_method
-    );
+  return (
+    formData.points_amount > 0 &&
+    hasSufficientBalance(formData.points_amount) &&
+    formData.payout_method
+  );
 };
 
 <button disabled={!isFormValid()}>Request Payout</button>;
 
 {
-    formData.points_amount > wallet.available_balance && (
-        <div className="alert alert-warning">
-            Insufficient balance. You have {wallet.available_balance} points
-            available.
-        </div>
-    );
+  formData.points_amount > wallet.available_balance && (
+    <div className="alert alert-warning">
+      Insufficient balance. You have {wallet.available_balance} points
+      available.
+    </div>
+  );
 }
 ```
 
@@ -649,21 +649,21 @@ All API calls use the existing `apiClient` (axios instance) with:
 ```javascript
 // api/client.js
 const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
 });
 
 apiClient.interceptors.request.use(config => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // api/wallet.js uses apiClient
 export const getWalletBalance = async () => {
-    const response = await apiClient.get('/api/v1/wallet/balance');
-    return response.data.data;
+  const response = await apiClient.get('/api/v1/wallet/balance');
+  return response.data.data;
 };
 ```
 
@@ -676,13 +676,13 @@ export const getWalletBalance = async () => {
 ```javascript
 // api/wallet.js
 export const buyPoints = async data => {
-    try {
-        const response = await apiClient.post('/api/v1/wallet/buy', data);
-        return response.data.data;
-    } catch (error) {
-        // Let caller handle errors
-        throw error;
-    }
+  try {
+    const response = await apiClient.post('/api/v1/wallet/buy', data);
+    return response.data.data;
+  } catch (error) {
+    // Let caller handle errors
+    throw error;
+  }
 };
 ```
 
@@ -691,16 +691,16 @@ export const buyPoints = async data => {
 ```javascript
 // contexts/WalletContext.jsx
 const buyPoints = async data => {
-    try {
-        const result = await walletApi.buyPoints(data);
-        await refreshWallet();
-        return { success: true, data: result };
-    } catch (err) {
-        const errorMessage =
-            err.response?.data?.message || 'Failed to purchase points';
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
-    }
+  try {
+    const result = await walletApi.buyPoints(data);
+    await refreshWallet();
+    return { success: true, data: result };
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.message || 'Failed to purchase points';
+    setError(errorMessage);
+    return { success: false, error: errorMessage };
+  }
 };
 ```
 
@@ -709,25 +709,25 @@ const buyPoints = async data => {
 ```jsx
 // pages/BuyPoints/page.jsx
 const handleConfirm = async () => {
-    clearError();
-    const result = await buyPoints(formData);
+  clearError();
+  const result = await buyPoints(formData);
 
-    setTransactionResult(result);
+  setTransactionResult(result);
 
-    if (result.success) {
-        // Show success screen
-    } else {
-        // Show error screen with retry option
-    }
+  if (result.success) {
+    // Show success screen
+  } else {
+    // Show error screen with retry option
+  }
 };
 
 {
-    error && (
-        <div className="alert alert-error">
-            <span>{error}</span>
-            <button onClick={clearError}>×</button>
-        </div>
-    );
+  error && (
+    <div className="alert alert-error">
+      <span>{error}</span>
+      <button onClick={clearError}>×</button>
+    </div>
+  );
 }
 ```
 
@@ -817,13 +817,13 @@ setBalance(newBalance); // Don't calculate locally
 ```javascript
 // ✅ CORRECT
 {
-    pendingOperation && <LoadingSpinner />;
+  pendingOperation && <LoadingSpinner />;
 }
 {
-    transactionResult.success && <SuccessMessage />;
+  transactionResult.success && <SuccessMessage />;
 }
 {
-    transactionResult.error && <ErrorMessage />;
+  transactionResult.error && <ErrorMessage />;
 }
 
 // ❌ WRONG
@@ -837,8 +837,8 @@ setBalance(newBalance); // Don't calculate locally
 ```javascript
 // ✅ CORRECT
 if (!hasSufficientBalance(amount)) {
-    showError('Insufficient balance');
-    return;
+  showError('Insufficient balance');
+  return;
 }
 
 // ❌ WRONG
@@ -900,7 +900,7 @@ await buyPoints(data);
 ```javascript
 const result = await buyPoints(data);
 if (result.success) {
-    await refreshWallet(); // ← Must be here
+  await refreshWallet(); // ← Must be here
 }
 ```
 
@@ -914,9 +914,9 @@ if (result.success) {
 if (pendingOperation) return;
 setPendingOperation('buy');
 try {
-    // ... API call
+  // ... API call
 } finally {
-    setPendingOperation(null);
+  setPendingOperation(null);
 }
 ```
 
@@ -928,13 +928,13 @@ try {
 
 ```javascript
 useEffect(() => {
-    refreshExchangeRates();
+  refreshExchangeRates();
 }, []);
 
 useEffect(() => {
-    if (selectedCurrency !== prevCurrency) {
-        refreshExchangeRates();
-    }
+  if (selectedCurrency !== prevCurrency) {
+    refreshExchangeRates();
+  }
 }, [selectedCurrency]);
 ```
 

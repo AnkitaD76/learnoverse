@@ -41,7 +41,7 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
   // Join room on mount
   useEffect(() => {
     console.log('📱 Attempting to join course room:', courseId);
-    
+
     // Add a small delay to ensure socket is ready
     const timer = setTimeout(() => {
       const socket = getSocket();
@@ -59,8 +59,8 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
 
   // Listen for messages
   useEffect(() => {
-    const handleReceiveMessage = (messageObj) => {
-      setMessages((prev) => [...prev, messageObj]);
+    const handleReceiveMessage = messageObj => {
+      setMessages(prev => [...prev, messageObj]);
       scrollToBottom();
     };
 
@@ -73,9 +73,9 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
 
   // Listen for user events
   useEffect(() => {
-    onUserJoined((data) => {
+    onUserJoined(data => {
       console.log(`${data.userName} joined the chat`);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           id: `system-${Date.now()}`,
@@ -87,9 +87,9 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
       scrollToBottom();
     });
 
-    onUserLeft((data) => {
+    onUserLeft(data => {
       console.log(`${data.userName} left the chat`);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           id: `system-${Date.now()}`,
@@ -101,7 +101,7 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
       scrollToBottom();
     });
 
-    onMessageError((data) => {
+    onMessageError(data => {
       setError(data.error);
       setTimeout(() => setError(null), 3000);
     });
@@ -109,12 +109,12 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
 
   // Listen for typing indicators
   useEffect(() => {
-    onUserTyping((data) => {
-      setTypingUsers((prev) => new Set([...prev, data.userId]));
+    onUserTyping(data => {
+      setTypingUsers(prev => new Set([...prev, data.userId]));
     });
 
-    onUserStopTyping((data) => {
-      setTypingUsers((prev) => {
+    onUserStopTyping(data => {
+      setTypingUsers(prev => {
         const updated = new Set(prev);
         updated.delete(data.userId);
         return updated;
@@ -144,7 +144,7 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
     }, 2000);
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = e => {
     e.preventDefault();
     console.log('📤 Send message clicked');
 
@@ -157,11 +157,11 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
 
     console.log('💬 Sending message:', messageInput);
     setIsLoading(true);
-    
+
     // Send to server - don't add optimistic update, server will broadcast it back
     sendMessage(courseId, messageInput);
     console.log('✅ Message sent to server');
-    
+
     setMessageInput('');
     setIsLoading(false);
     setIsTyping(false);
@@ -170,16 +170,20 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] border border-[#E5E5E5] rounded-lg bg-white">
+    <div className="flex h-[600px] flex-col rounded-lg border border-[#E5E5E5] bg-white">
       {/* Header */}
-      <div className="border-b border-[#E5E5E5] p-4 bg-gradient-to-r from-[#FF6A00]/5 to-[#FF6A00]/10">
+      <div className="border-b border-[#E5E5E5] bg-gradient-to-r from-[#FF6A00]/5 to-[#FF6A00]/10 p-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-[#1A1A1A]">Course Chat</h3>
-            <p className="text-xs text-[#4A4A4A]">Real-time messaging with students</p>
+            <p className="text-xs text-[#4A4A4A]">
+              Real-time messaging with students
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div
+              className={`h-3 w-3 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            />
             <span className="text-xs font-medium text-[#4A4A4A]">
               {socketConnected ? 'Connected' : 'Disconnected'}
             </span>
@@ -188,21 +192,23 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA]">
+      <div className="flex-1 space-y-3 overflow-y-auto bg-[#FAFAFA] p-4">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-[#4A4A4A]">No messages yet. Start a conversation!</p>
+          <div className="flex h-full items-center justify-center">
+            <p className="text-sm text-[#4A4A4A]">
+              No messages yet. Start a conversation!
+            </p>
           </div>
         ) : (
           <>
-            {messages.map((msg) => (
+            {messages.map(msg => (
               <div
                 key={msg.id}
                 className={`flex gap-2 ${msg.userId === currentUserId ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.type === 'system' ? (
-                  <div className="flex items-center justify-center w-full">
-                    <p className="text-xs text-[#999999] italic bg-gray-100 px-3 py-1 rounded-full">
+                  <div className="flex w-full items-center justify-center">
+                    <p className="rounded-full bg-gray-100 px-3 py-1 text-xs text-[#999999] italic">
                       {msg.message}
                     </p>
                   </div>
@@ -210,17 +216,21 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
                   <div
                     className={`max-w-xs ${
                       msg.userId === currentUserId
-                        ? 'bg-[#FF6A00] text-white rounded-lg rounded-tr-none'
-                        : 'bg-white border border-[#E5E5E5] text-[#1A1A1A] rounded-lg rounded-tl-none'
+                        ? 'rounded-lg rounded-tr-none bg-[#FF6A00] text-white'
+                        : 'rounded-lg rounded-tl-none border border-[#E5E5E5] bg-white text-[#1A1A1A]'
                     } px-4 py-2 break-words`}
                   >
                     {msg.userId !== currentUserId && (
-                      <p className="text-xs font-semibold opacity-75 mb-1">{msg.userName}</p>
+                      <p className="mb-1 text-xs font-semibold opacity-75">
+                        {msg.userName}
+                      </p>
                     )}
                     <p className="text-sm">{msg.message}</p>
                     <p
-                      className={`text-xs mt-1 ${
-                        msg.userId === currentUserId ? 'text-white/70' : 'text-[#4A4A4A]'
+                      className={`mt-1 text-xs ${
+                        msg.userId === currentUserId
+                          ? 'text-white/70'
+                          : 'text-[#4A4A4A]'
                       }`}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString([], {
@@ -237,18 +247,19 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
             {typingUsers.size > 0 && (
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-[#FF6A00] rounded-full animate-bounce" />
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-[#FF6A00]" />
                   <div
-                    className="w-2 h-2 bg-[#FF6A00] rounded-full animate-bounce"
+                    className="h-2 w-2 animate-bounce rounded-full bg-[#FF6A00]"
                     style={{ animationDelay: '0.2s' }}
                   />
                   <div
-                    className="w-2 h-2 bg-[#FF6A00] rounded-full animate-bounce"
+                    className="h-2 w-2 animate-bounce rounded-full bg-[#FF6A00]"
                     style={{ animationDelay: '0.4s' }}
                   />
                 </div>
                 <p className="text-xs text-[#4A4A4A] italic">
-                  {Array.from(typingUsers).length} user{typingUsers.size !== 1 ? 's' : ''} typing...
+                  {Array.from(typingUsers).length} user
+                  {typingUsers.size !== 1 ? 's' : ''} typing...
                 </p>
               </div>
             )}
@@ -260,18 +271,21 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
 
       {/* Error Message */}
       {error && (
-        <div className="px-4 py-2 bg-red-50 border-t border-red-200">
+        <div className="border-t border-red-200 bg-red-50 px-4 py-2">
           <p className="text-xs text-red-600">{error}</p>
         </div>
       )}
 
       {/* Input Form */}
-      <form onSubmit={handleSendMessage} className="border-t border-[#E5E5E5] p-4 bg-white">
+      <form
+        onSubmit={handleSendMessage}
+        className="border-t border-[#E5E5E5] bg-white p-4"
+      >
         <div className="flex gap-2">
           <input
             type="text"
             value={messageInput}
-            onChange={(e) => {
+            onChange={e => {
               setMessageInput(e.target.value);
               handleTyping();
             }}
@@ -284,18 +298,18 @@ const CourseMessaging = ({ courseId, currentUserId, currentUserName }) => {
             }}
             placeholder="Type a message..."
             maxLength="500"
-            className="flex-1 px-3 py-2 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#FF6A00] text-sm"
+            className="flex-1 rounded-lg border border-[#E5E5E5] px-3 py-2 text-sm focus:border-[#FF6A00] focus:outline-none"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !messageInput.trim()}
-            className="px-4 py-2 bg-[#FF6A00] text-white rounded-lg hover:bg-[#e85f00] disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
+            className="rounded-lg bg-[#FF6A00] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e85f00] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? '...' : 'Send'}
           </button>
         </div>
-        <p className="text-xs text-[#4A4A4A] mt-2">
+        <p className="mt-2 text-xs text-[#4A4A4A]">
           {messageInput.length}/500 characters
         </p>
       </form>

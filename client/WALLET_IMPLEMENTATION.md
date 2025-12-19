@@ -46,10 +46,10 @@ The complete frontend implementation for the point-based virtual wallet system h
 ### Routing
 
 - [`client/src/router/index.jsx`](client/src/router/index.jsx) - Added wallet routes
-    - `/wallet` - Dashboard
-    - `/wallet/buy` - Buy points
-    - `/wallet/sell` - Sell points
-    - `/wallet/transactions` - Transaction history
+  - `/wallet` - Dashboard
+  - `/wallet/buy` - Buy points
+  - `/wallet/sell` - Sell points
+  - `/wallet/transactions` - Transaction history
 
 ### App Configuration
 
@@ -60,9 +60,9 @@ The complete frontend implementation for the point-based virtual wallet system h
 
 - [`client/src/api/courses.js`](client/src/api/courses.js) - Added `enrollInCourseWithPoints()` API call
 - [`client/src/pages/CourseDetails/page.jsx`](client/src/pages/CourseDetails/page.jsx) - Added "Enroll with Points" button with:
-    - Balance check
-    - Confirmation modal
-    - Wallet refresh after enrollment
+  - Balance check
+  - Confirmation modal
+  - Wallet refresh after enrollment
 
 ---
 
@@ -71,132 +71,132 @@ The complete frontend implementation for the point-based virtual wallet system h
 ### 1. Wallet Dashboard (`/wallet`)
 
 - **Balance Card**
-    - Available vs reserved points
-    - Cash equivalent display
-    - Total earned/spent stats
-    - Manual refresh button
+  - Available vs reserved points
+  - Cash equivalent display
+  - Total earned/spent stats
+  - Manual refresh button
 
 - **Quick Actions**
-    - Buy Points
-    - Sell Points
-    - Transaction History
+  - Buy Points
+  - Sell Points
+  - Transaction History
 
 - **Recent Transactions**
-    - Last 5 transactions
-    - Type icons (💰 purchase, 💸 sale, 📚 enrollment)
-    - Status badges
-    - Link to full history
+  - Last 5 transactions
+  - Type icons (💰 purchase, 💸 sale, 📚 enrollment)
+  - Status badges
+  - Link to full history
 
 - **Info Section**
-    - How points work
-    - Exchange rate info
+  - How points work
+  - Exchange rate info
 
 ### 2. Buy Points (`/wallet/buy`)
 
 - **Currency Selection**
-    - USD, BDT, EUR, GBP
-    - Live exchange rate display
-    - Bi-directional conversion (cash ↔ points)
+  - USD, BDT, EUR, GBP
+  - Live exchange rate display
+  - Bi-directional conversion (cash ↔ points)
 
 - **Payment Methods**
-    - Credit/Debit Card (Stripe)
-    - PayPal
-    - Bank Transfer
-    - Mobile Money (bKash/Nagad)
+  - Credit/Debit Card (Stripe)
+  - PayPal
+  - Bank Transfer
+  - Mobile Money (bKash/Nagad)
 
 - **Payment-Specific Fields**
-    - Bank details for transfers
-    - PayPal email
-    - Mobile money provider & number
+  - Bank details for transfers
+  - PayPal email
+  - Mobile money provider & number
 
 - **Confirmation**
-    - Review transaction details
-    - Show summary before submission
-    - Disabled during pending
+  - Review transaction details
+  - Show summary before submission
+  - Disabled during pending
 
 - **Result Screen**
-    - Success: Show transaction ID, new balance, options (Back to Wallet, Buy More)
-    - Failure: Show error, retry option
+  - Success: Show transaction ID, new balance, options (Back to Wallet, Buy More)
+  - Failure: Show error, retry option
 
 ### 3. Sell Points (`/wallet/sell`)
 
 - **Current Balance Display**
-    - Show available points
-    - Prevent selling more than available
+  - Show available points
+  - Prevent selling more than available
 
 - **Warning System**
-    - ⚠️ Points debited immediately
-    - Manual admin processing
-    - Restoration on rejection
+  - ⚠️ Points debited immediately
+  - Manual admin processing
+  - Restoration on rejection
 
 - **Payout Methods**
-    - Bank Transfer (2-3 days)
-    - PayPal (1-2 days)
-    - Mobile Money (24 hours)
+  - Bank Transfer (2-3 days)
+  - PayPal (1-2 days)
+  - Mobile Money (24 hours)
 
 - **Payout-Specific Fields**
-    - Bank account details
-    - PayPal email
-    - Mobile money details
+  - Bank account details
+  - PayPal email
+  - Mobile money details
 
 - **Explicit Confirmation**
-    - Type "CONFIRM" to proceed
-    - Show all transaction details
-    - Warning about irreversibility
+  - Type "CONFIRM" to proceed
+  - Show all transaction details
+  - Warning about irreversibility
 
 - **Result Screen**
-    - Success: Show payout request ID, reduced balance, processing time
-    - Failure: Show error, points not deducted, retry option
+  - Success: Show payout request ID, reduced balance, processing time
+  - Failure: Show error, points not deducted, retry option
 
 ### 4. Transaction History (`/wallet/transactions`)
 
 - **Dual Views**
-    - Transactions tab
-    - Payout Requests tab
+  - Transactions tab
+  - Payout Requests tab
 
 - **Filters**
-    - Type: All, Purchase, Sale, Enrollment, Refund, Admin Adjustment
-    - Status: All, Pending, Completed, Failed, Approved, Rejected
+  - Type: All, Purchase, Sale, Enrollment, Refund, Admin Adjustment
+  - Status: All, Pending, Completed, Failed, Approved, Rejected
 
 - **Pagination**
-    - 20 items per page
-    - Previous/Next navigation
-    - Page count display
+  - 20 items per page
+  - Previous/Next navigation
+  - Page count display
 
 - **Transaction Details**
-    - Expandable metadata
-    - Transaction ID
-    - Amount with +/- indicator
-    - Status badge
-    - Timestamp
+  - Expandable metadata
+  - Transaction ID
+  - Amount with +/- indicator
+  - Status badge
+  - Timestamp
 
 - **Payout Details**
-    - Points → Cash conversion
-    - Payout method
-    - Status tracking
-    - Admin notes (if any)
+  - Points → Cash conversion
+  - Payout method
+  - Status tracking
+  - Admin notes (if any)
 
 - **URL State**
-    - Filters saved in URL
-    - Shareable links
+  - Filters saved in URL
+  - Shareable links
 
 ### 5. Course Enrollment with Points
 
 - **Course Details Page Enhancement**
-    - "Enroll with Points" button
-    - Balance display
-    - Insufficient balance handling
+  - "Enroll with Points" button
+  - Balance display
+  - Insufficient balance handling
 
 - **Confirmation Modal**
-    - Show course title
-    - Show cost
-    - Show current balance
-    - Show balance after enrollment
+  - Show course title
+  - Show cost
+  - Show current balance
+  - Show balance after enrollment
 
 - **Post-Enrollment**
-    - Wallet refresh (updated balance)
-    - Navigate to My Courses
-    - Success message
+  - Wallet refresh (updated balance)
+  - Navigate to My Courses
+  - Success message
 
 ---
 
@@ -205,36 +205,36 @@ The complete frontend implementation for the point-based virtual wallet system h
 ### Fintech-Grade UX
 
 1. **Backend is Source of Truth**
-    - Never cache balance locally
-    - Always fetch from API
-    - No optimistic updates
+   - Never cache balance locally
+   - Always fetch from API
+   - No optimistic updates
 
 2. **Explicit Confirmations**
-    - All financial operations require confirmation
-    - Destructive actions require typing "CONFIRM"
-    - Show transaction details before submission
+   - All financial operations require confirmation
+   - Destructive actions require typing "CONFIRM"
+   - Show transaction details before submission
 
 3. **Pending State Management**
-    - Prevent double submissions
-    - Show loading indicators
-    - Disable actions during pending
+   - Prevent double submissions
+   - Show loading indicators
+   - Disable actions during pending
 
 4. **Error Handling**
-    - Display backend error messages
-    - Provide retry options
-    - Clear error states
+   - Display backend error messages
+   - Provide retry options
+   - Clear error states
 
 5. **Transaction Status**
-    - Pending (yellow)
-    - Completed (green)
-    - Failed (red)
-    - Processing (blue)
-    - Approved (light green)
+   - Pending (yellow)
+   - Completed (green)
+   - Failed (red)
+   - Processing (blue)
+   - Approved (light green)
 
 6. **Balance Validation**
-    - Check before allowing action
-    - Show insufficient balance warnings
-    - Disable actions if can't afford
+   - Check before allowing action
+   - Show insufficient balance warnings
+   - Disable actions if can't afford
 
 ### Atomic Operations
 
@@ -277,13 +277,13 @@ The complete frontend implementation for the point-based virtual wallet system h
 ### With Backend API
 
 - **14 Endpoints Used**:
-    - GET `/api/v1/wallet/balance`
-    - GET `/api/v1/wallet/transactions`
-    - GET `/api/v1/wallet/exchange-rates`
-    - POST `/api/v1/wallet/buy`
-    - POST `/api/v1/wallet/sell`
-    - GET `/api/v1/wallet/payout-requests`
-    - POST `/api/v1/courses/:id/enroll-with-points`
+  - GET `/api/v1/wallet/balance`
+  - GET `/api/v1/wallet/transactions`
+  - GET `/api/v1/wallet/exchange-rates`
+  - POST `/api/v1/wallet/buy`
+  - POST `/api/v1/wallet/sell`
+  - GET `/api/v1/wallet/payout-requests`
+  - POST `/api/v1/courses/:id/enroll-with-points`
 
 ### With Existing Systems
 
@@ -430,11 +430,11 @@ The backend API is already running with:
 ### For Developers
 
 - **[WALLET_FRONTEND.md](WALLET_FRONTEND.md)** - Complete architecture guide
-    - Layer architecture
-    - Component details
-    - State flow diagrams
-    - Best practices
-    - Troubleshooting
+  - Layer architecture
+  - Component details
+  - State flow diagrams
+  - Best practices
+  - Troubleshooting
 
 ### For Backend Reference
 

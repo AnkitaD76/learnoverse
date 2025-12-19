@@ -5,28 +5,28 @@ A modern, secure authentication frontend built with React, Vite, and Tailwind CS
 ## 🚀 Features
 
 - **Complete Authentication Flow**
-    - User Registration with optional demographics
-    - Email Verification
-    - Login with secure token management
-    - Forgot Password / Reset Password
-    - Automatic token refresh
-    - Secure logout
+  - User Registration with optional demographics
+  - Email Verification
+  - Login with secure token management
+  - Forgot Password / Reset Password
+  - Automatic token refresh
+  - Secure logout
 
 - **Role-Based Dashboards**
-    - Student Dashboard
-    - Instructor Dashboard
-    - Admin Dashboard with statistics
+  - Student Dashboard
+  - Instructor Dashboard
+  - Admin Dashboard with statistics
 
 - **Profile Management**
-    - View user profile
-    - Edit profile information
-    - Update demographics
+  - View user profile
+  - Edit profile information
+  - Update demographics
 
 - **Security Best Practices**
-    - Access tokens stored in memory (not localStorage)
-    - Refresh tokens in httpOnly cookies
-    - Automatic token refresh on expiration
-    - Protected routes
+  - Access tokens stored in memory (not localStorage)
+  - Refresh tokens in httpOnly cookies
+  - Automatic token refresh on expiration
+  - Protected routes
 
 ## 🛠️ Tech Stack
 
@@ -97,36 +97,36 @@ Each component follows the **Single Responsibility Principle**:
 ## 🔐 Authentication Flow
 
 1. **Registration**
-    - User registers with email, name, password
-    - Optional: age, gender, location, occupation
-    - Verification email sent
-    - Redirect to email verification page
+   - User registers with email, name, password
+   - Optional: age, gender, location, occupation
+   - Verification email sent
+   - Redirect to email verification page
 
 2. **Email Verification**
-    - User enters email and verification token
-    - Or clicks link in email (auto-fills token)
-    - Account activated
-    - Redirect to login
+   - User enters email and verification token
+   - Or clicks link in email (auto-fills token)
+   - Account activated
+   - Redirect to login
 
 3. **Login**
-    - User enters email and password
-    - Server returns access token (stored in memory)
-    - Server sets refresh token in httpOnly cookie
-    - Redirect to dashboard
+   - User enters email and password
+   - Server returns access token (stored in memory)
+   - Server sets refresh token in httpOnly cookie
+   - Redirect to dashboard
 
 4. **Token Refresh**
-    - Access token expires after 15-30 minutes
-    - Axios interceptor catches 401 errors
-    - Automatically calls `/auth/refresh-token`
-    - Gets new access token
-    - Retries failed request
-    - If refresh fails → logout and redirect to login
+   - Access token expires after 15-30 minutes
+   - Axios interceptor catches 401 errors
+   - Automatically calls `/auth/refresh-token`
+   - Gets new access token
+   - Retries failed request
+   - If refresh fails → logout and redirect to login
 
 5. **Logout**
-    - Calls `/auth/logout` endpoint
-    - Clears access token from memory
-    - Server removes refresh token
-    - Redirect to login
+   - Calls `/auth/logout` endpoint
+   - Clears access token from memory
+   - Server removes refresh token
+   - Redirect to login
 
 ## 🚦 API Integration
 
@@ -163,32 +163,32 @@ VITE_API_BASE_URL=http://localhost:3000/api/v1
 
 1. **Install dependencies:**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 2. **Create `.env` file:**
 
-    ```bash
-    cp .env.example .env
-    ```
+   ```bash
+   cp .env.example .env
+   ```
 
 3. **Update environment variables if needed:**
 
-    ```env
-    VITE_API_BASE_URL=http://localhost:3000/api/v1
-    ```
+   ```env
+   VITE_API_BASE_URL=http://localhost:3000/api/v1
+   ```
 
 4. **Start development server:**
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
 5. **Open browser:**
-    ```
-    http://localhost:5173
-    ```
+   ```
+   http://localhost:5173
+   ```
 
 ## 📜 Available Scripts
 
@@ -239,22 +239,22 @@ VITE_API_BASE_URL=http://localhost:3000/api/v1
 ## 🔒 Security Features
 
 1. **Token Storage**
-    - Access tokens: In-memory only (cleared on page refresh)
-    - Refresh tokens: httpOnly cookies (not accessible via JavaScript)
+   - Access tokens: In-memory only (cleared on page refresh)
+   - Refresh tokens: httpOnly cookies (not accessible via JavaScript)
 
 2. **Automatic Token Refresh**
-    - Axios interceptor handles expired tokens
-    - Seamless user experience
-    - No manual intervention needed
+   - Axios interceptor handles expired tokens
+   - Seamless user experience
+   - No manual intervention needed
 
 3. **Protected Routes**
-    - Unauthenticated users redirected to login
-    - Session checked on mount
-    - Loading state during initialization
+   - Unauthenticated users redirected to login
+   - Session checked on mount
+   - Loading state during initialization
 
 4. **CORS Configuration**
-    - Credentials sent with every request
-    - Backend validates origin
+   - Credentials sent with every request
+   - Backend validates origin
 
 ## 🚀 Deployment
 
@@ -278,19 +278,19 @@ VITE_API_BASE_URL=https://your-api-domain.com/api/v1
 
 - **Vercel** (recommended for Vite)
 
-    ```bash
-    vercel --prod
-    ```
+  ```bash
+  vercel --prod
+  ```
 
 - **Netlify**
 
-    ```bash
-    netlify deploy --prod
-    ```
+  ```bash
+  netlify deploy --prod
+  ```
 
 - **Static Hosting** (S3, GitHub Pages, etc.)
-    - Upload `dist/` folder contents
-    - Configure routing for SPA
+  - Upload `dist/` folder contents
+  - Configure routing for SPA
 
 ## 🐛 Troubleshooting
 

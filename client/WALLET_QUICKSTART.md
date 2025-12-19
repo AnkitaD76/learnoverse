@@ -35,28 +35,28 @@ You'll see:
 1. **Select Currency**: USD, BDT, EUR, or GBP
 2. **Enter Amount**: Type cash amount OR points amount (auto-converts)
 3. **Choose Payment Method**:
-    - Credit/Debit Card (Stripe) - Instant
-    - PayPal - 1-2 business days
-    - Bank Transfer - 2-3 business days
-    - Mobile Money (bKash/Nagad) - Instant
+   - Credit/Debit Card (Stripe) - Instant
+   - PayPal - 1-2 business days
+   - Bank Transfer - 2-3 business days
+   - Mobile Money (bKash/Nagad) - Instant
 
 4. **Fill Payment Details** (varies by method):
-    - Bank: Account name, number, routing
-    - PayPal: Email address
-    - Mobile Money: Provider, mobile number
+   - Bank: Account name, number, routing
+   - PayPal: Email address
+   - Mobile Money: Provider, mobile number
 
 5. **Review Summary**:
-    - You Pay: USD 50.00
-    - You Get: 5,000 points
-    - Exchange Rate: 1 USD = 100 points
+   - You Pay: USD 50.00
+   - You Get: 5,000 points
+   - Exchange Rate: 1 USD = 100 points
 
 6. **Click "Review Purchase"**
 7. **Confirm** in modal
 8. **Wait for processing** (button shows "Processing...")
 9. **Success Screen**:
-    - Transaction ID
-    - New Balance
-    - Options: "Back to Wallet" or "Buy More Points"
+   - Transaction ID
+   - New Balance
+   - Options: "Back to Wallet" or "Buy More Points"
 
 ---
 
@@ -67,18 +67,18 @@ You'll see:
 1. Navigate to **http://localhost:5173/courses**
 2. Click on any course
 3. On course details page, you'll see:
-    - Course price: `2,500 points`
-    - Your balance: `5,000 points`
-    - Two enrollment options:
-        - **"Enroll (Free)"** - Standard enrollment
-        - **"💰 Enroll with Points"** - Pay with wallet points
+   - Course price: `2,500 points`
+   - Your balance: `5,000 points`
+   - Two enrollment options:
+     - **"Enroll (Free)"** - Standard enrollment
+     - **"💰 Enroll with Points"** - Pay with wallet points
 
 4. **Click "💰 Enroll with Points"**
 5. **Review Enrollment Details**:
-    - Course: Advanced JavaScript
-    - Cost: 2,500 points
-    - Your Balance: 5,000 points
-    - Balance After: 2,500 points
+   - Course: Advanced JavaScript
+   - Cost: 2,500 points
+   - Your Balance: 5,000 points
+   - Balance After: 2,500 points
 
 6. **Click "Confirm Enrollment"**
 7. **Wait for processing**
@@ -111,28 +111,28 @@ You'll see:
 
 1. **View Current Balance**: Shows available points
 2. **Read Warning**:
-    - ⚠️ Points debited immediately
-    - Manual admin processing
-    - Restoration if rejected
+   - ⚠️ Points debited immediately
+   - Manual admin processing
+   - Restoration if rejected
 
 3. **Select Amount**:
-    - Points to Sell: 1,000
-    - Auto-calculates: USD 10.00
+   - Points to Sell: 1,000
+   - Auto-calculates: USD 10.00
 
 4. **Choose Payout Method**:
-    - Bank Transfer (2-3 days)
-    - PayPal (1-2 days)
-    - Mobile Money (24 hours)
+   - Bank Transfer (2-3 days)
+   - PayPal (1-2 days)
+   - Mobile Money (24 hours)
 
 5. **Fill Payout Details**:
-    - Bank: Bank name, account holder, account number
-    - PayPal: Email
-    - Mobile Money: Provider, mobile number
+   - Bank: Bank name, account holder, account number
+   - PayPal: Email
+   - Mobile Money: Provider, mobile number
 
 6. **Review Summary**:
-    - Points to Sell: 1,000 points
-    - You'll Receive: USD 10.00
-    - Processing Time: 2-3 business days
+   - Points to Sell: 1,000 points
+   - You'll Receive: USD 10.00
+   - Processing Time: 2-3 business days
 
 7. **Click "Review Payout Request"**
 8. **⚠️ Type "CONFIRM"** (explicit confirmation required)
@@ -154,34 +154,34 @@ Navigate to: **http://localhost:5173/wallet/transactions**
 ### Features
 
 - **Two Tabs**:
-    - Transactions (all point movements)
-    - Payout Requests (cash-out requests)
+  - Transactions (all point movements)
+  - Payout Requests (cash-out requests)
 
 ### Transactions Tab
 
 - **Filters**:
-    - Type: All, Purchase, Sale, Enrollment, Refund
-    - Status: All, Pending, Completed, Failed
+  - Type: All, Purchase, Sale, Enrollment, Refund
+  - Status: All, Pending, Completed, Failed
 
 - **View Details**:
-    - Transaction ID
-    - Type (with icon)
-    - Amount (+/-)
-    - Status badge
-    - Timestamp
-    - Expandable metadata (currency, exchange rate, course details)
+  - Transaction ID
+  - Type (with icon)
+  - Amount (+/-)
+  - Status badge
+  - Timestamp
+  - Expandable metadata (currency, exchange rate, course details)
 
 - **Pagination**: 20 per page
 
 ### Payout Requests Tab
 
 - **View**:
-    - Points sold → Cash amount
-    - Payout method
-    - Status (Pending, Approved, Rejected, Completed)
-    - Request ID
-    - Processing date
-    - Admin notes (if any)
+  - Points sold → Cash amount
+  - Payout method
+  - Status (Pending, Approved, Rejected, Completed)
+  - Request ID
+  - Processing date
+  - Admin notes (if any)
 
 ---
 

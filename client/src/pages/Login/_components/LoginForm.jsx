@@ -4,31 +4,27 @@ import { ForgotPasswordLink } from './ForgotPasswordLink';
 import { SubmitButton } from './SubmitButton';
 
 export const LoginForm = ({
-    email,
-    password,
-    errors,
-    isLoading,
-    onEmailChange,
-    onPasswordChange,
-    onSubmit,
+  email,
+  password,
+  errors,
+  isLoading,
+  onEmailChange,
+  onPasswordChange,
+  onSubmit,
 }) => {
-    return (
-        <form onSubmit={onSubmit} className="space-y-4">
-            <InputEmail
-                value={email}
-                onChange={onEmailChange}
-                error={errors.email}
-            />
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <InputEmail value={email} onChange={onEmailChange} error={errors.email} />
 
-            <InputPassword
-                value={password}
-                onChange={onPasswordChange}
-                error={errors.password}
-            />
+      <InputPassword
+        value={password}
+        onChange={onPasswordChange}
+        error={errors.password}
+      />
 
-            <ForgotPasswordLink />
+      <ForgotPasswordLink />
 
-            <SubmitButton isLoading={isLoading} />
-        </form>
-    );
+      <SubmitButton isLoading={isLoading} />
+    </form>
+  );
 };
