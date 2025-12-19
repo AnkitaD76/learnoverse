@@ -33,141 +33,141 @@ import SellPoints from '../pages/SellPoints/page';
 import TransactionHistory from '../pages/TransactionHistory/page';
 
 export const AppRouter = () => {
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+    return (
+        <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* Protected Routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
+            {/* Protected Routes */}
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <DashboardPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/settings"
+                element={
+                    <ProtectedRoute>
+                        <SettingsPage />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* ✅ My Courses */}
-      <Route
-        path="/my-courses"
-        element={
-          <ProtectedRoute>
-            <MyCoursesPage />
-          </ProtectedRoute>
-        }
-      />
+            {/* ✅ My Courses */}
+            <Route
+                path="/my-courses"
+                element={
+                    <ProtectedRoute>
+                        <MyCoursesPage />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* Course Routes */}
-      <Route
-        path="/courses"
-        element={
-          <ProtectedRoute>
-            <CoursesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/create"
-        element={
-          <ProtectedRoute>
-            <CreateCoursePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId"
-        element={
-          <ProtectedRoute>
-            <CourseDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId/content"
-        element={
-          <ProtectedRoute>
-            <CourseContentPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId/manage-lessons"
-        element={
-          <ProtectedRoute>
-            <ManageLessonsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId/enrolled-students"
-        element={
-          <ProtectedRoute>
-            <StudentEnrolledPage />
-          </ProtectedRoute>
-        }
-      />
+            {/* Course Routes */}
+            <Route
+                path="/courses"
+                element={
+                    <ProtectedRoute>
+                        <CoursesPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/courses/create"
+                element={
+                    <ProtectedRoute>
+                        <CreateCoursePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/courses/:courseId"
+                element={
+                    <ProtectedRoute>
+                        <CourseDetailPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/courses/:courseId/content"
+                element={
+                    <ProtectedRoute>
+                        <CourseContentPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/courses/:courseId/manage-lessons"
+                element={
+                    <ProtectedRoute>
+                        <ManageLessonsPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/courses/:courseId/enrolled-students"
+                element={
+                    <ProtectedRoute>
+                        <StudentEnrolledPage />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* Posts */}
-      <Route path="/posts" element={<PostsPage />} />
+            {/* Posts */}
+            <Route path="/posts" element={<PostsPage />} />
 
-      {/* Wallet Routes */}
-      <Route
-        path="/wallet"
-        element={
-          <ProtectedRoute>
-            <WalletDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/wallet/buy"
-        element={
-          <ProtectedRoute>
-            <BuyPoints />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/wallet/sell"
-        element={
-          <ProtectedRoute>
-            <SellPoints />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/wallet/transactions"
-        element={
-          <ProtectedRoute>
-            <TransactionHistory />
-          </ProtectedRoute>
-        }
-      />
+            {/* Wallet Routes */}
+            <Route
+                path="/wallet"
+                element={
+                    <ProtectedRoute>
+                        <WalletDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/wallet/buy"
+                element={
+                    <ProtectedRoute>
+                        <BuyPoints />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/wallet/sell"
+                element={
+                    <ProtectedRoute>
+                        <SellPoints />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/wallet/transactions"
+                element={
+                    <ProtectedRoute>
+                        <TransactionHistory />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* Redirect unknown routes */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+            {/* Redirect unknown routes */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+    );
 };

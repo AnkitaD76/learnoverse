@@ -16,8 +16,8 @@ import apiClient from './client';
  * Get user's wallet balance and summary
  */
 export const getWalletBalance = async () => {
-  const response = await apiClient.get('/wallet/balance');
-  return response.data;
+    const response = await apiClient.get('/wallet/balance');
+    return response.data;
 };
 
 /**
@@ -32,16 +32,16 @@ export const getWalletBalance = async () => {
  * @param {string} params.endDate - Filter to date
  */
 export const getTransactionHistory = async (params = {}) => {
-  const response = await apiClient.get('/wallet/transactions', { params });
-  return response.data;
+    const response = await apiClient.get('/wallet/transactions', { params });
+    return response.data;
 };
 
 /**
  * Get current exchange rates for all currencies
  */
 export const getExchangeRates = async () => {
-  const response = await apiClient.get('/wallet/exchange-rates');
-  return response.data;
+    const response = await apiClient.get('/wallet/exchange-rates');
+    return response.data;
 };
 
 /**
@@ -54,8 +54,8 @@ export const getExchangeRates = async () => {
  * @param {Object} data.payment_details - Payment details (mock)
  */
 export const buyPoints = async data => {
-  const response = await apiClient.post('/wallet/buy-points', data);
-  return response.data;
+    const response = await apiClient.post('/wallet/buy-points', data);
+    return response.data;
 };
 
 /**
@@ -68,8 +68,8 @@ export const buyPoints = async data => {
  * @param {Object} data.payout_details - Payout account details
  */
 export const sellPoints = async data => {
-  const response = await apiClient.post('/wallet/sell-points', data);
-  return response.data;
+    const response = await apiClient.post('/wallet/sell-points', data);
+    return response.data;
 };
 
 /**
@@ -81,8 +81,8 @@ export const sellPoints = async data => {
  * @param {string} params.status - Filter by status
  */
 export const getPayoutRequests = async (params = {}) => {
-  const response = await apiClient.get('/wallet/payouts', { params });
-  return response.data;
+    const response = await apiClient.get('/wallet/payouts', { params });
+    return response.data;
 };
 
 /**
@@ -97,9 +97,9 @@ export const getPayoutRequests = async (params = {}) => {
  * @returns {number} - Calculated points
  */
 export const calculatePoints = (cashAmount, currency, exchangeRates) => {
-  const rate = exchangeRates.find(r => r.currency === currency);
-  if (!rate) return 0;
-  return Math.floor(cashAmount * rate.rate);
+    const rate = exchangeRates.find(r => r.currency === currency);
+    if (!rate) return 0;
+    return Math.floor(cashAmount * rate.rate);
 };
 
 /**
@@ -111,7 +111,7 @@ export const calculatePoints = (cashAmount, currency, exchangeRates) => {
  * @returns {number} - Calculated cash amount
  */
 export const calculateCash = (points, currency, exchangeRates) => {
-  const rate = exchangeRates.find(r => r.currency === currency);
-  if (!rate) return 0;
-  return parseFloat((points / rate.rate).toFixed(2));
+    const rate = exchangeRates.find(r => r.currency === currency);
+    if (!rate) return 0;
+    return parseFloat((points / rate.rate).toFixed(2));
 };

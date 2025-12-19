@@ -2,11 +2,11 @@
 @import './styles/wallet.css';
 
 :root {
-  --color-primary: #ff6a00;
-  --color-secondary: #1a1a1a;
-  --color-background: #0d0d0f;
-  --color-accent: #043f7b;
-  --color-accent-alt: #1eb5a6;
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #4a4a4a;
+    --color-primary: #ff6a00;
+    --color-secondary: #1a1a1a;
+    --color-background: #0d0d0f;
+    --color-accent: #043f7b;
+    --color-accent-alt: #1eb5a6;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #4a4a4a;
 }
