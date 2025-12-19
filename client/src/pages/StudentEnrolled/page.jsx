@@ -23,9 +23,12 @@ const StudentEnrolledPage = () => {
 
         // Fetch enrolled students
         const enrollmentsRes = await fetchCourseEnrollments(courseId);
+        console.log('📋 Enrollments Response:', enrollmentsRes);
+        console.log('📋 First enrollment structure:', enrollmentsRes.enrollments?.[0]);
         setEnrolledUsers(enrollmentsRes.enrollments || []);
       } catch (err) {
-        console.error(err);
+        console.error('❌ Full error:', err);
+        console.error('❌ Error response:', err.response?.data);
         setError(
           err.response?.data?.message ||
             err.response?.data?.msg ||
@@ -89,53 +92,23 @@ const StudentEnrolledPage = () => {
           {enrolledUsers.length === 0 ? (
             <p className="text-center text-[#4A4A4A] py-8">No students enrolled yet.</p>
           ) : (
-            <div className="space-y-3">
-              {enrolledUsers.map((enrollment, index) => (
-                <div
-                  key={enrollment._id}
-                  className="flex items-center gap-4 rounded-lg border border-[#E5E5E5] p-4 hover:bg-[#F9F9F9] transition"
-                >
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    {enrollment.user.avatar ? (
-                      <img
-                        src={enrollment.user.avatar}
-                        alt={enrollment.user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#e85f00] flex items-center justify-center text-white font-semibold text-lg">
-                        {enrollment.user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Student Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-[#1A1A1A]">
-                        {index + 1}. {enrollment.user.name}
-                      </p>
-                      <span className="text-xs font-semibold capitalize text-white bg-[#FF6A00] px-2 py-1 rounded">
-                        {enrollment.user.role}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[#4A4A4A] truncate">
-                      {enrollment.user.email}
+            <div className="space-y-2">
+              {enrolledUsers.map((enrollment, index) => {
+                console.log(`Student ${index}:`, enrollment);
+                return (
+                  <div
+                    key={enrollment._id}
+                    className="rounded-lg border border-[#E5E5E5] p-3 hover:bg-[#F9F9F9] transition"
+                  >
+                    <p className="font-medium text-[#1A1A1A]">
+                      {index + 1}. {enrollment.user?.name || 'No name'}
                     </p>
-                    <p className="text-xs text-[#4A4A4A] mt-1">
-                      Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}
+                    <p className="text-sm text-[#4A4A4A]">
+                      {enrollment.user?.email || 'No email'}
                     </p>
                   </div>
-
-                  {/* Status Badge */}
-                  <div className="flex-shrink-0 text-right">
-                    <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                      {enrollment.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>

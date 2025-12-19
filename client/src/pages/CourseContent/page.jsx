@@ -207,45 +207,9 @@ const CourseContentPage = () => {
           ) : enrolledUsers.length === 0 ? (
             <p className="text-sm text-[#4A4A4A]">No students enrolled yet.</p>
           ) : (
-            <div className="space-y-3">
-              {enrolledUsers.map(enrollment => (
-                <div
-                  key={enrollment._id}
-                  className="flex items-center gap-3 rounded-lg border border-[#E5E5E5] p-4 hover:bg-[#F9F9F9] transition"
-                >
-                  {/* Avatar */}
-                  {enrollment.user.avatar ? (
-                    <img
-                      src={enrollment.user.avatar}
-                      alt={enrollment.user.name}
-                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#e85f00] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                      {enrollment.user.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-
-                  {/* Student Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[#1A1A1A]">
-                      {enrollment.user.name}
-                    </p>
-                    <p className="text-sm text-[#4A4A4A] truncate">
-                      {enrollment.user.email}
-                    </p>
-                    <p className="text-xs text-[#4A4A4A] mt-1">
-                      Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  {/* Status Badge */}
-                  <span className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 flex-shrink-0">
-                    {enrollment.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <p className="text-sm text-[#4A4A4A]">
+              {enrolledUsers.length} student{enrolledUsers.length !== 1 ? 's' : ''} enrolled. Click "View All Students" to see details.
+            </p>
           )}
         </Card>
 
