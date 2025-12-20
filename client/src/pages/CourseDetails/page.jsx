@@ -9,6 +9,9 @@ import {
   withdrawFromCourse,
 } from '../../api/courses';
 import { useWallet } from '../../contexts/WalletContext';
+import { useSession } from '../../contexts/SessionContext';
+import { fetchMyCreatedCourses } from '../../api/courses';
+import { requestSkillSwap } from '../../api/skillSwap';
 import ConfirmationModal from '../../components/wallet/ConfirmationModal';
 
 const CourseDetailPage = () => {
@@ -22,6 +25,10 @@ const CourseDetailPage = () => {
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [showPointsConfirm, setShowPointsConfirm] = useState(false);
+  const [showSwapModal, setShowSwapModal] = useState(false);
+  const [myCreatedCourses, setMyCreatedCourses] = useState([]);
+  const [selectedMyCourseId, setSelectedMyCourseId] = useState(null);
+  const [swapLoading, setSwapLoading] = useState(false);
 
   const loadCourse = async () => {
     try {
@@ -45,6 +52,39 @@ const CourseDetailPage = () => {
     loadCourse();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
+
+  const { user } = useSession();
+
+  const openSwapModal = async () => {
+    try {
+      setShowSwapModal(true);
+      const res = await fetchMyCreatedCourses();
+      setMyCreatedCourses(res.courses || []);
+    } catch (err) {
+      console.error('Failed to load my created courses', err);
+      setMyCreatedCourses([]);
+    }
+  };
+
+  const handleRequestSwap = async () => {
+    if (!selectedMyCourseId) return;
+    try {
+      setSwapLoading(true);
+      await requestSkillSwap({
+        toUserId: course.instructor._id || course.instructor,
+        offeredCourseId: selectedMyCourseId,
+        requestedCourseId: course._id,
+      });
+      setShowSwapModal(false);
+      setSelectedMyCourseId(null);
+      setInfo('Skill swap request sent');
+    } catch (err) {
+      console.error('Failed to request skill swap', err);
+      setError(err.response?.data?.message || 'Failed to request skill swap');
+    } finally {
+      setSwapLoading(false);
+    }
+  };
 
   const handleEnroll = async () => {
     try {
@@ -167,13 +207,56 @@ const CourseDetailPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={handleEnroll}
-              isLoading={actionLoading}
-              className="bg-gray-600 text-white hover:bg-gray-700"
-            >
-              Enroll (Free)
-            </Button>
+            {course.skillSwapEnabled && user && String(user._id) !== String(course.instructor?._id || course.instructor) ? (
+              <>
+                <Button
+                  onClick={openSwapModal}
+                  isLoading={actionLoading}
+                  className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
+                >
+                  Request Skill Swap
+                </Button>
+
+                {/* Swap selection modal (simple) */}
+                {showSwapModal && (
+                  <div className="modal-overlay" onClick={() => setShowSwapModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold">Select one of your courses to offer</h3>
+                        <div className="mt-3 space-y-2">
+                          {myCreatedCourses.length === 0 && <p className="text-sm text-gray-600">You have no created courses.</p>}
+                          {myCreatedCourses.map(c => (
+                            <label key={c._id} className="flex items-center gap-2 border p-2 rounded cursor-pointer">
+                              <input
+                                type="radio"
+                                name="myCourse"
+                                value={c._id}
+                                checked={selectedMyCourseId === String(c._id)}
+                                onChange={() => setSelectedMyCourseId(String(c._id))}
+                              />
+                              <span>{c.title}</span>
+                            </label>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <Button onClick={handleRequestSwap} isLoading={swapLoading} className="bg-[#FF6A00] text-white">Send Request</Button>
+                          <Button variant="secondary" onClick={() => setShowSwapModal(false)}>Cancel</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Button
+                onClick={handleEnroll}
+                isLoading={actionLoading}
+                className="bg-gray-600 text-white hover:bg-gray-700"
+              >
+                Enroll (Free)
+              </Button>
+            )}
 
             <Button
               onClick={() => setShowPointsConfirm(true)}

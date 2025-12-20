@@ -77,6 +77,27 @@ export const createCourse = async (req, res) => {
     // Debug: log incoming lessons
     console.log('📚 Creating course with lessons:', lessons);
 
+    // Validate lessons payload early to provide clearer error messages
+    if (lessons && !Array.isArray(lessons)) {
+        throw new BadRequestError('Lessons must be an array');
+    }
+
+    if (Array.isArray(lessons)) {
+        const allowedTypes = ['video', 'text', 'live'];
+        for (let i = 0; i < lessons.length; i++) {
+            const l = lessons[i];
+            if (!l || typeof l !== 'object') {
+                throw new BadRequestError(`Lesson at index ${i} must be an object`);
+            }
+            if (!l.title || !String(l.title).trim()) {
+                throw new BadRequestError(`Lesson at index ${i} is missing a title`);
+            }
+            if (!l.type || !allowedTypes.includes(l.type)) {
+                throw new BadRequestError(`Lesson at index ${i} has invalid or missing type`);
+            }
+        }
+    }
+
     const course = await Course.create({
         title,
         description,

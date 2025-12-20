@@ -38,6 +38,11 @@ const NotificationsPage = () => {
     load();
   };
 
+  const handleRespondWithCourse = async (swapId, action, chosenCourseId) => {
+    await respondSkillSwap(swapId, action, chosenCourseId);
+    load();
+  };
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-[#1A1A1A]">Notifications</h1>
@@ -68,15 +73,39 @@ const NotificationsPage = () => {
                 </Button>
               )}
 
-              {n.type === 'skill_swap_request' &&
-                n.data?.skillSwapRequestId && (
+              {n.type === 'skill_swap_request' && n.data?.skillSwapRequestId && (
+                <div className="flex flex-col gap-2">
+                  {/* If requester provided a list of their courses, render selectable boxes */}
+                  {Array.isArray(n.data?.fromUserCourses) && n.data.fromUserCourses.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {n.data.fromUserCourses.map(c => (
+                        <label key={c.id} className="flex items-center gap-2 border p-2 rounded cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`swap-choice-${n._id}`}
+                            value={c.id}
+                            onChange={e => {
+                              // store selected id on DOM dataset for quick use
+                              const el = document.getElementById(`accept-btn-${n._id}`);
+                              if (el) el.dataset.choice = e.target.value;
+                            }}
+                          />
+                          <span className="text-sm">{c.title}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <Button
+                      id={`accept-btn-${n._id}`}
                       size="sm"
                       className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                      onClick={() =>
-                        handleRespond(n.data.skillSwapRequestId, 'accept')
-                      }
+                      onClick={() => {
+                        const el = document.getElementById(`accept-btn-${n._id}`);
+                        const choice = el?.dataset?.choice;
+                        handleRespondWithCourse(n.data.skillSwapRequestId, 'accept', choice);
+                      }}
                     >
                       Accept
                     </Button>
@@ -84,14 +113,13 @@ const NotificationsPage = () => {
                       size="sm"
                       variant="secondary"
                       className="border border-red-500 text-red-500 hover:bg-red-50"
-                      onClick={() =>
-                        handleRespond(n.data.skillSwapRequestId, 'reject')
-                      }
+                      onClick={() => handleRespond(n.data.skillSwapRequestId, 'reject')}
                     >
                       Reject
                     </Button>
                   </div>
-                )}
+                </div>
+              )}
             </div>
           </div>
         </Card>

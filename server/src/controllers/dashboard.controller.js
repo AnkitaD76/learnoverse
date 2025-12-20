@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import { User, Course, Enrollment } from '../models/index.js';
+import { User, Course, Enrollment, SkillSwapRequest } from '../models/index.js';
 import { NotFoundError } from '../errors/index.js';
 
 /**
@@ -55,6 +55,10 @@ export const getDashboardData = async (req, res) => {
     stats: {
       totalEnrolledCourses: activeEnrollments.length,
       pointsBalance: user.pointsBalance || 0,
+      totalSkillSwapsAccepted: await SkillSwapRequest.countDocuments({
+        status: 'accepted',
+        $or: [{ fromUser: userId }, { toUser: userId }],
+      }),
     },
     enrolledCourses: activeEnrollments,
     recommendedCourses,
