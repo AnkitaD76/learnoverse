@@ -20,6 +20,8 @@ const lessonSchema = new mongoose.Schema(
       startTime: { type: Date, default: null },
       roomName: { type: String, default: '' }, // e.g. "learnoverse-course-123"
       joinCode: { type: String, default: '' }, // generated on create (only enrolled should receive)
+      // PID of a keepalive process (optional) that stays connected to the room
+      keepalivePid: { type: Number, default: null },
     },
 
     order: { type: Number, default: 0 },

@@ -9,6 +9,7 @@ import {
   fetchCourseEnrollments,
   addCourseLesson,
   createLessonLiveSession,
+  stopLessonKeepalive,
 } from '../../api/courses';
 import { useSession } from '../../contexts/SessionContext';
 
@@ -136,8 +137,10 @@ const CourseContentPage = () => {
       setCourse(updated.course);
       setViewingLesson(updated.course.lessons.find(l => String(l._id) === String(lesson._id)));
       setInfo('Live session created');
-      // open jitsi
-      if (res.roomName) { window.location.href = `https://meet.jit.si/${res.roomName}`; }
+      // navigate into in-app live session page (embedded Jitsi)
+      if (res.roomName) {
+        navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
+      }
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to create live session');
@@ -245,12 +248,34 @@ const CourseContentPage = () => {
                     </div>
                     {lesson.type === 'live' ? (
                       lesson.live?.roomName ? (
-                        <button
-                          onClick={() => { window.location.href = `https://meet.jit.si/${lesson.live.roomName}`; }}
-                          className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 flex-shrink-0"
-                        >
-                          Join Live
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => navigate(`/courses/${courseId}/lessons/${lesson._id}/live`)}
+                            className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 flex-shrink-0"
+                          >
+                            Join Live
+                          </button>
+
+                          {(user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) && lesson.live?.keepalivePid && (
+                            <button
+                              onClick={async () => {
+                                if (!confirm('Stop the keepalive process for this lesson?')) return;
+                                try {
+                                  await stopLessonKeepalive(courseId, lesson._id);
+                                  setInfo('Keepalive stopped');
+                                  const updated = await fetchCourseById(courseId);
+                                  setCourse(updated.course);
+                                } catch (err) {
+                                  console.error(err);
+                                  setError(err.response?.data?.message || 'Failed to stop keepalive');
+                                }
+                              }}
+                              className="rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700 flex-shrink-0"
+                            >
+                              Stop Keepalive
+                            </button>
+                          )}
+                        </div>
                       ) : (
                         (user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) ? (
                           <button

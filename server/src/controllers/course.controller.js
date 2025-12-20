@@ -6,6 +6,8 @@ import {
     NotFoundError,
     UnauthorizedError,
 } from '../errors/index.js';
+import { spawn } from 'child_process';
+import path from 'path';
 
 /**
  * GET /api/v1/courses
@@ -94,6 +96,32 @@ export const createCourse = async (req, res) => {
 
     // Debug: log saved course
     console.log('✅ Course created with lessons:', course.lessons);
+
+        // If any lessons include a pre-filled live.roomName, spawn keepalive processes
+        try {
+            if (Array.isArray(course.lessons)) {
+                for (const l of course.lessons) {
+                    if (l.type === 'live' && l.live?.roomName && !l.live?.keepalivePid) {
+                        try {
+                            const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
+                            const child = spawn(process.execPath, [runnerPath, l.live.roomName], {
+                                detached: true,
+                                stdio: 'ignore',
+                            });
+                            child.unref();
+                            l.live.keepalivePid = child.pid;
+                            console.log('Spawned keepalive(pid=', child.pid, ') for prefilled lesson room=', l.live.roomName);
+                        } catch (e) {
+                            console.error('Failed to spawn keepalive for lesson during course create', e);
+                        }
+                    }
+                }
+                // save updated PIDs
+                await course.save();
+            }
+        } catch (e) {
+            console.error('Error while attempting to spawn keepalives on course create', e);
+        }
 
     res.status(StatusCodes.CREATED).json({ success: true, course });
 };
@@ -502,6 +530,28 @@ export const addLessonToCourse = async (req, res) => {
 
   await course.save();
 
+    // If lesson contains a prefilled live.roomName, spawn keepalive
+    try {
+        const pushed = course.lessons[course.lessons.length - 1];
+        if (pushed.type === 'live' && pushed.live?.roomName && !pushed.live?.keepalivePid) {
+            try {
+                const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
+                const child = spawn(process.execPath, [runnerPath, pushed.live.roomName], {
+                    detached: true,
+                    stdio: 'ignore',
+                });
+                child.unref();
+                pushed.live.keepalivePid = child.pid;
+                await course.save();
+                console.log('Spawned keepalive(pid=', child.pid, ') for added lesson room=', pushed.live.roomName);
+            } catch (e) {
+                console.error('Failed to spawn keepalive for added lesson', e);
+            }
+        }
+    } catch (e) {
+        console.error('Error handling keepalive for added lesson', e);
+    }
+
   res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson added' });
 };
 
@@ -535,7 +585,39 @@ export const updateLessonInCourse = async (req, res) => {
 
   await course.save();
 
-  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson updated' });
+    // If lesson is live and has a roomName but no keepalive, spawn one.
+    try {
+        if (lesson.type === 'live' && lesson.live?.roomName && !lesson.live?.keepalivePid) {
+            try {
+                const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
+                const child = spawn(process.execPath, [runnerPath, lesson.live.roomName], {
+                    detached: true,
+                    stdio: 'ignore',
+                });
+                child.unref();
+                lesson.live.keepalivePid = child.pid;
+                await course.save();
+                console.log('Spawned keepalive(pid=', child.pid, ') for updated lesson room=', lesson.live.roomName);
+            } catch (e) {
+                console.error('Failed to spawn keepalive for updated lesson', e);
+            }
+        }
+
+        // If live room was removed but a keepalive exists, try to kill it and clear PID
+        if (!(lesson.live?.roomName) && lesson.live?.keepalivePid) {
+            try {
+                process.kill(lesson.live.keepalivePid);
+            } catch (e) {
+                // ignore errors when killing
+            }
+            lesson.live.keepalivePid = null;
+            await course.save();
+        }
+    } catch (e) {
+        console.error('Error handling keepalive for updated lesson', e);
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson updated' });
 };
 
 /**
@@ -557,10 +639,37 @@ export const deleteLessonFromCourse = async (req, res) => {
   const lesson = course.lessons.id(lessonId);
   if (!lesson) throw new NotFoundError('Lesson not found');
 
-  lesson.remove();
-  await course.save();
+    // If a keepalive PID exists for this lesson, try to kill it
+    try {
+        if (lesson.live?.keepalivePid) {
+            try {
+                process.kill(lesson.live.keepalivePid);
+                console.log('Killed keepalive pid=', lesson.live.keepalivePid, 'for lesson', lessonId);
+            } catch (e) {
+                console.warn('Failed to kill keepalive pid', lesson.live.keepalivePid, e);
+            }
+            // clear PID
+            lesson.live.keepalivePid = null;
+        }
+    } catch (e) {
+        console.error('Error while cleaning keepalive PID during lesson delete', e);
+    }
 
-  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson deleted' });
+        // Remove lesson: prefer subdocument.remove(), but fall back to filtering if not available
+        try {
+            if (lesson && typeof lesson.remove === 'function') {
+                lesson.remove();
+            } else {
+                course.lessons = (course.lessons || []).filter(l => String(l._id) !== String(lessonId));
+            }
+        } catch (e) {
+            // fallback
+            course.lessons = (course.lessons || []).filter(l => String(l._id) !== String(lessonId));
+        }
+
+        await course.save();
+
+    res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson deleted' });
 };
 
 /**
@@ -595,5 +704,55 @@ export const createLiveSessionInLesson = async (req, res) => {
 
   await course.save();
 
-  res.status(StatusCodes.OK).json({ success: true, course, message: 'Live session created', roomName, joinCode });
+    // Try to spawn a detached keepalive process so the public meet.jit.si room
+    // is joined by a headless client and isn't reclaimed while class runs.
+    try {
+        const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
+        const child = spawn(process.execPath, [runnerPath, roomName], {
+            detached: true,
+            stdio: 'ignore',
+        });
+        // detach so it continues after this process returns
+        child.unref();
+        // store PID on lesson so we can stop later if needed
+        lesson.live.keepalivePid = child.pid;
+        await course.save();
+        console.log('Spawned keepalive pid=', child.pid, 'for room', roomName);
+    } catch (e) {
+        console.error('Failed to spawn keepalive runner', e);
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, course, message: 'Live session created', roomName, joinCode });
+};
+
+/**
+ * POST /api/v1/courses/:id/lessons/:lessonId/stop-keepalive
+ * Stop the keepalive process for a lesson (if any) and clear the PID
+ */
+export const stopKeepaliveForLesson = async (req, res) => {
+    const { role, userId } = req.user;
+    const courseId = req.params.id;
+    const lessonId = req.params.lessonId;
+
+    const course = await Course.findById(courseId);
+    if (!course) throw new NotFoundError('Course not found');
+
+    if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+        throw new UnauthorizedError('You do not have permission to modify this course');
+    }
+
+    const lesson = course.lessons.id(lessonId);
+    if (!lesson) throw new NotFoundError('Lesson not found');
+
+    if (lesson.live?.keepalivePid) {
+        try {
+            process.kill(lesson.live.keepalivePid);
+        } catch (e) {
+            console.warn('Failed to kill keepalive pid', lesson.live.keepalivePid, e);
+        }
+        lesson.live.keepalivePid = null;
+        await course.save();
+    }
+
+    res.status(StatusCodes.OK).json({ success: true, course, message: 'Keepalive stopped' });
 };

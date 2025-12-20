@@ -79,3 +79,8 @@ export const createLessonLiveSession = async (courseId, lessonId, payload = {}) 
   const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/create-live`, payload);
   return res.data;
 };
+
+export const stopLessonKeepalive = async (courseId, lessonId) => {
+  const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/stop-keepalive`);
+  return res.data;
+};

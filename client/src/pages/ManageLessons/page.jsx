@@ -8,6 +8,7 @@ import {
   updateCourseLesson,
   deleteCourseLesson,
   createLessonLiveSession,
+  stopLessonKeepalive,
 } from '../../api/courses';
 import { Input } from '../../components/Input';
 
@@ -169,7 +170,7 @@ const ManageLessonsPage = () => {
                       lesson.live?.roomName ? (
                         <button
                           onClick={() => {
-                            window.location.href = `https://meet.jit.si/${lesson.live.roomName}`;
+                            navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
                           }}
                           className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
                         >
@@ -182,6 +183,46 @@ const ManageLessonsPage = () => {
                               await createLessonLiveSession(courseId, lesson._id);
                               alert('Live session created');
                               await load();
+                              // navigate owner into the live session page so they can start
+                              navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
+                            } catch (err) {
+                              console.error(err);
+                              alert(err.response?.data?.message || 'Failed to create live session');
+                            }
+                          }}
+                          className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+                        >
+                          Create Session
+                        </button>
+                      )
+                    ) : null}
+
+                    {lesson.type === 'live' && lesson.live?.keepalivePid && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Stop the keepalive process for this lesson?')) return;
+                          try {
+                            await stopLessonKeepalive(courseId, lesson._id);
+                            alert('Keepalive stopped');
+                            await load();
+                          } catch (err) {
+                            console.error(err);
+                            alert(err.response?.data?.message || 'Failed to stop keepalive');
+                          }
+                        }}
+                        className="rounded bg-gray-200 px-3 py-1 text-xs text-gray-700"
+                      >
+                        Stop Keepalive
+                      </button>
+                    )}
+                        <button
+                          onClick={async () => {
+                            try {
+                              await createLessonLiveSession(courseId, lesson._id);
+                              alert('Live session created');
+                              await load();
+                              // navigate owner into the live session page so they can start
+                              navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
                             } catch (err) {
                               console.error(err);
                               alert(err.response?.data?.message || 'Failed to create live session');

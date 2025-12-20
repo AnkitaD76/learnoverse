@@ -18,6 +18,7 @@ import {
   updateLessonInCourse,
   deleteLessonFromCourse,
   createLiveSessionInLesson,
+    stopKeepaliveForLesson,
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -62,6 +63,7 @@ router.post('/:id/lessons', authenticate, requireVerification, addLessonToCourse
 router.patch('/:id/lessons/:lessonId', authenticate, requireVerification, updateLessonInCourse);
 router.delete('/:id/lessons/:lessonId', authenticate, requireVerification, deleteLessonFromCourse);
 router.post('/:id/lessons/:lessonId/create-live', authenticate, requireVerification, createLiveSessionInLesson);
+router.post('/:id/lessons/:lessonId/stop-keepalive', authenticate, requireVerification, stopKeepaliveForLesson);
 
 
 export default router;
