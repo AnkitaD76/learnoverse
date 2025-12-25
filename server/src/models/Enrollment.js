@@ -22,14 +22,13 @@ const enrollmentSchema = new mongoose.Schema(
         enrolledAt: { type: Date, default: Date.now },
         withdrawnAt: { type: Date, default: null },
 
-        // ✅ coupon for live classes (generated on enroll)
-        accessCode: { type: String, default: '' },
-
-        // ✅ progress tracking
-        completedLessonIds: {
-            type: [mongoose.Schema.Types.ObjectId],
-            default: [],
+        // Payment tracking
+        paymentMethod: {
+            type: String,
+            enum: ['FREE', 'POINTS', 'SKILL_SWAP'],
+            default: 'FREE',
         },
+        pointsPaid: { type: Number, default: 0, min: 0 },
 
         // ✅ evaluation-based scoring
         totalScore: { type: Number, default: 0, min: 0 },

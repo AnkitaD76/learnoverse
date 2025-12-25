@@ -234,11 +234,13 @@ export const publishEvaluation = async (req, res) => {
         throw new BadRequestError('Evaluation is already published or closed');
     }
 
-    // Validate weight is set
-    if (!evaluation.weight || evaluation.weight <= 0) {
-        throw new BadRequestError(
-            'Weight must be set before publishing (must be > 0)'
-        );
+    // Validate weight is set (allow 0 for optional evaluations)
+    if (evaluation.weight === undefined || evaluation.weight === null) {
+        throw new BadRequestError('Weight must be set before publishing');
+    }
+
+    if (evaluation.weight < 0 || evaluation.weight > 100) {
+        throw new BadRequestError('Weight must be between 0 and 100');
     }
 
     // Ensure there are questions

@@ -69,6 +69,12 @@ router.post('/', authenticate, requireVerification, createCourse);
 router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
 router.post(
+    '/:id/enroll-with-points',
+    authenticate,
+    requireVerification,
+    enrollInCourseWithPoints
+);
+router.post(
     '/:id/withdraw',
     authenticate,
     requireVerification,

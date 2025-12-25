@@ -127,28 +127,44 @@ const MyCoursesPage = () => {
             ) : (
               enrolled.map(item => (
                 <Card key={item._id}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-lg font-semibold text-[#1A1A1A]">
-                        {item.course?.title}
-                      </h2>
-                      <p className="mt-1 text-xs text-[#4A4A4A]">
-                        {item.course?.category} · {item.course?.level}
-                      </p>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h2 className="truncate text-lg font-semibold text-[#1A1A1A]">
+                          {item.course?.title}
+                        </h2>
+                        <p className="mt-1 text-xs text-[#4A4A4A]">
+                          {item.course?.category} · {item.course?.level}
+                        </p>
 
-                      <ProgressBar percent={item.progress?.percent || 0} />
+                        <ProgressBar percent={item.progress?.percent || 0} />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <ReportButton
+                          onClick={() => handleReportCourse(item.course)}
+                        />
+                        <Link to={`/courses/${item.course?._id}/content`}>
+                          <Button
+                            size="sm"
+                            className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                          >
+                            Open
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="flex gap-2">
-                      <ReportButton
-                        onClick={() => handleReportCourse(item.course)}
-                      />
-                      <Link to={`/courses/${item.course?._id}/content`}>
+                      <Link
+                        to={`/courses/${item.course?._id}/student/evaluations`}
+                      >
                         <Button
                           size="sm"
-                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                          variant="secondary"
+                          className="text-xs"
                         >
-                          Open
+                          📝 Quizzes & Assignments
                         </Button>
                       </Link>
                     </div>
@@ -177,40 +193,63 @@ const MyCoursesPage = () => {
             ) : (
               created.map(course => (
                 <Card key={course._id}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 className="truncate text-lg font-semibold text-[#1A1A1A]">
-                        {course.title}
-                      </h2>
-                      <p className="mt-1 text-xs text-[#4A4A4A]">
-                        {course.category} · {course.level}
-                      </p>
-                      <p className="mt-1 text-xs text-[#4A4A4A]">
-                        Lessons: {course.totalLessons || 0} · Enrolled:{' '}
-                        {course.enrollCount || 0}
-                      </p>
-                      <p className="mt-1 text-xs">
-                        Status:{' '}
-                        <span
-                          className={
-                            course.isPublished
-                              ? 'text-green-700'
-                              : 'text-orange-600'
-                          }
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h2 className="truncate text-lg font-semibold text-[#1A1A1A]">
+                          {course.title}
+                        </h2>
+                        <p className="mt-1 text-xs text-[#4A4A4A]">
+                          {course.category} · {course.level}
+                        </p>
+                        <p className="mt-1 text-xs text-[#4A4A4A]">
+                          Lessons: {course.totalLessons || 0} · Enrolled:{' '}
+                          {course.enrollCount || 0}
+                        </p>
+                        <p className="mt-1 text-xs">
+                          Status:{' '}
+                          <span
+                            className={
+                              course.isPublished
+                                ? 'text-green-700'
+                                : 'text-orange-600'
+                            }
+                          >
+                            {course.isPublished ? 'Published' : 'Not Published'}
+                          </span>
+                        </p>
+                      </div>
+
+                      <Link to={`/courses/${course._id}/content`}>
+                        <Button
+                          size="sm"
+                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
                         >
-                          {course.isPublished ? 'Published' : 'Not Published'}
-                        </span>
-                      </p>
+                          View
+                        </Button>
+                      </Link>
                     </div>
 
-                    <Link to={`/courses/${course._id}/content`}>
-                      <Button
-                        size="sm"
-                        className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                      >
-                        View
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link to={`/courses/${course._id}/manage-lessons`}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          Manage Lessons
+                        </Button>
+                      </Link>
+                      <Link to={`/courses/${course._id}/evaluations`}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          Quizzes & Assignments
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </Card>
               ))

@@ -74,9 +74,14 @@ const CourseContentPage = () => {
     const shouldPoll = () => {
       if (!course) return false;
       if (!user) return false;
-      const isOwner = user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id));
+      const isOwner =
+        user &&
+        (user.role === 'admin' ||
+          String(user._id) === String(course.instructor?._id));
       if (isOwner) return false;
-      return (course.lessons || []).some(l => l.type === 'live' && !l.live?.roomName);
+      return (course.lessons || []).some(
+        l => l.type === 'live' && !l.live?.roomName
+      );
     };
 
     if (!shouldPoll()) return;
@@ -129,13 +134,15 @@ const CourseContentPage = () => {
     return <p className="text-sm text-red-600">Course not found.</p>;
   }
 
-  const handleCreateLive = async (lesson) => {
+  const handleCreateLive = async lesson => {
     try {
       const res = await createLessonLiveSession(courseId, lesson._id);
       // refresh
       const updated = await fetchCourseById(courseId);
       setCourse(updated.course);
-      setViewingLesson(updated.course.lessons.find(l => String(l._id) === String(lesson._id)));
+      setViewingLesson(
+        updated.course.lessons.find(l => String(l._id) === String(lesson._id))
+      );
       setInfo('Live session created');
       // navigate into in-app live session page (embedded Jitsi)
       if (res.roomName) {
@@ -212,9 +219,20 @@ const CourseContentPage = () => {
 
         {/* Course Content */}
         <Card>
-          <h2 className="text-lg font-semibold text-[#1A1A1A]">
-            Course Content
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[#1A1A1A]">
+              Course Content
+            </h2>
+            <Button
+              onClick={() =>
+                navigate(`/courses/${courseId}/student/evaluations`)
+              }
+              variant="secondary"
+              className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
+            >
+              📝 Quizzes & Assignments
+            </Button>
+          </div>
           {!course.lessons || course.lessons.length === 0 ? (
             <p className="mt-4 text-sm text-[#4A4A4A]">No lessons added yet.</p>
           ) : (
@@ -224,7 +242,7 @@ const CourseContentPage = () => {
                   key={lesson._id || index}
                   className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 transition hover:bg-white"
                 >
-                    <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="font-medium text-[#1A1A1A]">
                         {lesson.order + 1}. {lesson.title}
@@ -242,7 +260,9 @@ const CourseContentPage = () => {
                       )}
                       {lesson.type === 'live' && (
                         <p className="mt-2 text-xs text-[#4A4A4A]">
-                          {lesson.live?.roomName ? `Room: ${lesson.live.roomName}` : 'Live session not created yet'}
+                          {lesson.live?.roomName
+                            ? `Room: ${lesson.live.roomName}`
+                            : 'Live session not created yet'}
                         </p>
                       )}
                     </div>
@@ -250,48 +270,74 @@ const CourseContentPage = () => {
                       lesson.live?.roomName ? (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => navigate(`/courses/${courseId}/lessons/${lesson._id}/live`)}
-                            className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 flex-shrink-0"
+                            onClick={() =>
+                              navigate(
+                                `/courses/${courseId}/lessons/${lesson._id}/live`
+                              )
+                            }
+                            className="flex-shrink-0 rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
                           >
                             Join Live
                           </button>
 
-                          {(user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) && lesson.live?.keepalivePid && (
-                            <button
-                              onClick={async () => {
-                                if (!confirm('Stop the keepalive process for this lesson?')) return;
-                                try {
-                                  await stopLessonKeepalive(courseId, lesson._id);
-                                  setInfo('Keepalive stopped');
-                                  const updated = await fetchCourseById(courseId);
-                                  setCourse(updated.course);
-                                } catch (err) {
-                                  console.error(err);
-                                  setError(err.response?.data?.message || 'Failed to stop keepalive');
-                                }
-                              }}
-                              className="rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700 flex-shrink-0"
-                            >
-                              Stop Keepalive
-                            </button>
-                          )}
+                          {user &&
+                            (user.role === 'admin' ||
+                              String(user._id) ===
+                                String(course.instructor?._id)) &&
+                            lesson.live?.keepalivePid && (
+                              <button
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      'Stop the keepalive process for this lesson?'
+                                    )
+                                  )
+                                    return;
+                                  try {
+                                    await stopLessonKeepalive(
+                                      courseId,
+                                      lesson._id
+                                    );
+                                    setInfo('Keepalive stopped');
+                                    const updated =
+                                      await fetchCourseById(courseId);
+                                    setCourse(updated.course);
+                                  } catch (err) {
+                                    console.error(err);
+                                    setError(
+                                      err.response?.data?.message ||
+                                        'Failed to stop keepalive'
+                                    );
+                                  }
+                                }}
+                                className="flex-shrink-0 rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-700"
+                              >
+                                Stop Keepalive
+                              </button>
+                            )}
                         </div>
+                      ) : user &&
+                        (user.role === 'admin' ||
+                          String(user._id) ===
+                            String(course.instructor?._id)) ? (
+                        <button
+                          onClick={() => handleCreateLive(lesson)}
+                          className="flex-shrink-0 rounded bg-red-500 px-3 py-1 text-sm font-medium text-white hover:bg-red-600"
+                        >
+                          Create & Join
+                        </button>
                       ) : (
-                        (user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id))) ? (
-                          <button
-                            onClick={() => handleCreateLive(lesson)}
-                            className="rounded bg-red-500 px-3 py-1 text-sm font-medium text-white hover:bg-red-600 flex-shrink-0"
-                          >
-                            Create & Join
-                          </button>
-                        ) : (
-                          <button disabled className="rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-400 flex-shrink-0">Live</button>
-                        )
+                        <button
+                          disabled
+                          className="flex-shrink-0 rounded bg-gray-200 px-3 py-1 text-sm font-medium text-gray-400"
+                        >
+                          Live
+                        </button>
                       )
                     ) : (
-                      <button 
+                      <button
                         onClick={() => setViewingLesson(lesson)}
-                        className="rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00] flex-shrink-0"
+                        className="flex-shrink-0 rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00]"
                       >
                         Start
                       </button>

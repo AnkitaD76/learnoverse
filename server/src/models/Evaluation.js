@@ -78,13 +78,27 @@ evaluationSchema.index({ course: 1, createdAt: -1 });
 evaluationSchema.index({ instructor: 1, createdAt: -1 });
 evaluationSchema.index({ course: 1, status: 1 });
 
+// Store original document on init for comparison
+evaluationSchema.post('init', function () {
+    this._original = this.toObject();
+});
+
 // Prevent editing after publish
 evaluationSchema.pre('save', function (next) {
     if (this.isModified() && !this.isNew) {
-        const modifiedPaths = this.modifiedPaths();
-        const allowedAfterPublish = ['status', 'closedAt'];
+        // Check the ORIGINAL status (before any changes in this save operation)
+        const originalStatus = this._original?.status || 'draft';
 
-        if (this.status === 'published' || this.status === 'closed') {
+        // If transitioning from draft to published/closed, allow all changes
+        if (originalStatus === 'draft') {
+            return next();
+        }
+
+        // If evaluation WAS already published/closed, restrict changes
+        if (originalStatus === 'published' || originalStatus === 'closed') {
+            const modifiedPaths = this.modifiedPaths();
+            const allowedAfterPublish = ['status', 'closedAt', 'publishedAt'];
+
             const illegalChanges = modifiedPaths.filter(
                 path => !allowedAfterPublish.includes(path)
             );

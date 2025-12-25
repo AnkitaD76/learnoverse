@@ -134,6 +134,12 @@ const ManageLessonsPage = () => {
             <Button onClick={() => navigate(-1)} variant="secondary">
               Back
             </Button>
+            <Button
+              onClick={() => navigate(`/courses/${courseId}/evaluations`)}
+              variant="secondary"
+            >
+              Manage Quizzes/Assignments
+            </Button>
             <Button onClick={startNew} className="bg-[#FF6A00] text-white">
               + New Lesson
             </Button>
