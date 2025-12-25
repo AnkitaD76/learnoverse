@@ -235,6 +235,14 @@ export const Footer = () => {
                   Sitemap
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/my-reports"
+                  className="text-sm transition-colors hover:text-white"
+                >
+                  My Reports
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

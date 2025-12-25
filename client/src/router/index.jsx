@@ -41,6 +41,10 @@ import QuestionDetailPage from '../pages/QA/QuestionDetailPage';
 // Search
 import SearchPage from '../pages/Search/page';
 
+// Reports
+import MyReportsPage from '../pages/MyReports';
+import AdminReportsPage from '../pages/AdminReports';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -194,6 +198,24 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <TransactionHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Report Routes */}
+      <Route
+        path="/my-reports"
+        element={
+          <ProtectedRoute>
+            <MyReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminReportsPage />
           </ProtectedRoute>
         }
       />

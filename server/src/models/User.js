@@ -181,6 +181,11 @@ const UserSchema = new mongoose.Schema(
             default: true,
         },
 
+        isBanned: {
+            type: Boolean,
+            default: false,
+        },
+
         lastLogin: {
             type: Date,
             default: null,

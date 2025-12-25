@@ -144,6 +144,16 @@ export const Header = () => {
                         Wallet
                       </Link>
 
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin/reports"
+                          className="block px-4 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Admin Reports
+                        </Link>
+                      )}
+
                       <button
                         onClick={handleLogout}
                         className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
