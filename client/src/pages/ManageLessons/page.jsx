@@ -119,270 +119,275 @@ const ManageLessonsPage = () => {
   if (!course) return <p className="text-sm text-red-600">Course not found.</p>;
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            Manage Lessons — {course.title}
-          </h1>
-          <p className="text-sm text-[#4A4A4A]">
-            Add, edit or remove lessons for this course.
-          </p>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mx-auto max-w-7xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">
+              Manage Lessons — {course.title}
+            </h1>
+            <p className="text-sm text-[#4A4A4A]">
+              Add, edit or remove lessons for this course.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate(-1)} variant="secondary">
+              Back
+            </Button>
+            <Button onClick={startNew} className="bg-[#FF6A00] text-white">
+              + New Lesson
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => navigate(-1)} variant="secondary">
-            Back
-          </Button>
-          <Button onClick={startNew} className="bg-[#FF6A00] text-white">
-            + New Lesson
-          </Button>
-        </div>
-      </div>
 
-      {error && (
-        <div className="rounded bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="rounded bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h2 className="text-lg font-semibold">Lessons</h2>
-          {!course.lessons || course.lessons.length === 0 ? (
-            <Card>
-              <p className="text-sm text-[#4A4A4A]">No lessons yet.</p>
-            </Card>
-          ) : (
-            course.lessons.map(lesson => (
-              <Card key={lesson._id} className="mb-2 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {lesson.order + 1}. {lesson.title}
-                    </p>
-                    <p className="text-xs text-[#4A4A4A]">{lesson.type}</p>
-                    {lesson.type === 'live' && (
-                      <p className="text-xs text-[#4A4A4A]">
-                        Room: {lesson.live?.roomName || 'Not created'}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <h2 className="text-lg font-semibold">Lessons</h2>
+            {!course.lessons || course.lessons.length === 0 ? (
+              <Card>
+                <p className="text-sm text-[#4A4A4A]">No lessons yet.</p>
+              </Card>
+            ) : (
+              course.lessons.map(lesson => (
+                <Card key={lesson._id} className="mb-2 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">
+                        {lesson.order + 1}. {lesson.title}
                       </p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {lesson.type === 'live' ? (
-                      lesson.live?.roomName ? (
-                        <button
-                          onClick={() => {
-                            navigate(
-                              `/courses/${courseId}/lessons/${lesson._id}/live`
-                            );
-                          }}
-                          className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
-                        >
-                          Open Session
-                        </button>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            try {
-                              await createLessonLiveSession(
-                                courseId,
-                                lesson._id
-                              );
-                              alert('Live session created');
-                              await load();
-                              // navigate owner into the live session page so they can start
+                      <p className="text-xs text-[#4A4A4A]">{lesson.type}</p>
+                      {lesson.type === 'live' && (
+                        <p className="text-xs text-[#4A4A4A]">
+                          Room: {lesson.live?.roomName || 'Not created'}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {lesson.type === 'live' ? (
+                        lesson.live?.roomName ? (
+                          <button
+                            onClick={() => {
                               navigate(
                                 `/courses/${courseId}/lessons/${lesson._id}/live`
                               );
+                            }}
+                            className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+                          >
+                            Open Session
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              try {
+                                await createLessonLiveSession(
+                                  courseId,
+                                  lesson._id
+                                );
+                                alert('Live session created');
+                                await load();
+                                // navigate owner into the live session page so they can start
+                                navigate(
+                                  `/courses/${courseId}/lessons/${lesson._id}/live`
+                                );
+                              } catch (err) {
+                                console.error(err);
+                                alert(
+                                  err.response?.data?.message ||
+                                    'Failed to create live session'
+                                );
+                              }
+                            }}
+                            className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+                          >
+                            Create Session
+                          </button>
+                        )
+                      ) : null}
+
+                      {lesson.type === 'live' && lesson.live?.keepalivePid && (
+                        <button
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                'Stop the keepalive process for this lesson?'
+                              )
+                            )
+                              return;
+                            try {
+                              await stopLessonKeepalive(courseId, lesson._id);
+                              alert('Keepalive stopped');
+                              await load();
                             } catch (err) {
                               console.error(err);
                               alert(
                                 err.response?.data?.message ||
-                                  'Failed to create live session'
+                                  'Failed to stop keepalive'
                               );
                             }
                           }}
-                          className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+                          className="rounded bg-gray-200 px-3 py-1 text-xs text-gray-700"
                         >
-                          Create Session
+                          Stop Keepalive
                         </button>
-                      )
-                    ) : null}
+                      )}
 
-                    {lesson.type === 'live' && lesson.live?.keepalivePid && (
                       <button
-                        onClick={async () => {
-                          if (
-                            !confirm(
-                              'Stop the keepalive process for this lesson?'
-                            )
-                          )
-                            return;
-                          try {
-                            await stopLessonKeepalive(courseId, lesson._id);
-                            alert('Keepalive stopped');
-                            await load();
-                          } catch (err) {
-                            console.error(err);
-                            alert(
-                              err.response?.data?.message ||
-                                'Failed to stop keepalive'
-                            );
-                          }
-                        }}
-                        className="rounded bg-gray-200 px-3 py-1 text-xs text-gray-700"
+                        onClick={() => startEdit(lesson)}
+                        className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700"
                       >
-                        Stop Keepalive
+                        Edit
                       </button>
-                    )}
-
-                    <button
-                      onClick={() => startEdit(lesson)}
-                      className="rounded bg-blue-100 px-3 py-1 text-xs text-blue-700"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(lesson._id)}
-                      className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
-                    >
-                      Delete
-                    </button>
+                      <button
+                        onClick={() => handleDelete(lesson._id)}
+                        className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
+                </Card>
+              ))
+            )}
+          </div>
 
-        <div>
-          <h2 className="text-lg font-semibold">
-            {editing
-              ? editing === 'new'
-                ? 'New Lesson'
-                : 'Edit Lesson'
-              : 'Select or create a lesson'}
-          </h2>
+          <div>
+            <h2 className="text-lg font-semibold">
+              {editing
+                ? editing === 'new'
+                  ? 'New Lesson'
+                  : 'Edit Lesson'
+                : 'Select or create a lesson'}
+            </h2>
 
-          {editing ? (
-            <Card className="mt-3 p-4">
-              <div className="space-y-3">
-                <Input
-                  label="Title"
-                  value={form.title}
-                  onChange={e =>
-                    setForm(prev => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A]">
-                    Type
-                  </label>
-                  <select
-                    value={form.type}
-                    onChange={e =>
-                      setForm(prev => ({
-                        ...prev,
-                        type: e.target.value,
-                      }))
-                    }
-                    className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
-                  >
-                    <option value="video">Video</option>
-                    <option value="text">Text</option>
-                    <option value="live">Live</option>
-                  </select>
-                </div>
-
-                {form.type === 'video' && (
+            {editing ? (
+              <Card className="mt-3 p-4">
+                <div className="space-y-3">
                   <Input
-                    label="Video URL"
-                    value={form.contentUrl}
+                    label="Title"
+                    value={form.title}
                     onChange={e =>
                       setForm(prev => ({
                         ...prev,
-                        contentUrl: e.target.value,
+                        title: e.target.value,
                       }))
                     }
                   />
-                )}
 
-                {form.type === 'text' && (
                   <div>
                     <label className="block text-sm font-medium text-[#4A4A4A]">
-                      Text Content
+                      Type
                     </label>
-                    <textarea
-                      value={form.textContent}
+                    <select
+                      value={form.type}
                       onChange={e =>
                         setForm(prev => ({
                           ...prev,
-                          textContent: e.target.value,
+                          type: e.target.value,
                         }))
                       }
                       className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
-                      rows={8}
-                    />
+                    >
+                      <option value="video">Video</option>
+                      <option value="text">Text</option>
+                      <option value="live">Live</option>
+                    </select>
                   </div>
-                )}
 
-                {form.type === 'live' && (
-                  <div className="grid gap-2">
-                    <input
-                      type="datetime-local"
-                      value={form.live.startTime || ''}
+                  {form.type === 'video' && (
+                    <Input
+                      label="Video URL"
+                      value={form.contentUrl}
                       onChange={e =>
                         setForm(prev => ({
                           ...prev,
-                          live: {
-                            ...(prev.live || {}),
-                            startTime: e.target.value,
-                          },
+                          contentUrl: e.target.value,
                         }))
                       }
-                      className="w-full rounded border p-2"
                     />
-                    <input
-                      value={form.live.roomName || ''}
-                      onChange={e =>
-                        setForm(prev => ({
-                          ...prev,
-                          live: {
-                            ...(prev.live || {}),
-                            roomName: e.target.value,
-                          },
-                        }))
-                      }
-                      placeholder="Room name"
-                      className="w-full rounded border p-2"
-                    />
-                  </div>
-                )}
+                  )}
 
-                <div className="flex justify-end gap-3">
-                  <Button onClick={() => setEditing(null)} variant="secondary">
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    className="bg-[#FF6A00] text-white"
-                  >
-                    Save
-                  </Button>
+                  {form.type === 'text' && (
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A4A4A]">
+                        Text Content
+                      </label>
+                      <textarea
+                        value={form.textContent}
+                        onChange={e =>
+                          setForm(prev => ({
+                            ...prev,
+                            textContent: e.target.value,
+                          }))
+                        }
+                        className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
+                        rows={8}
+                      />
+                    </div>
+                  )}
+
+                  {form.type === 'live' && (
+                    <div className="grid gap-2">
+                      <input
+                        type="datetime-local"
+                        value={form.live.startTime || ''}
+                        onChange={e =>
+                          setForm(prev => ({
+                            ...prev,
+                            live: {
+                              ...(prev.live || {}),
+                              startTime: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full rounded border p-2"
+                      />
+                      <input
+                        value={form.live.roomName || ''}
+                        onChange={e =>
+                          setForm(prev => ({
+                            ...prev,
+                            live: {
+                              ...(prev.live || {}),
+                              roomName: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="Room name"
+                        className="w-full rounded border p-2"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      onClick={() => setEditing(null)}
+                      variant="secondary"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      className="bg-[#FF6A00] text-white"
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <Card className="mt-3 p-4">
-              <p className="text-sm text-[#4A4A4A]">
-                Choose a lesson on the left or create a new one.
-              </p>
-            </Card>
-          )}
+              </Card>
+            ) : (
+              <Card className="mt-3 p-4">
+                <p className="text-sm text-[#4A4A4A]">
+                  Choose a lesson on the left or create a new one.
+                </p>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>

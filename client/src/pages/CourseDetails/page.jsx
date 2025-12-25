@@ -176,138 +176,172 @@ const CourseDetailPage = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <h1 className="text-2xl font-semibold text-[#1A1A1A]">
-          {course.title}
-        </h1>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <Card>
+          <h1 className="text-2xl font-semibold text-[#1A1A1A]">
+            {course.title}
+          </h1>
 
-        <p className="mt-1 text-sm text-[#4A4A4A]">
-          {course.category} · {course.level}
-        </p>
+          <p className="mt-1 text-sm text-[#4A4A4A]">
+            {course.category} · {course.level}
+          </p>
 
-        <p className="mt-1 text-xs text-[#4A4A4A]">
-          Instructor: {course.instructor?.name || '—'}
-        </p>
+          <p className="mt-1 text-xs text-[#4A4A4A]">
+            Instructor: {course.instructor?.name || '—'}
+          </p>
 
-        <p className="mt-4 text-sm text-[#4A4A4A]">
-          {course.description || 'No description provided.'}
-        </p>
+          <p className="mt-4 text-sm text-[#4A4A4A]">
+            {course.description || 'No description provided.'}
+          </p>
 
-        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <span className="text-lg font-semibold text-[#FF6A00]">
-              {course.pricePoints} points
-            </span>
-            {wallet && (
-              <p className="mt-1 text-xs text-[#4A4A4A]">
-                Your balance: {wallet.available_balance.toLocaleString()} points
-              </p>
-            )}
-          </div>
+          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <span className="text-lg font-semibold text-[#FF6A00]">
+                {course.pricePoints} points
+              </span>
+              {wallet && (
+                <p className="mt-1 text-xs text-[#4A4A4A]">
+                  Your balance: {wallet.available_balance.toLocaleString()}{' '}
+                  points
+                </p>
+              )}
+            </div>
 
-          <div className="flex flex-wrap gap-3">
-            {course.skillSwapEnabled && user && String(user._id) !== String(course.instructor?._id || course.instructor) ? (
-              <>
-                <Button
-                  onClick={openSwapModal}
-                  isLoading={actionLoading}
-                  className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
-                >
-                  Request Skill Swap
-                </Button>
+            <div className="flex flex-wrap gap-3">
+              {course.skillSwapEnabled &&
+              user &&
+              String(user._id) !==
+                String(course.instructor?._id || course.instructor) ? (
+                <>
+                  <Button
+                    onClick={openSwapModal}
+                    isLoading={actionLoading}
+                    className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
+                  >
+                    Request Skill Swap
+                  </Button>
 
-                {/* Swap selection modal (simple) */}
-                {showSwapModal && (
-                  <div className="modal-overlay" onClick={() => setShowSwapModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold">Select one of your courses to offer</h3>
-                        <div className="mt-3 space-y-2">
-                          {myCreatedCourses.length === 0 && <p className="text-sm text-gray-600">You have no created courses.</p>}
-                          {myCreatedCourses.map(c => (
-                            <label key={c._id} className="flex items-center gap-2 border p-2 rounded cursor-pointer">
-                              <input
-                                type="radio"
-                                name="myCourse"
-                                value={c._id}
-                                checked={selectedMyCourseId === String(c._id)}
-                                onChange={() => setSelectedMyCourseId(String(c._id))}
-                              />
-                              <span>{c.title}</span>
-                            </label>
-                          ))}
-                        </div>
+                  {/* Swap selection modal (simple) */}
+                  {showSwapModal && (
+                    <div
+                      className="modal-overlay"
+                      onClick={() => setShowSwapModal(false)}
+                    >
+                      <div
+                        className="modal-content"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold">
+                            Select one of your courses to offer
+                          </h3>
+                          <div className="mt-3 space-y-2">
+                            {myCreatedCourses.length === 0 && (
+                              <p className="text-sm text-gray-600">
+                                You have no created courses.
+                              </p>
+                            )}
+                            {myCreatedCourses.map(c => (
+                              <label
+                                key={c._id}
+                                className="flex cursor-pointer items-center gap-2 rounded border p-2"
+                              >
+                                <input
+                                  type="radio"
+                                  name="myCourse"
+                                  value={c._id}
+                                  checked={selectedMyCourseId === String(c._id)}
+                                  onChange={() =>
+                                    setSelectedMyCourseId(String(c._id))
+                                  }
+                                />
+                                <span>{c.title}</span>
+                              </label>
+                            ))}
+                          </div>
 
-                        <div className="mt-4 flex gap-2">
-                          <Button onClick={handleRequestSwap} isLoading={swapLoading} className="bg-[#FF6A00] text-white">Send Request</Button>
-                          <Button variant="secondary" onClick={() => setShowSwapModal(false)}>Cancel</Button>
+                          <div className="mt-4 flex gap-2">
+                            <Button
+                              onClick={handleRequestSwap}
+                              isLoading={swapLoading}
+                              className="bg-[#FF6A00] text-white"
+                            >
+                              Send Request
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => setShowSwapModal(false)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </>
-            ) : (
+                  )}
+                </>
+              ) : (
+                <Button
+                  onClick={handleEnroll}
+                  isLoading={actionLoading}
+                  className="bg-gray-600 text-white hover:bg-gray-700"
+                >
+                  Enroll (Free)
+                </Button>
+              )}
+
               <Button
-                onClick={handleEnroll}
+                onClick={() => setShowPointsConfirm(true)}
                 isLoading={actionLoading}
-                className="bg-gray-600 text-white hover:bg-gray-700"
+                disabled={!canAffordCourse}
+                className="bg-[#FF6A00] text-white hover:bg-[#e85f00] disabled:cursor-not-allowed disabled:opacity-50"
+                title={!canAffordCourse ? 'Insufficient points balance' : ''}
               >
-                Enroll (Free)
+                💰 Enroll with Points
               </Button>
-            )}
 
-            <Button
-              onClick={() => setShowPointsConfirm(true)}
-              isLoading={actionLoading}
-              disabled={!canAffordCourse}
-              className="bg-[#FF6A00] text-white hover:bg-[#e85f00] disabled:cursor-not-allowed disabled:opacity-50"
-              title={!canAffordCourse ? 'Insufficient points balance' : ''}
-            >
-              💰 Enroll with Points
-            </Button>
-
-            <Button
-              onClick={handleWithdraw}
-              variant="secondary"
-              className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
-              isLoading={actionLoading}
-            >
-              Withdraw
-            </Button>
+              <Button
+                onClick={handleWithdraw}
+                variant="secondary"
+                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
+                isLoading={actionLoading}
+              >
+                Withdraw
+              </Button>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {info && <p className="text-sm text-[#4A4A4A]">{info}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        {info && <p className="text-sm text-[#4A4A4A]">{info}</p>}
 
-      {/* Enrollment Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showPointsConfirm}
-        onClose={() => setShowPointsConfirm(false)}
-        onConfirm={handleEnrollWithPoints}
-        title="Enroll with Points"
-        message={`You're about to enroll in "${course?.title}" using your points.`}
-        details={[
-          { label: 'Course', value: course?.title || '' },
-          {
-            label: 'Cost',
-            value: `${course?.pricePoints?.toLocaleString()} points`,
-          },
-          {
-            label: 'Your Balance',
-            value: `${wallet?.available_balance?.toLocaleString()} points`,
-          },
-          {
-            label: 'Balance After',
-            value: `${(wallet?.available_balance - (course?.pricePoints || 0))?.toLocaleString()} points`,
-          },
-        ]}
-        confirmText="Confirm Enrollment"
-        isLoading={actionLoading}
-      />
+        {/* Enrollment Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showPointsConfirm}
+          onClose={() => setShowPointsConfirm(false)}
+          onConfirm={handleEnrollWithPoints}
+          title="Enroll with Points"
+          message={`You're about to enroll in "${course?.title}" using your points.`}
+          details={[
+            { label: 'Course', value: course?.title || '' },
+            {
+              label: 'Cost',
+              value: `${course?.pricePoints?.toLocaleString()} points`,
+            },
+            {
+              label: 'Your Balance',
+              value: `${wallet?.available_balance?.toLocaleString()} points`,
+            },
+            {
+              label: 'Balance After',
+              value: `${(wallet?.available_balance - (course?.pricePoints || 0))?.toLocaleString()} points`,
+            },
+          ]}
+          confirmText="Confirm Enrollment"
+          isLoading={actionLoading}
+        />
+      </div>
     </div>
   );
 };

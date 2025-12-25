@@ -147,243 +147,247 @@ const CreateCoursePage = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-[#1A1A1A]">
-        Create a New Course
-      </h1>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">
+          Create a New Course
+        </h1>
 
-      <Card>
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <Input
-            label="Title"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            required
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-[#4A4A4A]">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-[#FF6A00] focus:ring-[#FF6A00]"
-              rows={4}
-            />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <Input
-              label="Category"
-              name="category"
-              value={form.category}
+              label="Title"
+              name="title"
+              value={form.title}
               onChange={handleChange}
-              placeholder="e.g. Programming"
+              required
             />
 
             <div>
               <label className="block text-sm font-medium text-[#4A4A4A]">
-                Level
+                Description
               </label>
-              <select
-                name="level"
-                value={form.level}
+              <textarea
+                name="description"
+                value={form.description}
                 onChange={handleChange}
                 className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-[#FF6A00] focus:ring-[#FF6A00]"
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+                rows={4}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              <Input
+                label="Category"
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                placeholder="e.g. Programming"
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-[#4A4A4A]">
+                  Level
+                </label>
+                <select
+                  name="level"
+                  value={form.level}
+                  onChange={handleChange}
+                  className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm focus:border-[#FF6A00] focus:ring-[#FF6A00]"
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <Input
+                label="Price (points)"
+                type="number"
+                name="pricePoints"
+                min="0"
+                value={form.pricePoints}
+                onChange={handleChange}
+              />
             </div>
 
             <Input
-              label="Price (points)"
-              type="number"
-              name="pricePoints"
-              min="0"
-              value={form.pricePoints}
+              label="Skill Tags (comma separated)"
+              name="skillTags"
+              value={form.skillTags}
               onChange={handleChange}
+              placeholder="JavaScript, React, MERN"
             />
-          </div>
 
-          <Input
-            label="Skill Tags (comma separated)"
-            name="skillTags"
-            value={form.skillTags}
-            onChange={handleChange}
-            placeholder="JavaScript, React, MERN"
-          />
-
-          {/* ✅ Skill swap toggle */}
-          <div className="flex items-center gap-3">
-            <input
-              id="skillSwapEnabled"
-              type="checkbox"
-              name="skillSwapEnabled"
-              checked={form.skillSwapEnabled}
-              onChange={handleChange}
-              className="h-4 w-4"
-            />
-            <label
-              htmlFor="skillSwapEnabled"
-              className="text-sm text-[#4A4A4A]"
-            >
-              Enable Skill Swap for this course
-            </label>
-          </div>
-
-          {/* ✅ Lessons */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#1A1A1A]">Lessons</h2>
-              <Button
-                type="button"
-                onClick={addLesson}
-                className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+            {/* ✅ Skill swap toggle */}
+            <div className="flex items-center gap-3">
+              <input
+                id="skillSwapEnabled"
+                type="checkbox"
+                name="skillSwapEnabled"
+                checked={form.skillSwapEnabled}
+                onChange={handleChange}
+                className="h-4 w-4"
+              />
+              <label
+                htmlFor="skillSwapEnabled"
+                className="text-sm text-[#4A4A4A]"
               >
-                + Add Lesson
-              </Button>
+                Enable Skill Swap for this course
+              </label>
             </div>
 
-            {form.lessons.map((lesson, idx) => (
-              <div
-                key={idx}
-                className="space-y-3 rounded-lg border border-gray-200 p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-[#1A1A1A]">
-                    Lesson #{idx + 1}
-                  </p>
-                  {form.lessons.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeLesson(idx)}
-                      className="text-sm text-red-600 hover:underline"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
+            {/* ✅ Lessons */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-[#1A1A1A]">
+                  Lessons
+                </h2>
+                <Button
+                  type="button"
+                  onClick={addLesson}
+                  className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                >
+                  + Add Lesson
+                </Button>
+              </div>
 
-                <Input
-                  label="Lesson Title"
-                  value={lesson.title}
-                  onChange={e =>
-                    updateLesson(idx, {
-                      title: e.target.value,
-                    })
-                  }
-                  required={idx === 0}
-                />
+              {form.lessons.map((lesson, idx) => (
+                <div
+                  key={idx}
+                  className="space-y-3 rounded-lg border border-gray-200 p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-[#1A1A1A]">
+                      Lesson #{idx + 1}
+                    </p>
+                    {form.lessons.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLesson(idx)}
+                        className="text-sm text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A]">
-                    Lesson Type
-                  </label>
-                  <select
-                    value={lesson.type}
-                    onChange={e =>
-                      updateLesson(idx, {
-                        type: e.target.value,
-                      })
-                    }
-                    className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
-                  >
-                    <option value="video">Video</option>
-                    <option value="text">Text</option>
-                    <option value="live">Live (Jitsi)</option>
-                  </select>
-                </div>
-
-                {lesson.type === 'video' && (
                   <Input
-                    label="Video URL"
-                    value={lesson.contentUrl}
+                    label="Lesson Title"
+                    value={lesson.title}
                     onChange={e =>
                       updateLesson(idx, {
-                        contentUrl: e.target.value,
+                        title: e.target.value,
                       })
                     }
-                    placeholder="https://..."
+                    required={idx === 0}
                   />
-                )}
 
-                {lesson.type === 'text' && (
                   <div>
                     <label className="block text-sm font-medium text-[#4A4A4A]">
-                      Text Content
+                      Lesson Type
                     </label>
-                    <textarea
-                      value={lesson.textContent}
+                    <select
+                      value={lesson.type}
                       onChange={e =>
                         updateLesson(idx, {
-                          textContent: e.target.value,
+                          type: e.target.value,
                         })
                       }
                       className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
-                      rows={4}
-                    />
+                    >
+                      <option value="video">Video</option>
+                      <option value="text">Text</option>
+                      <option value="live">Live (Jitsi)</option>
+                    </select>
                   </div>
-                )}
 
-                {lesson.type === 'live' && (
-                  <div className="grid gap-3 md:grid-cols-2">
+                  {lesson.type === 'video' && (
                     <Input
-                      label="Start Time"
-                      type="datetime-local"
-                      value={lesson.live?.startTime || ''}
+                      label="Video URL"
+                      value={lesson.contentUrl}
                       onChange={e =>
-                        updateLive(idx, {
-                          startTime: e.target.value,
+                        updateLesson(idx, {
+                          contentUrl: e.target.value,
                         })
                       }
+                      placeholder="https://..."
                     />
-                    <Input
-                      label="Jitsi Room Name"
-                      value={lesson.live?.roomName || ''}
-                      onChange={e =>
-                        updateLive(idx, {
-                          roomName: e.target.value,
-                        })
-                      }
-                      placeholder="learnoverse-course-xyz"
-                    />
-                    <p className="text-xs text-[#4A4A4A] md:col-span-2">
-                      Note: Only enrolled students should be allowed to join.
-                      (Backend will generate a joinCode later.)
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
 
-          {/* ✅ Two actions */}
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              isLoading={loading}
-              onClick={() => setSubmitForApproval(false)}
-              className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
-            >
-              Save Draft
-            </Button>
+                  {lesson.type === 'text' && (
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A4A4A]">
+                        Text Content
+                      </label>
+                      <textarea
+                        value={lesson.textContent}
+                        onChange={e =>
+                          updateLesson(idx, {
+                            textContent: e.target.value,
+                          })
+                        }
+                        className="mt-1 w-full rounded-lg border border-gray-300 p-2 text-sm"
+                        rows={4}
+                      />
+                    </div>
+                  )}
 
-            <Button
-              type="submit"
-              isLoading={loading}
-              onClick={() => setSubmitForApproval(true)}
-              className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-            >
-              Submit for Admin Approval
-            </Button>
-          </div>
-        </form>
-      </Card>
+                  {lesson.type === 'live' && (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input
+                        label="Start Time"
+                        type="datetime-local"
+                        value={lesson.live?.startTime || ''}
+                        onChange={e =>
+                          updateLive(idx, {
+                            startTime: e.target.value,
+                          })
+                        }
+                      />
+                      <Input
+                        label="Jitsi Room Name"
+                        value={lesson.live?.roomName || ''}
+                        onChange={e =>
+                          updateLive(idx, {
+                            roomName: e.target.value,
+                          })
+                        }
+                        placeholder="learnoverse-course-xyz"
+                      />
+                      <p className="text-xs text-[#4A4A4A] md:col-span-2">
+                        Note: Only enrolled students should be allowed to join.
+                        (Backend will generate a joinCode later.)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* ✅ Two actions */}
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                isLoading={loading}
+                onClick={() => setSubmitForApproval(false)}
+                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
+              >
+                Save Draft
+              </Button>
+
+              <Button
+                type="submit"
+                isLoading={loading}
+                onClick={() => setSubmitForApproval(true)}
+                className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+              >
+                Submit for Admin Approval
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 };
