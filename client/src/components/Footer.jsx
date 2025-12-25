@@ -113,14 +113,14 @@ export const Footer = () => {
                   Find Services
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to="/marketplace"
                   className="text-sm transition-colors hover:text-white"
                 >
                   Marketplace
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
                   to="/become-instructor"

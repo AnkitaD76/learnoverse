@@ -9,9 +9,9 @@ const navigationRoutes = [
   { name: 'My Courses', path: '/my-courses' },
   { name: 'Q&A', path: '/qa' },
   { name: 'Posts', path: '/posts' },
-  { name: 'Marketplace', path: '/marketplace' },
-  { name: 'About', path: '/about' },
-  { name: 'Contact', path: '/contact' },
+  // { name: 'Marketplace', path: '/marketplace' },
+  // { name: 'About', path: '/about' },
+  // { name: 'Contact', path: '/contact' },
 ];
 
 export const Header = () => {
