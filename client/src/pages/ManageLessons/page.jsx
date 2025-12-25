@@ -162,7 +162,9 @@ const ManageLessonsPage = () => {
                     </p>
                     <p className="text-xs text-[#4A4A4A]">{lesson.type}</p>
                     {lesson.type === 'live' && (
-                      <p className="text-xs text-[#4A4A4A]">Room: {lesson.live?.roomName || 'Not created'}</p>
+                      <p className="text-xs text-[#4A4A4A]">
+                        Room: {lesson.live?.roomName || 'Not created'}
+                      </p>
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -170,7 +172,9 @@ const ManageLessonsPage = () => {
                       lesson.live?.roomName ? (
                         <button
                           onClick={() => {
-                            navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
+                            navigate(
+                              `/courses/${courseId}/lessons/${lesson._id}/live`
+                            );
                           }}
                           className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
                         >
@@ -180,14 +184,22 @@ const ManageLessonsPage = () => {
                         <button
                           onClick={async () => {
                             try {
-                              await createLessonLiveSession(courseId, lesson._id);
+                              await createLessonLiveSession(
+                                courseId,
+                                lesson._id
+                              );
                               alert('Live session created');
                               await load();
                               // navigate owner into the live session page so they can start
-                              navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
+                              navigate(
+                                `/courses/${courseId}/lessons/${lesson._id}/live`
+                              );
                             } catch (err) {
                               console.error(err);
-                              alert(err.response?.data?.message || 'Failed to create live session');
+                              alert(
+                                err.response?.data?.message ||
+                                  'Failed to create live session'
+                              );
                             }
                           }}
                           className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
@@ -200,14 +212,22 @@ const ManageLessonsPage = () => {
                     {lesson.type === 'live' && lesson.live?.keepalivePid && (
                       <button
                         onClick={async () => {
-                          if (!confirm('Stop the keepalive process for this lesson?')) return;
+                          if (
+                            !confirm(
+                              'Stop the keepalive process for this lesson?'
+                            )
+                          )
+                            return;
                           try {
                             await stopLessonKeepalive(courseId, lesson._id);
                             alert('Keepalive stopped');
                             await load();
                           } catch (err) {
                             console.error(err);
-                            alert(err.response?.data?.message || 'Failed to stop keepalive');
+                            alert(
+                              err.response?.data?.message ||
+                                'Failed to stop keepalive'
+                            );
                           }
                         }}
                         className="rounded bg-gray-200 px-3 py-1 text-xs text-gray-700"
@@ -215,25 +235,6 @@ const ManageLessonsPage = () => {
                         Stop Keepalive
                       </button>
                     )}
-                        <button
-                          onClick={async () => {
-                            try {
-                              await createLessonLiveSession(courseId, lesson._id);
-                              alert('Live session created');
-                              await load();
-                              // navigate owner into the live session page so they can start
-                              navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
-                            } catch (err) {
-                              console.error(err);
-                              alert(err.response?.data?.message || 'Failed to create live session');
-                            }
-                          }}
-                          className="rounded bg-red-100 px-3 py-1 text-xs text-red-700"
-                        >
-                          Create Session
-                        </button>
-                      )
-                    ) : null}
 
                     <button
                       onClick={() => startEdit(lesson)}
