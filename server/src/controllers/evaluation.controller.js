@@ -60,9 +60,10 @@ export const createEvaluation = async (req, res) => {
     }
 
     // Create evaluation
+    // Always set instructor to course instructor (not the user creating it if admin)
     const evaluation = await Evaluation.create({
         course: courseId,
-        instructor: userId,
+        instructor: course.instructor,
         type,
         title,
         description: description || '',
@@ -128,15 +129,23 @@ export const updateEvaluation = async (req, res) => {
     const { title, description, totalMarks, weight, questions } = req.body;
 
     // Find evaluation
-    const evaluation = await Evaluation.findById(id);
+    const evaluation = await Evaluation.findById(id).populate(
+        'course',
+        'instructor'
+    );
     if (!evaluation) {
         throw new NotFoundError('Evaluation not found');
     }
 
-    // Check authorization
-    if (String(evaluation.instructor) !== String(userId) && role !== 'admin') {
+    // Check authorization - allow evaluation instructor or course instructor
+    const isEvaluationInstructor =
+        String(evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(evaluation.course.instructor) === String(userId);
+
+    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
         throw new UnauthorizedError(
-            'Only the evaluation creator can update it'
+            'Only the course instructor can update evaluations'
         );
     }
 
@@ -217,15 +226,23 @@ export const publishEvaluation = async (req, res) => {
     const { userId, role } = req.user;
 
     // Find evaluation
-    const evaluation = await Evaluation.findById(id);
+    const evaluation = await Evaluation.findById(id).populate(
+        'course',
+        'instructor'
+    );
     if (!evaluation) {
         throw new NotFoundError('Evaluation not found');
     }
 
-    // Check authorization
-    if (String(evaluation.instructor) !== String(userId) && role !== 'admin') {
+    // Check authorization - allow evaluation instructor or course instructor
+    const isEvaluationInstructor =
+        String(evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(evaluation.course.instructor) === String(userId);
+
+    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
         throw new UnauthorizedError(
-            'Only the evaluation creator can publish it'
+            'Only the course instructor can publish evaluations'
         );
     }
 
@@ -281,13 +298,24 @@ export const closeEvaluation = async (req, res) => {
     const { id } = req.params;
     const { userId, role } = req.user;
 
-    const evaluation = await Evaluation.findById(id);
+    const evaluation = await Evaluation.findById(id).populate(
+        'course',
+        'instructor'
+    );
     if (!evaluation) {
         throw new NotFoundError('Evaluation not found');
     }
 
-    if (String(evaluation.instructor) !== String(userId) && role !== 'admin') {
-        throw new UnauthorizedError('Only the evaluation creator can close it');
+    // Check authorization - allow evaluation instructor or course instructor
+    const isEvaluationInstructor =
+        String(evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(evaluation.course.instructor) === String(userId);
+
+    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
+        throw new UnauthorizedError(
+            'Only the course instructor can close evaluations'
+        );
     }
 
     if (evaluation.status !== 'published') {
@@ -383,9 +411,13 @@ export const getEvaluationById = async (req, res) => {
         evaluation: id,
     }).sort('order');
 
-    // Check authorization
+    // Check authorization - allow evaluation instructor, course instructor, or admin
+    const isEvaluationInstructor =
+        String(evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(evaluation.course.instructor) === String(userId);
     const isInstructor =
-        String(evaluation.instructor) === String(userId) || role === 'admin';
+        isEvaluationInstructor || isCourseInstructor || role === 'admin';
 
     if (!isInstructor) {
         // Check if student is enrolled
@@ -426,15 +458,23 @@ export const getEvaluationSubmissions = async (req, res) => {
     const { userId, role } = req.user;
 
     // Find evaluation
-    const evaluation = await Evaluation.findById(id);
+    const evaluation = await Evaluation.findById(id).populate(
+        'course',
+        'instructor'
+    );
     if (!evaluation) {
         throw new NotFoundError('Evaluation not found');
     }
 
-    // Check authorization
-    if (String(evaluation.instructor) !== String(userId) && role !== 'admin') {
+    // Check authorization - allow evaluation instructor or course instructor
+    const isEvaluationInstructor =
+        String(evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(evaluation.course.instructor) === String(userId);
+
+    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
         throw new UnauthorizedError(
-            'Only the evaluation creator can view submissions'
+            'Only the course instructor can view submissions'
         );
     }
 
@@ -572,23 +612,36 @@ export const gradeSubmission = async (req, res) => {
     const { userId, role } = req.user;
     const { totalScore, feedback } = req.body;
 
+    console.log('📝 Grading submission:', {
+        submissionId: id,
+        totalScore,
+        totalScoreType: typeof totalScore,
+        feedback: feedback ? 'provided' : 'not provided',
+    });
+
     // Find submission
     const submission = await EvaluationSubmission.findById(id).populate({
         path: 'evaluation',
         select: 'instructor course totalMarks',
+        populate: {
+            path: 'course',
+            select: 'instructor',
+        },
     });
 
     if (!submission) {
         throw new NotFoundError('Submission not found');
     }
 
-    // Check authorization
-    if (
-        String(submission.evaluation.instructor) !== String(userId) &&
-        role !== 'admin'
-    ) {
+    // Check authorization - allow evaluation instructor or course instructor
+    const isEvaluationInstructor =
+        String(submission.evaluation.instructor) === String(userId);
+    const isCourseInstructor =
+        String(submission.evaluation.course.instructor) === String(userId);
+
+    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
         throw new UnauthorizedError(
-            'Only the evaluation creator can grade submissions'
+            'Only the course instructor can grade submissions'
         );
     }
 
@@ -600,22 +653,26 @@ export const gradeSubmission = async (req, res) => {
     }
 
     // Validate score
-    if (
-        totalScore === undefined ||
-        totalScore === null ||
-        typeof totalScore !== 'number'
-    ) {
+    if (totalScore === undefined || totalScore === null) {
         throw new BadRequestError('Total score is required');
     }
 
-    if (totalScore < 0 || totalScore > submission.evaluation.totalMarks) {
+    // Convert to number and validate
+    const scoreNum =
+        typeof totalScore === 'number' ? totalScore : Number(totalScore);
+
+    if (isNaN(scoreNum)) {
+        throw new BadRequestError('Total score must be a valid number');
+    }
+
+    if (scoreNum < 0 || scoreNum > submission.evaluation.totalMarks) {
         throw new BadRequestError(
             `Score must be between 0 and ${submission.evaluation.totalMarks}`
         );
     }
 
     // Update submission
-    submission.totalScore = totalScore;
+    submission.totalScore = scoreNum;
     submission.feedback = feedback || null;
     submission.gradedBy = userId;
     submission.gradedAt = new Date();

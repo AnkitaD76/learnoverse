@@ -65,12 +65,17 @@ export const EvaluationSubmissionsPage = () => {
       return;
     }
 
+    // Convert and validate score
+    const score = parseFloat(gradeForm.totalScore);
     if (
-      !gradeForm.totalScore ||
-      gradeForm.totalScore < 0 ||
-      gradeForm.totalScore > evaluation.totalMarks
+      gradeForm.totalScore === '' ||
+      isNaN(score) ||
+      score < 0 ||
+      score > evaluation.totalMarks
     ) {
-      alert(`Score must be between 0 and ${evaluation.totalMarks}`);
+      alert(
+        `Score must be a valid number between 0 and ${evaluation.totalMarks}`
+      );
       return;
     }
 
@@ -82,7 +87,7 @@ export const EvaluationSubmissionsPage = () => {
 
     try {
       await gradeSubmission(selectedSubmission._id, {
-        totalScore: parseFloat(gradeForm.totalScore),
+        totalScore: score,
         feedback: gradeForm.feedback,
       });
 
@@ -144,44 +149,62 @@ export const EvaluationSubmissionsPage = () => {
                 {submissions.map(submission => (
                   <Card
                     key={submission._id}
-                    className={`cursor-pointer p-4 transition ${
+                    className={`p-4 transition ${
                       selectedSubmission?._id === submission._id
                         ? 'ring-2 ring-blue-500'
                         : 'hover:shadow-md'
                     }`}
-                    onClick={() => handleSelectSubmission(submission)}
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">
-                          {submission.student?.name || 'Unknown'}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {submission.student?.email}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-400">
-                          Submitted:{' '}
-                          {new Date(submission.submittedAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span
-                          className={`rounded px-2 py-1 text-xs font-medium ${
-                            submission.status === 'graded'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}
-                        >
-                          {submission.status === 'graded'
-                            ? 'Graded'
-                            : 'Pending'}
-                        </span>
-                        {submission.status === 'graded' && (
-                          <p className="mt-1 text-sm font-semibold">
-                            {submission.totalScore}/{evaluation.totalMarks}
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => handleSelectSubmission(submission)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium">
+                            {submission.student?.name || 'Unknown'}
                           </p>
-                        )}
+                          <p className="text-sm text-gray-500">
+                            {submission.student?.email}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-400">
+                            Submitted:{' '}
+                            {new Date(submission.submittedAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`rounded px-2 py-1 text-xs font-medium ${
+                              submission.status === 'graded'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-yellow-100 text-yellow-700'
+                            }`}
+                          >
+                            {submission.status === 'graded'
+                              ? 'Graded'
+                              : 'Pending'}
+                          </span>
+                          {submission.status === 'graded' && (
+                            <p className="mt-1 text-sm font-semibold">
+                              {submission.totalScore}/{evaluation.totalMarks}
+                            </p>
+                          )}
+                        </div>
                       </div>
+                    </div>
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() =>
+                          navigate(
+                            `/evaluations/${evaluationId}/view?submissionId=${submission._id}`
+                          )
+                        }
+                        className="w-full text-xs"
+                      >
+                        View Full Submission & Grade
+                      </Button>
                     </div>
                   </Card>
                 ))}

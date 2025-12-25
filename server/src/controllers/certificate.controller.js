@@ -169,10 +169,18 @@ export const generateCertificatePDF = async (req, res) => {
     // Import puppeteer dynamically
     const puppeteer = await import('puppeteer');
 
-    const browser = await puppeteer.default.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    let browser;
+    try {
+        browser = await puppeteer.default.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+    } catch (launchError) {
+        console.error('Failed to launch browser:', launchError);
+        throw new Error(
+            'Failed to launch PDF generator. Please try again later.'
+        );
+    }
 
     try {
         const page = await browser.newPage();
@@ -257,7 +265,10 @@ export const generateCertificatePDF = async (req, res) => {
         );
         res.send(pdfBuffer);
     } catch (error) {
-        await browser.close();
+        if (browser) {
+            await browser.close();
+        }
+        console.error('PDF generation error:', error);
         throw error;
     }
 };

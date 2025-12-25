@@ -79,6 +79,11 @@ evaluationSubmissionSchema.index(
 // Index for queries
 evaluationSubmissionSchema.index({ evaluation: 1, status: 1 });
 
+// Store original document on init for comparison
+evaluationSubmissionSchema.post('init', function () {
+    this._original = this.toObject();
+});
+
 // Prevent editing after submission
 evaluationSubmissionSchema.pre('save', function (next) {
     if (this.isModified() && !this.isNew) {
@@ -89,6 +94,8 @@ evaluationSubmissionSchema.pre('save', function (next) {
             'gradedBy',
             'gradedAt',
             'status',
+            'updatedAt', // Mongoose timestamp
+            'createdAt', // Mongoose timestamp
         ];
 
         // If already submitted, only allow grading fields to be modified
@@ -97,6 +104,10 @@ evaluationSubmissionSchema.pre('save', function (next) {
         );
 
         if (illegalChanges.length > 0) {
+            console.error('❌ Illegal changes detected:', {
+                modifiedPaths,
+                illegalChanges,
+            });
             const err = new Error(
                 'Cannot modify submission after submitting. Only grading fields can be updated.'
             );
@@ -104,9 +115,12 @@ evaluationSubmissionSchema.pre('save', function (next) {
             return next(err);
         }
 
+        // Check the ORIGINAL status (before any changes in this save operation)
+        const originalStatus = this._original?.status || 'submitted';
+
         // If already graded, prevent changes to grade
         if (
-            this.status === 'graded' &&
+            originalStatus === 'graded' &&
             (modifiedPaths.includes('totalScore') ||
                 modifiedPaths.includes('feedback') ||
                 modifiedPaths.includes('gradedBy') ||

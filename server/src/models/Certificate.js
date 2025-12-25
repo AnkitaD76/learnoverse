@@ -14,7 +14,7 @@ const certificateSchema = new mongoose.Schema(
         },
         certificateNumber: {
             type: String,
-            required: true,
+            required: false, // Generated in pre-save hook
         },
         issuedAt: {
             type: Date,

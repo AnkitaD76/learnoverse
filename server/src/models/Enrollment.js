@@ -32,6 +32,12 @@ const enrollmentSchema = new mongoose.Schema(
 
         // ✅ evaluation-based scoring
         totalScore: { type: Number, default: 0, min: 0 },
+
+        // ✅ lesson progress tracking
+        completedLessonIds: {
+            type: [mongoose.Schema.Types.ObjectId],
+            default: [],
+        },
     },
     { timestamps: true }
 );

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 const CertificatePage = () => {
   const { certificateId } = useParams();
@@ -17,7 +17,7 @@ const CertificatePage = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/api/v1/certificates/${certificateId}`
+          `${API_BASE_URL}/certificates/${certificateId}`
         );
 
         if (!response.ok) {
@@ -41,7 +41,7 @@ const CertificatePage = () => {
     try {
       setDownloading(true);
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/certificates/${certificateId}/pdf`,
+        `${API_BASE_URL}/certificates/${certificateId}/pdf`,
         {
           method: 'POST',
         }

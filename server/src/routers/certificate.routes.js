@@ -9,6 +9,7 @@ import {
     authenticate,
     requireVerification,
 } from '../middleware/authenticate.js';
+import { asyncWrapper } from '../utils/asyncWrapper.js';
 
 const router = express.Router();
 
@@ -26,11 +27,15 @@ router.get(
     '/my-certificates',
     authenticate,
     requireVerification,
-    getMyCertificates
+    asyncWrapper(getMyCertificates)
 );
 
 // Public routes - no authentication required
-router.get('/:certificateId', getCertificate);
-router.post('/:certificateId/pdf', pdfLimiter, generateCertificatePDF);
+router.get('/:certificateId', asyncWrapper(getCertificate));
+router.post(
+    '/:certificateId/pdf',
+    pdfLimiter,
+    asyncWrapper(generateCertificatePDF)
+);
 
 export default router;

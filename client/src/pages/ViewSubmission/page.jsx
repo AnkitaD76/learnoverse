@@ -1,35 +1,76 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { getEvaluationById, getMySubmission } from '../../api/evaluations';
+import {
+  getEvaluationById,
+  getMySubmission,
+  getEvaluationSubmissions,
+  gradeSubmission,
+} from '../../api/evaluations';
+import { useSession } from '../../contexts/SessionContext';
 
 export const ViewSubmissionPage = () => {
   const { evaluationId } = useParams();
+  const [searchParams] = useSearchParams();
+  const submissionIdParam = searchParams.get('submissionId');
   const navigate = useNavigate();
+  const { user } = useSession();
 
   const [evaluation, setEvaluation] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInstructor, setIsInstructor] = useState(false);
+  const [gradeForm, setGradeForm] = useState({
+    totalScore: '',
+    feedback: '',
+  });
+  const [grading, setGrading] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, [evaluationId]);
+  }, [evaluationId, submissionIdParam]);
 
   const fetchData = async () => {
     try {
-      const [evalRes, submissionRes] = await Promise.all([
-        getEvaluationById(evaluationId),
-        getMySubmission(evaluationId),
-      ]);
-
+      const evalRes = await getEvaluationById(evaluationId);
       setEvaluation(evalRes.evaluation);
-      setSubmission(submissionRes.submission);
 
-      if (!submissionRes.submission) {
-        alert('You have not submitted this evaluation yet');
-        navigate(-1);
+      // Check if user is instructor
+      const instructorCheck =
+        user &&
+        (user.role === 'admin' ||
+          String(user._id) === String(evalRes.evaluation.course?.instructor));
+      setIsInstructor(instructorCheck);
+
+      // If submissionId is provided (instructor viewing specific submission)
+      if (submissionIdParam && instructorCheck) {
+        const subsRes = await getEvaluationSubmissions(evaluationId);
+        const specificSubmission = subsRes.submissions?.find(
+          s => String(s._id) === String(submissionIdParam)
+        );
+        if (specificSubmission) {
+          setSubmission(specificSubmission);
+          if (specificSubmission.status === 'graded') {
+            setGradeForm({
+              totalScore: specificSubmission.totalScore || 0,
+              feedback: specificSubmission.feedback || '',
+            });
+          }
+        } else {
+          alert('Submission not found');
+          navigate(-1);
+        }
+      } else {
+        // Student viewing their own submission
+        const submissionRes = await getMySubmission(evaluationId);
+        setSubmission(submissionRes.submission);
+
+        if (!submissionRes.submission) {
+          alert('You have not submitted this evaluation yet');
+          navigate(-1);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -37,6 +78,55 @@ export const ViewSubmissionPage = () => {
       navigate(-1);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGradeSubmit = async e => {
+    e.preventDefault();
+    if (!submission) return;
+
+    if (submission.status === 'graded') {
+      alert('This submission has already been graded and cannot be modified.');
+      return;
+    }
+
+    // Convert and validate score
+    const score = parseFloat(gradeForm.totalScore);
+    if (
+      gradeForm.totalScore === '' ||
+      isNaN(score) ||
+      score < 0 ||
+      score > evaluation.totalMarks
+    ) {
+      alert(
+        `Score must be a valid number between 0 and ${evaluation.totalMarks}`
+      );
+      return;
+    }
+
+    if (!confirm('Are you sure? Grades cannot be modified once submitted.')) {
+      return;
+    }
+
+    setGrading(true);
+
+    try {
+      await gradeSubmission(submission._id, {
+        totalScore: score,
+        feedback: gradeForm.feedback,
+      });
+
+      alert('Submission graded successfully');
+      fetchData(); // Reload to show updated grade
+    } catch (err) {
+      console.error(err);
+      alert(
+        err.response?.data?.msg ||
+          err.response?.data?.message ||
+          'Failed to grade submission'
+      );
+    } finally {
+      setGrading(false);
     }
   };
 
@@ -140,6 +230,74 @@ export const ViewSubmissionPage = () => {
             </div>
           )}
         </Card>
+
+        {/* Instructor Grading Form */}
+        {isInstructor && submission?.status === 'submitted' && (
+          <Card className="mb-6 p-6">
+            <h2 className="mb-4 text-xl font-semibold">Grade Submission</h2>
+            <form onSubmit={handleGradeSubmit} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Total Score (out of {evaluation.totalMarks})
+                </label>
+                <input
+                  type="number"
+                  value={gradeForm.totalScore}
+                  onChange={e =>
+                    setGradeForm(prev => ({
+                      ...prev,
+                      totalScore: e.target.value,
+                    }))
+                  }
+                  min="0"
+                  max={evaluation.totalMarks}
+                  step="0.01"
+                  className="w-full rounded-md border px-3 py-2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Feedback (Optional)
+                </label>
+                <textarea
+                  value={gradeForm.feedback}
+                  onChange={e =>
+                    setGradeForm(prev => ({
+                      ...prev,
+                      feedback: e.target.value,
+                    }))
+                  }
+                  rows={4}
+                  className="w-full rounded-md border px-3 py-2"
+                  placeholder="Provide feedback to the student..."
+                />
+              </div>
+
+              <Button type="submit" disabled={grading} className="w-full">
+                {grading ? <LoadingSpinner /> : 'Submit Grade (Irreversible)'}
+              </Button>
+            </form>
+          </Card>
+        )}
+
+        {/* Student Info for Instructor */}
+        {isInstructor && submission && (
+          <Card className="mb-6 p-4">
+            <h3 className="mb-2 text-sm font-semibold text-gray-700">
+              Student Information
+            </h3>
+            <p className="text-sm">
+              <span className="font-medium">Name:</span>{' '}
+              {submission.student?.name || 'N/A'}
+            </p>
+            <p className="text-sm">
+              <span className="font-medium">Email:</span>{' '}
+              {submission.student?.email || 'N/A'}
+            </p>
+          </Card>
+        )}
 
         {/* Answers */}
         <div className="space-y-6">

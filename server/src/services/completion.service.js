@@ -8,8 +8,14 @@ import {
 
 /**
  * Check if a course is complete based on:
- * 1. All lessons completed
- * 2. Total evaluation score >= threshold (e.g., 50%)
+ * 1. All lessons completed (marked as done by student)
+ * 2. All evaluations submitted (quizzes/assignments)
+ * 3. Total evaluation score >= threshold (50%)
+ *
+ * AUTHORIZATION:
+ * - Only enrolled students can mark lessons complete
+ * - Only course instructors/admins can manage lessons (add/edit/delete)
+ * - Certificate is auto-issued when all requirements are met
  *
  * @param {string} userId - Student user ID
  * @param {string} courseId - Course ID
@@ -36,8 +42,8 @@ export const checkCourseCompletion = async (userId, courseId) => {
     }
 
     // Check lessons completion
-    const totalLessons = course.lessons.length;
-    const completedLessons = enrollment.completedLessonIds.length;
+    const totalLessons = course.lessons?.length || 0;
+    const completedLessons = enrollment.completedLessonIds?.length || 0;
     const allLessonsComplete =
         totalLessons === 0 || completedLessons >= totalLessons;
 
@@ -62,6 +68,20 @@ export const checkCourseCompletion = async (userId, courseId) => {
             isComplete: true,
             reason: 'All lessons completed, no evaluations',
             totalScore: 0,
+        };
+    }
+
+    // Check if student has submitted all evaluations
+    const submittedEvaluations = await EvaluationSubmission.find({
+        student: userId,
+        evaluation: { $in: evaluations.map(e => e._id) },
+    });
+
+    if (submittedEvaluations.length < evaluations.length) {
+        return {
+            isComplete: false,
+            reason: `Not all evaluations submitted (${submittedEvaluations.length}/${evaluations.length})`,
+            totalScore: enrollment.totalScore || 0,
         };
     }
 
