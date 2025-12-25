@@ -24,6 +24,7 @@ import dashboardRoutes from './routers/dashboard.routes.js';
 import walletRoutes from './routers/wallet.routes.js';
 import adminWalletRoutes from './routers/adminWallet.routes.js';
 import qaRoutes from './routers/qa.routes.js';
+import searchRoutes from './routers/search.routes.js';
 
 // (Optional: only keep these if you really have these router files)
 import notificationsRoutes from './routers/notifications.routes.js';
@@ -68,6 +69,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/admin/wallet', adminWalletRoutes);
 app.use('/api/v1/qa', qaRoutes);
+app.use('/api/v1/search', searchRoutes);
 
 // Optional modules (keep only if you created these endpoints)
 app.use('/api/v1/notifications', notificationsRoutes);

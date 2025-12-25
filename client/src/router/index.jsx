@@ -38,6 +38,9 @@ import QuestionsListPage from '../pages/QA/QuestionsListPage';
 import AskQuestionPage from '../pages/QA/AskQuestionPage';
 import QuestionDetailPage from '../pages/QA/QuestionDetailPage';
 
+// Search
+import SearchPage from '../pages/Search/page';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -145,6 +148,9 @@ export const AppRouter = () => {
 
       {/* Posts */}
       <Route path="/posts" element={<PostsPage />} />
+
+      {/* Search */}
+      <Route path="/search" element={<SearchPage />} />
 
       {/* Q&A Routes */}
       <Route path="/qa" element={<QuestionsListPage />} />

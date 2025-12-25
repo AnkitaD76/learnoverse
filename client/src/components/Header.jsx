@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './Button';
 import { useSession } from '../contexts/SessionContext';
+import { SearchBar } from './SearchBar';
 
 const navigationRoutes = [
   { name: 'Courses', path: '/courses' },
@@ -60,6 +61,11 @@ export const Header = () => {
                 {route.name}
               </Link>
             ))}
+          </div>
+
+          {/* Global Search Bar */}
+          <div className="hidden md:mx-8 md:block md:max-w-md md:flex-1">
+            <SearchBar />
           </div>
 
           {/* Desktop User Menu */}

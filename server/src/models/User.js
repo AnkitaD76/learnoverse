@@ -229,6 +229,19 @@ UserSchema.pre('save', async function (next) {
     next();
 });
 
+// ✅ Indexes for search optimization
+UserSchema.index({
+    name: 'text',
+    email: 'text',
+    bio: 'text',
+    institution: 'text',
+    fieldOfStudy: 'text',
+}); // Full-text search
+UserSchema.index({ role: 1 }); // Filter by role
+UserSchema.index({ country: 1 }); // Filter by country
+UserSchema.index({ interests: 1 }); // Filter by interests
+UserSchema.index({ email: 1 }); // Unique constraint + lookup
+
 // Compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
