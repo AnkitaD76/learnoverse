@@ -21,6 +21,7 @@ const ForgotPasswordPage = () => {
       const response = await apiClient.post('/auth/forgot-password', {
         email,
       });
+      console.log(response);
       setMessage(response.data.message);
       setEmail('');
     } catch (err) {

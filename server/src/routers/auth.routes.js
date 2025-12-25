@@ -2,6 +2,7 @@ import express from 'express';
 import {
     register,
     login,
+    logout,
     verifyEmail,
     forgotPassword,
     resetPassword,
@@ -15,10 +16,13 @@ router.post('/register', register);
 // LOGIN
 router.post('/login', login);
 
+// LOGOUT
+router.post('/logout', logout);
+
 // VERIFY EMAIL
 router.post('/verify-email', verifyEmail);
 
-// FORGOT PASSWORD 
+// FORGOT PASSWORD
 router.post('/forgot-password', forgotPassword);
 
 // RESET PASSWORD

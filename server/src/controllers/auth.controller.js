@@ -15,6 +15,7 @@ import { createTokenUser } from '../utils/createTokenUser.js';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
 import sendResetPasswordEmail from '../utils/sendResetPasswordEmail.js';
 import { createHash } from '../utils/createHash.js';
+import { success } from 'zod';
 
 /**
  * @desc    Register a new user
@@ -221,6 +222,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
+    console.log(user);
 
     if (user) {
         // Generate password reset token
@@ -234,23 +236,39 @@ export const forgotPassword = async (req, res) => {
         user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
         await user.save();
 
-        // Send email with unhashed token
-        const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
-        await sendResetPasswordEmail({
-            name: user.name,
-            email: user.email,
-            token: passwordResetToken,
-            origin,
+        try {
+            const origin = process.env.FRONTEND_URL || 'http://localhost:5173';
+            await sendResetPasswordEmail({
+                name: user.name,
+                email: user.email,
+                token: passwordResetToken,
+                origin,
+            });
+            res.status(StatusCodes.OK).json({
+                success: true,
+                message: 'Password reset email sent. Please check your email.',
+            });
+        } catch (error) {
+            // Rollback the token if email fails
+            user.passwordResetToken = undefined;
+            user.passwordResetExpires = undefined;
+            await user.save();
+
+            console.error('Error sending password reset email:', error);
+            throw new Error(
+                'Error sending password reset email. Please try again.'
+            );
+        }
+    } else {
+        console.log('User not found for email:', email);
+        res.status(StatusCodes.NOT_FOUND).json({
+            success: false,
+            message: 'User not found',
         });
     }
 
     // Always send success message (security best practice)
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Password reset email sent. Please check your email.',
-    });
 };
-
 /**
  * @desc    Reset password
  * @route   POST /api/v1/auth/reset-password
