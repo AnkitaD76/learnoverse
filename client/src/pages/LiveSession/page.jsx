@@ -4,6 +4,8 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { fetchCourseById, createLessonLiveSession } from '../../api/courses';
 import { useSession } from '../../contexts/SessionContext';
+import ReportButton from '../../components/ReportButton';
+import ReportModal from '../../components/ReportModal';
 
 const LiveSessionPage = () => {
   const { courseId, lessonId } = useParams();
@@ -18,13 +20,16 @@ const LiveSessionPage = () => {
   const jitsiRef = useRef(null);
   const containerRef = useRef(null);
   const [polling, setPolling] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const load = async () => {
     try {
       setLoading(true);
       const res = await fetchCourseById(courseId);
       setCourse(res.course);
-      const l = (res.course.lessons || []).find(l => String(l._id) === String(lessonId));
+      const l = (res.course.lessons || []).find(
+        l => String(l._id) === String(lessonId)
+      );
       setLesson(l || null);
     } catch (err) {
       console.error(err);
@@ -34,13 +39,18 @@ const LiveSessionPage = () => {
     }
   };
 
-  useEffect(() => { load(); }, [courseId, lessonId]);
+  useEffect(() => {
+    load();
+  }, [courseId, lessonId]);
   useEffect(() => {
     // When room becomes available, try to embed via External API
     const room = lesson?.live?.roomName;
     // If no room and we're not the owner, start polling for room creation
     // compute owner locally to avoid TDZ issues
-    const ownerCheck = user && (user.role === 'admin' || String(user._id) === String(course?.instructor?._id));
+    const ownerCheck =
+      user &&
+      (user.role === 'admin' ||
+        String(user._id) === String(course?.instructor?._id));
     if (!room && !ownerCheck) {
       if (!polling) setPolling(true);
       return;
@@ -51,7 +61,11 @@ const LiveSessionPage = () => {
 
     // Cleanup any previous instance
     if (jitsiRef.current && typeof jitsiRef.current.dispose === 'function') {
-      try { jitsiRef.current.dispose(); } catch (e) { /* ignore */ }
+      try {
+        jitsiRef.current.dispose();
+      } catch (e) {
+        /* ignore */
+      }
       jitsiRef.current = null;
     }
 
@@ -75,7 +89,12 @@ const LiveSessionPage = () => {
         return;
       }
 
-      console.log('LiveSession: embedding room=', room, 'container=', containerRef.current);
+      console.log(
+        'LiveSession: embedding room=',
+        room,
+        'container=',
+        containerRef.current
+      );
 
       // wait briefly for container to be attached if needed
       let attempts = 0;
@@ -101,7 +120,7 @@ const LiveSessionPage = () => {
         parentNode: containerRef.current,
         width: '100%',
         height: '100%',
-        configOverwrite: { 
+        configOverwrite: {
           prejoinPageEnabled: false,
         },
         interfaceConfigOverwrite: {
@@ -124,7 +143,11 @@ const LiveSessionPage = () => {
 
     return () => {
       if (jitsiRef.current && typeof jitsiRef.current.dispose === 'function') {
-        try { jitsiRef.current.dispose(); } catch (e) { /* ignore */ }
+        try {
+          jitsiRef.current.dispose();
+        } catch (e) {
+          /* ignore */
+        }
         jitsiRef.current = null;
       }
     };
@@ -138,7 +161,9 @@ const LiveSessionPage = () => {
     const interval = setInterval(async () => {
       try {
         const res = await fetchCourseById(courseId);
-        const updatedLesson = (res.course.lessons || []).find(l => String(l._id) === String(lessonId));
+        const updatedLesson = (res.course.lessons || []).find(
+          l => String(l._id) === String(lessonId)
+        );
         if (updatedLesson && updatedLesson.live?.roomName) {
           if (!cancelled) {
             setLesson(updatedLesson);
@@ -163,7 +188,9 @@ const LiveSessionPage = () => {
     if (!lesson) return;
     try {
       setCreating(true);
-      await createLessonLiveSession(courseId, lesson._id, { startTime: lesson.live?.startTime });
+      await createLessonLiveSession(courseId, lesson._id, {
+        startTime: lesson.live?.startTime,
+      });
       await load();
     } catch (err) {
       console.error(err);
@@ -173,56 +200,107 @@ const LiveSessionPage = () => {
     }
   };
 
-  if (loading) return <p className="text-sm text-[#4A4A4A] p-4">Loading session...</p>;
-  if (!course || !lesson) return <p className="text-sm text-red-600 p-4">Session not found.</p>;
+  if (loading)
+    return <p className="p-4 text-sm text-[#4A4A4A]">Loading session...</p>;
+  if (!course || !lesson)
+    return <p className="p-4 text-sm text-red-600">Session not found.</p>;
 
   const room = lesson.live?.roomName;
   const joinCode = lesson.live?.joinCode;
 
-  const isOwner = user && (user.role === 'admin' || String(user._id) === String(course.instructor?._id));
+  const isOwner =
+    user &&
+    (user.role === 'admin' ||
+      String(user._id) === String(course.instructor?._id));
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="mx-auto max-w-5xl">
-        <div className="flex items-start justify-between mb-4">
+        <div className="mb-4 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold">{course.title}</h1>
-            <p className="text-sm text-[#4A4A4A]">Lesson: {lesson.order + 1}. {lesson.title}</p>
-            {joinCode && <p className="text-xs text-[#4A4A4A]">Join code: <strong>{joinCode}</strong></p>}
+            <p className="text-sm text-[#4A4A4A]">
+              Lesson: {lesson.order + 1}. {lesson.title}
+            </p>
+            {joinCode && (
+              <p className="text-xs text-[#4A4A4A]">
+                Join code: <strong>{joinCode}</strong>
+              </p>
+            )}
             {lesson.live?.startTime && (
-              <p className="text-xs text-[#4A4A4A]">Start: {new Date(lesson.live.startTime).toLocaleString()}</p>
+              <p className="text-xs text-[#4A4A4A]">
+                Start: {new Date(lesson.live.startTime).toLocaleString()}
+              </p>
             )}
           </div>
 
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => navigate(-1)}>Back</Button>
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Back
+            </Button>
             {isOwner && !room && (
-              <Button onClick={handleCreate} isLoading={creating} className="bg-red-500 text-white">Create Session</Button>
+              <Button
+                onClick={handleCreate}
+                isLoading={creating}
+                className="bg-red-500 text-white"
+              >
+                Create Session
+              </Button>
             )}
             {room && (
-              <Button onClick={() => window.open(`https://meet.jit.si/${room}`, '_blank')} className="bg-[#FF6A00] text-white">Open in New Tab</Button>
+              <Button
+                onClick={() =>
+                  window.open(`https://meet.jit.si/${room}`, '_blank')
+                }
+                className="bg-[#FF6A00] text-white"
+              >
+                Open in New Tab
+              </Button>
+            )}
+            {!isOwner && room && (
+              <ReportButton
+                variant="button"
+                onReport={() => setShowReportModal(true)}
+              />
             )}
           </div>
         </div>
 
         <Card className="p-0">
           {room ? (
-            <div style={{height: '75vh'}} ref={containerRef}>
+            <div style={{ height: '75vh' }} ref={containerRef}>
               {/* Jitsi External API will render into this container */}
             </div>
           ) : (
             <div className="p-6">
-              <p className="text-sm text-[#4A4A4A]">Live session has not been created for this lesson yet.</p>
+              <p className="text-sm text-[#4A4A4A]">
+                Live session has not been created for this lesson yet.
+              </p>
               {isOwner ? (
                 <div className="mt-4">
-                  <p className="text-sm text-[#4A4A4A]">Click "Create Session" to provision a Jitsi room.</p>
+                  <p className="text-sm text-[#4A4A4A]">
+                    Click "Create Session" to provision a Jitsi room.
+                  </p>
                 </div>
               ) : (
-                <p className="mt-4 text-sm text-[#4A4A4A]">Please wait for the instructor to create the session.</p>
+                <p className="mt-4 text-sm text-[#4A4A4A]">
+                  Please wait for the instructor to create the session.
+                </p>
               )}
             </div>
           )}
         </Card>
+
+        {/* Report Modal */}
+        {showReportModal && lesson && course && (
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            reportType="liveSession"
+            reportedEntity={lesson._id}
+            reportedUser={course.instructor?._id}
+          />
+        )}
       </div>
     </div>
   );

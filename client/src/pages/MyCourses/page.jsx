@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { fetchMyEnrollments, fetchMyCreatedCourses } from '../../api/courses';
+import ReportButton from '../../components/ReportButton';
+import ReportModal from '../../components/ReportModal';
 
 const ProgressBar = ({ percent = 0 }) => {
   return (
@@ -24,6 +26,8 @@ const MyCoursesPage = () => {
   const [created, setCreated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportingCourse, setReportingCourse] = useState(null);
 
   const load = async () => {
     try {
@@ -52,6 +56,11 @@ const MyCoursesPage = () => {
   useEffect(() => {
     load();
   }, []);
+
+  const handleReportCourse = course => {
+    setReportingCourse(course);
+    setShowReportModal(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -119,7 +128,7 @@ const MyCoursesPage = () => {
               enrolled.map(item => (
                 <Card key={item._id}>
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <h2 className="truncate text-lg font-semibold text-[#1A1A1A]">
                         {item.course?.title}
                       </h2>
@@ -130,14 +139,19 @@ const MyCoursesPage = () => {
                       <ProgressBar percent={item.progress?.percent || 0} />
                     </div>
 
-                    <Link to={`/courses/${item.course?._id}/content`}>
-                      <Button
-                        size="sm"
-                        className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
-                      >
-                        Open
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <ReportButton
+                        onClick={() => handleReportCourse(item.course)}
+                      />
+                      <Link to={`/courses/${item.course?._id}/content`}>
+                        <Button
+                          size="sm"
+                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                        >
+                          Open
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </Card>
               ))
@@ -204,6 +218,19 @@ const MyCoursesPage = () => {
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && reportingCourse && (
+        <ReportModal
+          targetType="course"
+          targetId={reportingCourse._id}
+          targetTitle={reportingCourse.title}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportingCourse(null);
+          }}
+        />
+      )}
     </div>
   );
 };

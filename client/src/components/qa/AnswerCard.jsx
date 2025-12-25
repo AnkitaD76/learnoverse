@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import VoteButton from './VoteButton';
+import ReportButton from '../ReportButton';
 import './qa-components.css';
 
 /**
@@ -14,9 +15,11 @@ const AnswerCard = ({
   onAccept,
   onEdit,
   onDelete,
+  onReport,
   canAccept = false,
   canEdit = false,
   canDelete = false,
+  currentUserId,
 }) => {
   const [showEditHistory, setShowEditHistory] = useState(false);
 
@@ -72,6 +75,15 @@ const AnswerCard = ({
                   Delete
                 </button>
               )}
+              {currentUserId &&
+                answer.author?._id !== currentUserId &&
+                onReport && (
+                  <ReportButton
+                    variant="icon"
+                    onReport={onReport}
+                    className="ml-2"
+                  />
+                )}
               {answer.editHistory && answer.editHistory.length > 0 && (
                 <button
                   className="action-btn"

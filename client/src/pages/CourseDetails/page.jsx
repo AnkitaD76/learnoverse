@@ -13,11 +13,18 @@ import { useSession } from '../../contexts/SessionContext';
 import { fetchMyCreatedCourses } from '../../api/courses';
 import { requestSkillSwap } from '../../api/skillSwap';
 import ConfirmationModal from '../../components/wallet/ConfirmationModal';
+import ReportButton from '../../components/ReportButton';
+import ReportModal from '../../components/ReportModal';
+import StarRating from '../../components/StarRating';
+import ReviewForm from '../../components/ReviewForm';
+import ReviewList from '../../components/ReviewList';
+import { getUserReview, createReview, updateReview } from '../../api/reviews';
 
 const CourseDetailPage = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { wallet, hasSufficientBalance, refreshWallet } = useWallet();
+  const { user } = useSession();
 
   const [course, setCourse] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +36,13 @@ const CourseDetailPage = () => {
   const [myCreatedCourses, setMyCreatedCourses] = useState([]);
   const [selectedMyCourseId, setSelectedMyCourseId] = useState(null);
   const [swapLoading, setSwapLoading] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  // Review states
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [userReview, setUserReview] = useState(null);
+  const [isEditingReview, setIsEditingReview] = useState(false);
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
 
   const loadCourse = async () => {
     try {
@@ -53,7 +67,21 @@ const CourseDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  const { user } = useSession();
+  // Load user's review if enrolled
+  useEffect(() => {
+    const loadUserReview = async () => {
+      if (course && user && course.enrolled) {
+        try {
+          const response = await getUserReview(courseId);
+          setUserReview(response.review);
+        } catch (err) {
+          console.error('Failed to load user review:', err);
+        }
+      }
+    };
+
+    loadUserReview();
+  }, [courseId, user, course?.enrolled]);
 
   const openSwapModal = async () => {
     try {
@@ -166,6 +194,48 @@ const CourseDetailPage = () => {
 
   const canAffordCourse =
     wallet && course ? hasSufficientBalance(course.pricePoints) : false;
+
+  // Review handlers
+  const handleSubmitReview = async reviewData => {
+    try {
+      if (isEditingReview && userReview) {
+        // Update existing review
+        await updateReview(userReview._id, reviewData);
+        setInfo('Review updated successfully!');
+      } else {
+        // Create new review
+        await createReview(
+          courseId,
+          reviewData.courseRating,
+          reviewData.instructorRating,
+          reviewData.reviewText
+        );
+        setInfo('Review submitted successfully!');
+      }
+
+      // Reload user review and course data
+      const response = await getUserReview(courseId);
+      setUserReview(response.review);
+      await loadCourse();
+      setReviewRefreshKey(prev => prev + 1);
+
+      setShowReviewForm(false);
+      setIsEditingReview(false);
+    } catch (err) {
+      throw err; // Let ReviewForm handle the error display
+    }
+  };
+
+  const handleEditReview = review => {
+    setIsEditingReview(true);
+    setShowReviewForm(true);
+  };
+
+  const handleReviewDeleted = async () => {
+    setUserReview(null);
+    await loadCourse();
+    setReviewRefreshKey(prev => prev + 1);
+  };
 
   if (isLoading) {
     return <p className="text-sm text-[#4A4A4A]">Loading course...</p>;
@@ -316,6 +386,112 @@ const CourseDetailPage = () => {
         {error && <p className="text-sm text-red-600">{error}</p>}
         {info && <p className="text-sm text-[#4A4A4A]">{info}</p>}
 
+        {/* Report Button */}
+        {course &&
+          user &&
+          course.instructor?._id !== user._id &&
+          course.instructor?._id !== user.userId && (
+            <div className="mt-4">
+              <ReportButton
+                variant="text"
+                onReport={() => setShowReportModal(true)}
+              />
+            </div>
+          )}
+
+        {/* Course Rating Overview */}
+        {course && course.reviewCount > 0 && (
+          <Card>
+            <div className="flex items-center gap-4">
+              <div>
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-4xl font-bold text-gray-900">
+                    {course.averageRating.toFixed(1)}
+                  </span>
+                  <StarRating rating={course.averageRating} size="lg" />
+                </div>
+                <p className="text-sm text-gray-600">
+                  {course.reviewCount}{' '}
+                  {course.reviewCount === 1 ? 'review' : 'reviews'}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Write Review Button (Only for enrolled students who haven't reviewed) */}
+        {course && user && course.enrolled && !userReview && (
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Share Your Experience
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Help others by reviewing this course
+                </p>
+              </div>
+              <Button onClick={() => setShowReviewForm(true)}>
+                Write a Review
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* User's Review (if exists) */}
+        {userReview && (
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Your Review
+              </h3>
+              <Button
+                variant="secondary"
+                onClick={() => handleEditReview(userReview)}
+              >
+                Edit Review
+              </Button>
+            </div>
+            <div className="mb-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="w-24 text-sm font-medium text-gray-700">
+                  Course:
+                </span>
+                <StarRating
+                  rating={userReview.courseRating}
+                  size="sm"
+                  showValue={true}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-24 text-sm font-medium text-gray-700">
+                  Instructor:
+                </span>
+                <StarRating
+                  rating={userReview.instructorRating}
+                  size="sm"
+                  showValue={true}
+                />
+              </div>
+            </div>
+            {userReview.reviewText && (
+              <p className="whitespace-pre-wrap text-gray-700">
+                {userReview.reviewText}
+              </p>
+            )}
+          </Card>
+        )}
+
+        {/* All Reviews List */}
+        <Card>
+          <ReviewList
+            key={reviewRefreshKey}
+            courseId={courseId}
+            onEditReview={handleEditReview}
+            onReviewDeleted={handleReviewDeleted}
+          />
+        </Card>
+
         {/* Enrollment Confirmation Modal */}
         <ConfirmationModal
           isOpen={showPointsConfirm}
@@ -341,6 +517,33 @@ const CourseDetailPage = () => {
           confirmText="Confirm Enrollment"
           isLoading={actionLoading}
         />
+
+        {/* Report Modal */}
+        {showReportModal && course && (
+          <ReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            reportType="course"
+            reportedEntity={course._id}
+            reportedUser={course.instructor?._id}
+          />
+        )}
+
+        {/* Review Form Modal */}
+        {showReviewForm && course && (
+          <ReviewForm
+            isOpen={showReviewForm}
+            onClose={() => {
+              setShowReviewForm(false);
+              setIsEditingReview(false);
+            }}
+            onSubmit={handleSubmitReview}
+            initialData={isEditingReview ? userReview : null}
+            isEditing={isEditingReview}
+            courseName={course.title}
+            instructorName={course.instructor?.name}
+          />
+        )}
       </div>
     </div>
   );

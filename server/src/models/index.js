@@ -18,3 +18,6 @@ export { default as Tag } from './Tag.js';
 
 // Reporting System Model
 export { default as Report } from './Report.js';
+
+// Rating & Review System Model
+export { default as Review } from './Review.js';

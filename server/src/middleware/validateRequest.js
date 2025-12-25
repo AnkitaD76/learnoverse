@@ -3,35 +3,49 @@ import { BadRequestError } from '../errors/index.js';
 /**
  * Middleware to validate request using Zod schemas
  * @param {ZodSchema} schema - Zod validation schema
- * @param {string} source - Source of data to validate ('body', 'query', 'params')
  */
-export const validateRequest = (schema, source = 'body') => {
+export const validateRequest = schema => {
     return async (req, res, next) => {
         try {
-            const dataToValidate = req[source];
-            const validated = await schema.parseAsync(dataToValidate);
+            // Check if schema has nested body, query, or params properties
+            const schemaShape = schema._def?.shape || schema.shape;
 
-            // For query and params, we need to handle them specially as they're read-only
-            if (source === 'query' || source === 'params') {
-                // Store validated data in a separate property
-                req.validated = req.validated || {};
-                req.validated[source] = validated;
-                // Also merge back into the original for compatibility
-                Object.keys(validated).forEach(key => {
-                    req[source][key] = validated[key];
-                });
+            if (
+                schemaShape &&
+                (schemaShape.body || schemaShape.query || schemaShape.params)
+            ) {
+                // Schema has multiple parts (body, query, params)
+                const dataToValidate = {
+                    body: req.body,
+                    query: req.query,
+                    params: req.params,
+                };
+
+                const validated = await schema.parseAsync(dataToValidate);
+
+                // Update request with validated data
+                if (validated.body) req.body = validated.body;
+                if (validated.query) {
+                    Object.keys(validated.query).forEach(key => {
+                        req.query[key] = validated.query[key];
+                    });
+                }
+                if (validated.params) {
+                    Object.keys(validated.params).forEach(key => {
+                        req.params[key] = validated.params[key];
+                    });
+                }
             } else {
-                req[source] = validated;
+                // Legacy: single source validation (defaults to body)
+                const validated = await schema.parseAsync(req.body);
+                req.body = validated;
             }
 
             next();
         } catch (error) {
             if (error.errors) {
                 // Zod validation error
-                const errorMessages = error.errors
-                    .map(err => `${err.path.join('.')}: ${err.message}`)
-                    .join(', ');
-                throw new BadRequestError(errorMessages);
+                throw new BadRequestError(JSON.stringify(error.errors));
             }
             throw error;
         }

@@ -18,6 +18,8 @@ import AnswerCard from '../../components/qa/AnswerCard';
 import TagList from '../../components/qa/TagList';
 import MarkdownEditor from '../../components/qa/MarkdownEditor';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import ReportButton from '../../components/ReportButton';
+import ReportModal from '../../components/ReportModal';
 import './QuestionDetailPage.css';
 
 /**
@@ -51,6 +53,10 @@ const QuestionDetailPage = () => {
     body: '',
     tags: '',
   });
+
+  // Report states
+  const [reportingQuestion, setReportingQuestion] = useState(false);
+  const [reportingAnswerId, setReportingAnswerId] = useState(null);
 
   useEffect(() => {
     fetchQuestion();
@@ -296,7 +302,17 @@ const QuestionDetailPage = () => {
           </div>
         ) : (
           <>
-            <h1 className="question-title">{question.title}</h1>
+            <div className="mb-4 flex items-center justify-between">
+              <h1 className="question-title">{question.title}</h1>
+              {user &&
+                question.user?._id !== user._id &&
+                question.user?._id !== user.userId && (
+                  <ReportButton
+                    variant="icon"
+                    onReport={() => setReportingQuestion(true)}
+                  />
+                )}
+            </div>
 
             <div className="question-meta">
               <span>Asked {formatDate(question.createdAt)}</span>
@@ -394,11 +410,13 @@ const QuestionDetailPage = () => {
                 onAccept={() => handleAcceptAnswer(answer._id)}
                 onEdit={() => handleEditAnswer(answer)}
                 onDelete={() => handleDeleteAnswer(answer._id)}
+                onReport={() => setReportingAnswerId(answer._id)}
                 canAccept={isQuestionAuthor && !question.acceptedAnswer}
                 canEdit={user?.userId === answer.author?._id}
                 canDelete={
                   user?.userId === answer.author?._id || user?.role === 'admin'
                 }
+                currentUserId={user?._id || user?.userId}
               />
             )}
           </div>
@@ -432,6 +450,29 @@ const QuestionDetailPage = () => {
             <a href="/login">Log in</a>
           </p>
         </div>
+      )}
+
+      {/* Report Modals */}
+      {reportingQuestion && question && (
+        <ReportModal
+          isOpen={reportingQuestion}
+          onClose={() => setReportingQuestion(false)}
+          reportType="post"
+          reportedEntity={question._id}
+          reportedUser={question.user?._id}
+        />
+      )}
+
+      {reportingAnswerId && (
+        <ReportModal
+          isOpen={!!reportingAnswerId}
+          onClose={() => setReportingAnswerId(null)}
+          reportType="post"
+          reportedEntity={reportingAnswerId}
+          reportedUser={
+            answers.find(a => a._id === reportingAnswerId)?.author?._id
+          }
+        />
       )}
     </div>
   );

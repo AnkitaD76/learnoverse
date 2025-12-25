@@ -216,6 +216,10 @@ const UserSchema = new mongoose.Schema(
             min: 0,
             index: true, // For leaderboards
         },
+
+        // Rating & Reviews (for instructors)
+        instructorAverageRating: { type: Number, default: 0, min: 0, max: 5 },
+        instructorReviewCount: { type: Number, default: 0, min: 0 },
     },
     { timestamps: true }
 );

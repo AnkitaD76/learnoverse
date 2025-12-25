@@ -54,6 +54,10 @@ const courseSchema = new mongoose.Schema(
 
         enrollCount: { type: Number, default: 0 },
 
+        // ✅ Rating & Reviews
+        averageRating: { type: Number, default: 0, min: 0, max: 5 },
+        reviewCount: { type: Number, default: 0, min: 0 },
+
         // ✅ Admin approval flow
         status: {
             type: String,

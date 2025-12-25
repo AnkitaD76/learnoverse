@@ -6,6 +6,7 @@ export const PostList = ({
   userId,
   onLike,
   onComment,
+  onReport,
 }) => {
   if (!posts || posts.length === 0) {
     return (
@@ -25,6 +26,7 @@ export const PostList = ({
           userId={userId}
           onLike={onLike}
           onComment={onComment}
+          onReport={onReport}
         />
       ))}
     </div>

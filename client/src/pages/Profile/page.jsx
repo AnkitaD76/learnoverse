@@ -5,6 +5,8 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import apiClient from '../../api/client';
 import { useRef } from 'react';
+import ReportButton from '../../components/ReportButton';
+import ReportModal from '../../components/ReportModal';
 
 const ProfilePage = () => {
   const { user, refreshUser } = useSession();

@@ -3,6 +3,7 @@ import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
 import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';
+import ReportButton from '../../../components/ReportButton';
 
 export const PostItem = ({
   post,
@@ -10,6 +11,7 @@ export const PostItem = ({
   userId,
   onLike,
   onComment,
+  onReport,
 }) => {
   const [showComments, setShowComments] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
@@ -47,6 +49,9 @@ export const PostItem = ({
             {new Date(post.createdAt).toLocaleDateString()}
           </p>
         </div>
+        {post.user?._id !== userId && onReport && (
+          <ReportButton variant="icon" onReport={() => onReport(post._id)} />
+        )}
       </div>
 
       {/* Post Content */}

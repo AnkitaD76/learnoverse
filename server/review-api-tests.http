@@ -1,0 +1,194 @@
+### Review System API Tests
+### Base URL: http://localhost:3000/api/v1
+
+### Variables
+@baseUrl = http://localhost:3000/api/v1
+@accessToken = YOUR_ACCESS_TOKEN_HERE
+@courseId = YOUR_COURSE_ID_HERE
+@reviewId = YOUR_REVIEW_ID_HERE
+@userId = YOUR_USER_ID_HERE
+
+###############################################
+# PUBLIC ROUTES (No Auth Required)
+###############################################
+
+### Get all reviews for a course (with pagination and sorting)
+GET {{baseUrl}}/reviews/course/{{courseId}}?page=1&limit=10&sortBy=newest
+Content-Type: application/json
+
+### Get reviews sorted by highest rating
+GET {{baseUrl}}/reviews/course/{{courseId}}?page=1&limit=10&sortBy=highest
+Content-Type: application/json
+
+### Get reviews sorted by most helpful
+GET {{baseUrl}}/reviews/course/{{courseId}}?page=1&limit=10&sortBy=helpful
+Content-Type: application/json
+
+### Get rating distribution for a course
+GET {{baseUrl}}/reviews/course/{{courseId}}/distribution
+Content-Type: application/json
+
+###############################################
+# AUTHENTICATED ROUTES (Student/Enrolled)
+###############################################
+
+### Create a review (must be enrolled)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "courseRating": 4.5,
+  "instructorRating": 5,
+  "reviewText": "Great course! The instructor explained concepts clearly and the content was very practical. Highly recommend for anyone starting with this topic."
+}
+
+### Create review with minimal data (no review text)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "courseRating": 4,
+  "instructorRating": 4.5
+}
+
+### Get my review for a specific course
+GET {{baseUrl}}/reviews/my-review/{{courseId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+### Update my review
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseRating": 5,
+  "instructorRating": 4.5,
+  "reviewText": "Updated: After completing the course, I appreciate it even more! The hands-on projects were especially valuable."
+}
+
+### Update only the review text
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "reviewText": "Quick update: The course materials are excellent!"
+}
+
+### Mark a review as helpful
+PATCH {{baseUrl}}/reviews/{{reviewId}}/helpful
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "helpful": true
+}
+
+### Mark a review as not helpful
+PATCH {{baseUrl}}/reviews/{{reviewId}}/helpful
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "helpful": false
+}
+
+### Delete my review
+DELETE {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+###############################################
+# ADMIN ROUTES
+###############################################
+
+### Admin: Delete any review
+DELETE {{baseUrl}}/reviews/admin/{{reviewId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+###############################################
+# ERROR CASES / EDGE CASES
+###############################################
+
+### Try to create review without enrollment
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "NON_ENROLLED_COURSE_ID",
+  "courseRating": 4,
+  "instructorRating": 4
+}
+
+### Try to create duplicate review
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "courseRating": 3,
+  "instructorRating": 3
+}
+
+### Try to create review with invalid rating (must be 1-5, 0.5 increments)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "courseRating": 6,
+  "instructorRating": 4
+}
+
+### Try to create review with invalid increment (not 0.5)
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseId": "{{courseId}}",
+  "courseRating": 4.3,
+  "instructorRating": 4
+}
+
+### Try to mark own review as helpful (should fail)
+PATCH {{baseUrl}}/reviews/{{reviewId}}/helpful
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "helpful": true
+}
+
+### Try to update someone else's review (should fail)
+PATCH {{baseUrl}}/reviews/{{reviewId}}
+Content-Type: application/json
+Cookie: accessToken={{accessToken}}
+
+{
+  "courseRating": 1
+}
+
+###############################################
+# TESTING WORKFLOW
+###############################################
+
+# 1. Create a course and enroll a student
+# 2. Student creates a review using POST /reviews
+# 3. Verify review appears in GET /reviews/course/:courseId
+# 4. Student updates review using PATCH /reviews/:id
+# 5. Another user marks review as helpful
+# 6. Check rating distribution and averages
+# 7. Verify course.averageRating and course.reviewCount updated
+# 8. Verify instructor.instructorAverageRating updated
+# 9. Admin can delete any review
+# 10. Student can delete their own review

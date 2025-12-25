@@ -4,6 +4,7 @@ import apiClient from '../../api/client';
 import { CreatePostForm } from './_components/CreatePostForm';
 import { PostList } from './_components/PostList';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import ReportModal from '../../components/ReportModal';
 
 const PostsPage = () => {
   const { user, isAuthenticated } = useSession();
@@ -11,6 +12,7 @@ const PostsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const userId = user?._id || user?.userId;
+  const [reportingPostId, setReportingPostId] = useState(null);
 
   useEffect(() => {
     fetchPosts();
