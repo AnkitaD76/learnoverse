@@ -21,3 +21,6 @@ export { default as Report } from './Report.js';
 
 // Rating & Review System Model
 export { default as Review } from './Review.js';
+
+// Certificate System Model
+export { default as Certificate } from './Certificate.js';

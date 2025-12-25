@@ -1,0 +1,276 @@
+###
+### Certificate System API Tests
+### Use with REST Client extension in VS Code
+###
+
+@baseUrl = http://localhost:3000
+@token = YOUR_JWT_TOKEN_HERE
+@courseId = YOUR_COURSE_ID_HERE
+@lessonId = YOUR_LESSON_ID_HERE
+@certificateId = YOUR_CERTIFICATE_ID_HERE
+
+### =============================================
+### STUDENT ENDPOINTS (Authentication Required)
+### =============================================
+
+### 1. Mark Lesson as Complete
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/lessons/{{lessonId}}/complete
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### Expected Response:
+# {
+#   "success": true,
+#   "message": "Lesson marked as complete",
+#   "progress": {
+#     "completedLessons": 1,
+#     "totalLessons": 3,
+#     "percentage": 33,
+#     "isComplete": false
+#   },
+#   "certificate": null
+# }
+
+### 2. Get My Certificate for a Course
+GET {{baseUrl}}/api/v1/courses/{{courseId}}/certificate
+Authorization: Bearer {{token}}
+
+### Expected Response (if certificate exists):
+# {
+#   "success": true,
+#   "certificate": {
+#     "id": "...",
+#     "certificateNumber": "LRN-2025-ABC12345",
+#     "issuedAt": "2025-12-25T10:00:00.000Z",
+#     "status": "issued"
+#   }
+# }
+
+### Expected Response (if no certificate):
+# {
+#   "success": true,
+#   "certificate": null
+# }
+
+### 3. Get My Enrollment for a Course
+GET {{baseUrl}}/api/v1/courses/{{courseId}}/my-enrollment
+Authorization: Bearer {{token}}
+
+### Expected Response:
+# {
+#   "success": true,
+#   "enrollment": {
+#     "_id": "...",
+#     "user": "...",
+#     "course": {...},
+#     "status": "enrolled",
+#     "completedLessonIds": ["...", "..."],
+#     "progress": {
+#       "completedLessons": 2,
+#       "totalLessons": 3,
+#       "percent": 67
+#     }
+#   }
+# }
+
+### 4. Get All My Enrollments
+GET {{baseUrl}}/api/v1/courses/me/enrollments
+Authorization: Bearer {{token}}
+
+### Expected Response:
+# {
+#   "success": true,
+#   "enrollments": [
+#     {
+#       "_id": "...",
+#       "course": {...},
+#       "completedLessonIds": [...],
+#       "progress": {
+#         "completedLessons": 2,
+#         "totalLessons": 3,
+#         "percent": 67
+#       }
+#     }
+#   ]
+# }
+
+### 5. Get All My Certificates (NEW - Achievements Page)
+GET {{baseUrl}}/api/v1/certificates/my-certificates
+Authorization: Bearer {{token}}
+
+### Expected Response:
+# {
+#   "success": true,
+#   "count": 2,
+#   "certificates": [
+#     {
+#       "_id": "...",
+#       "certificateNumber": "LRN-2025-ABC12345",
+#       "issuedAt": "2025-12-25T10:00:00.000Z",
+#       "status": "issued",
+#       "course": {
+#         "_id": "...",
+#         "title": "Introduction to Programming",
+#         "category": "Programming",
+#         "level": "beginner"
+#       }
+#     }
+#   ]
+# }
+
+### =============================================
+### PUBLIC ENDPOINTS (No Authentication)
+### =============================================
+
+### 6. Get Certificate Details (Public)
+GET {{baseUrl}}/api/certificates/{{certificateId}}
+
+### Expected Response:
+# {
+#   "success": true,
+#   "certificate": {
+#     "id": "...",
+#     "certificateNumber": "LRN-2025-ABC12345",
+#     "issuedAt": "2025-12-25T10:00:00.000Z",
+#     "status": "issued",
+#     "recipient": {
+#       "name": "John Doe"
+#     },
+#     "course": {
+#       "title": "Introduction to Programming",
+#       "instructor": "Jane Smith"
+#     }
+#   }
+# }
+
+### 7. Generate and Download PDF (Public)
+POST {{baseUrl}}/api/certificates/{{certificateId}}/pdf
+
+### Expected Response:
+# Binary PDF file download
+# Content-Type: application/pdf
+# Content-Disposition: attachment; filename="Certificate-LRN-2025-ABC12345.pdf"
+
+### Note: Rate limited to 5 requests per 15 minutes per IP
+
+### =============================================
+### ERROR CASES
+### =============================================
+
+### 8. Invalid Certificate ID Format
+GET {{baseUrl}}/api/certificates/invalid-id
+
+### Expected Response (400):
+# {
+#   "success": false,
+#   "message": "Invalid certificate ID format"
+# }
+
+### 9. Certificate Not Found
+GET {{baseUrl}}/api/certificates/507f1f77bcf86cd799439011
+
+### Expected Response (404):
+# {
+#   "success": false,
+#   "message": "Certificate not found"
+# }
+
+### 10. Mark Non-Enrolled Course Lesson as Complete
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/lessons/{{lessonId}}/complete
+Authorization: Bearer {{token}}
+
+### Expected Response (400):
+# {
+#   "success": false,
+#   "message": "You are not enrolled in this course"
+# }
+
+### 11. Rate Limit Exceeded (after 5 PDF downloads)
+POST {{baseUrl}}/api/certificates/{{certificateId}}/pdf
+
+### Expected Response (429):
+# {
+#   "message": "Too many PDF generation requests, please try again later"
+# }
+
+### =============================================
+### WORKFLOW TEST SEQUENCE
+### =============================================
+
+### Step 1: Enroll in a course (existing endpoint)
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/enroll
+Authorization: Bearer {{token}}
+
+### Step 2: Get enrollment to see initial progress
+GET {{baseUrl}}/api/v1/courses/{{courseId}}/my-enrollment
+Authorization: Bearer {{token}}
+
+### Step 3: Complete first lesson
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/lessons/LESSON_ID_1/complete
+Authorization: Bearer {{token}}
+
+### Step 4: Complete second lesson
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/lessons/LESSON_ID_2/complete
+Authorization: Bearer {{token}}
+
+### Step 5: Complete final lesson (should issue certificate)
+POST {{baseUrl}}/api/v1/courses/{{courseId}}/lessons/LESSON_ID_3/complete
+Authorization: Bearer {{token}}
+
+### Expected Response (with certificate):
+# {
+#   "success": true,
+#   "message": "Lesson marked as complete",
+#   "progress": {
+#     "completedLessons": 3,
+#     "totalLessons": 3,
+#     "percentage": 100,
+#     "isComplete": true
+#   },
+#   "certificate": {
+#     "id": "...",
+#     "certificateNumber": "LRN-2025-ABC12345",
+#     "issuedAt": "2025-12-25T10:00:00.000Z"
+#   }
+# }
+
+### Step 6: Get certificate details
+GET {{baseUrl}}/api/v1/courses/{{courseId}}/certificate
+Authorization: Bearer {{token}}
+
+### Step 7: View certificate (public - copy certificateId from previous response)
+GET {{baseUrl}}/api/certificates/CERTIFICATE_ID_FROM_STEP_6
+
+### Step 8: Download PDF
+POST {{baseUrl}}/api/certificates/CERTIFICATE_ID_FROM_STEP_6/pdf
+
+### =============================================
+### NOTES
+### =============================================
+
+# 1. Replace placeholder values:
+#    - {{token}} with actual JWT token from login
+#    - {{courseId}} with actual course ID
+#    - {{lessonId}} with actual lesson ID
+#    - {{certificateId}} with actual certificate ID
+
+# 2. Certificate is automatically issued when:
+#    - All lessons in a course are marked complete
+#    - User is enrolled with status "enrolled"
+#    - No existing certificate for this user+course combination
+
+# 3. Certificate numbers are unique and auto-generated:
+#    - Format: LRN-YYYY-XXXXXXXX
+#    - LRN = Learnoverse
+#    - YYYY = Year
+#    - XXXXXXXX = Random alphanumeric
+
+# 4. PDF generation:
+#    - Uses Puppeteer on server-side
+#    - PDFs are never stored (generated on-demand)
+#    - Rate limited to prevent abuse
+
+# 5. Public access:
+#    - Certificate viewing requires no authentication
+#    - PDF download requires no authentication
+#    - Enables easy sharing and verification

@@ -87,13 +87,19 @@ export const createCourse = async (req, res) => {
         for (let i = 0; i < lessons.length; i++) {
             const l = lessons[i];
             if (!l || typeof l !== 'object') {
-                throw new BadRequestError(`Lesson at index ${i} must be an object`);
+                throw new BadRequestError(
+                    `Lesson at index ${i} must be an object`
+                );
             }
             if (!l.title || !String(l.title).trim()) {
-                throw new BadRequestError(`Lesson at index ${i} is missing a title`);
+                throw new BadRequestError(
+                    `Lesson at index ${i} is missing a title`
+                );
             }
             if (!l.type || !allowedTypes.includes(l.type)) {
-                throw new BadRequestError(`Lesson at index ${i} has invalid or missing type`);
+                throw new BadRequestError(
+                    `Lesson at index ${i} has invalid or missing type`
+                );
             }
         }
     }
@@ -118,31 +124,56 @@ export const createCourse = async (req, res) => {
     // Debug: log saved course
     console.log('✅ Course created with lessons:', course.lessons);
 
-        // If any lessons include a pre-filled live.roomName, spawn keepalive processes
-        try {
-            if (Array.isArray(course.lessons)) {
-                for (const l of course.lessons) {
-                    if (l.type === 'live' && l.live?.roomName && !l.live?.keepalivePid) {
-                        try {
-                            const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
-                            const child = spawn(process.execPath, [runnerPath, l.live.roomName], {
+    // If any lessons include a pre-filled live.roomName, spawn keepalive processes
+    try {
+        if (Array.isArray(course.lessons)) {
+            for (const l of course.lessons) {
+                if (
+                    l.type === 'live' &&
+                    l.live?.roomName &&
+                    !l.live?.keepalivePid
+                ) {
+                    try {
+                        const runnerPath = path.resolve(
+                            process.cwd(),
+                            'server',
+                            'src',
+                            'utils',
+                            'jitsiKeepaliveRunner.js'
+                        );
+                        const child = spawn(
+                            process.execPath,
+                            [runnerPath, l.live.roomName],
+                            {
                                 detached: true,
                                 stdio: 'ignore',
-                            });
-                            child.unref();
-                            l.live.keepalivePid = child.pid;
-                            console.log('Spawned keepalive(pid=', child.pid, ') for prefilled lesson room=', l.live.roomName);
-                        } catch (e) {
-                            console.error('Failed to spawn keepalive for lesson during course create', e);
-                        }
+                            }
+                        );
+                        child.unref();
+                        l.live.keepalivePid = child.pid;
+                        console.log(
+                            'Spawned keepalive(pid=',
+                            child.pid,
+                            ') for prefilled lesson room=',
+                            l.live.roomName
+                        );
+                    } catch (e) {
+                        console.error(
+                            'Failed to spawn keepalive for lesson during course create',
+                            e
+                        );
                     }
                 }
-                // save updated PIDs
-                await course.save();
             }
-        } catch (e) {
-            console.error('Error while attempting to spawn keepalives on course create', e);
+            // save updated PIDs
+            await course.save();
         }
+    } catch (e) {
+        console.error(
+            'Error while attempting to spawn keepalives on course create',
+            e
+        );
+    }
 
     res.status(StatusCodes.CREATED).json({ success: true, course });
 };
@@ -321,9 +352,69 @@ export const getMyEnrollments = async (req, res) => {
         .populate('course')
         .sort('-createdAt');
 
+    // Add progress information to each enrollment
+    const enrollmentsWithProgress = enrollments.map(enrollment => {
+        const totalLessons = enrollment.course?.lessons?.length || 0;
+        const completedLessons = enrollment.completedLessonIds?.length || 0;
+        const percent =
+            totalLessons > 0
+                ? Math.round((completedLessons / totalLessons) * 100)
+                : 0;
+
+        return {
+            ...enrollment.toObject(),
+            progress: {
+                completedLessons,
+                totalLessons,
+                percent,
+            },
+        };
+    });
+
     res.status(StatusCodes.OK).json({
         success: true,
-        enrollments,
+        enrollments: enrollmentsWithProgress,
+    });
+};
+
+/**
+ * GET /api/v1/courses/:id/my-enrollment
+ * Get current user's enrollment for a specific course
+ */
+export const getMyEnrollment = async (req, res) => {
+    const userId = req.user.userId;
+    const courseId = req.params.id;
+
+    const enrollment = await Enrollment.findOne({
+        user: userId,
+        course: courseId,
+        status: 'enrolled',
+    }).populate('course');
+
+    if (!enrollment) {
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            enrollment: null,
+        });
+    }
+
+    const totalLessons = enrollment.course?.lessons?.length || 0;
+    const completedLessons = enrollment.completedLessonIds?.length || 0;
+    const percent =
+        totalLessons > 0
+            ? Math.round((completedLessons / totalLessons) * 100)
+            : 0;
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        enrollment: {
+            ...enrollment.toObject(),
+            progress: {
+                completedLessons,
+                totalLessons,
+                percent,
+            },
+        },
     });
 };
 
@@ -523,48 +614,69 @@ export const enrollInCourseWithPoints = async (req, res) => {
  * Add a lesson to an existing course (only instructor or admin)
  */
 export const addLessonToCourse = async (req, res) => {
-  const { role, userId } = req.user;
-  const courseId = req.params.id;
+    const { role, userId } = req.user;
+    const courseId = req.params.id;
 
-  const { title, type, contentUrl, textContent, live } = req.body;
+    const { title, type, contentUrl, textContent, live } = req.body;
 
-  const course = await Course.findById(courseId);
-  if (!course) throw new NotFoundError('Course not found');
+    const course = await Course.findById(courseId);
+    if (!course) throw new NotFoundError('Course not found');
 
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-    throw new UnauthorizedError('You do not have permission to modify this course');
-  }
+    if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+        throw new UnauthorizedError(
+            'You do not have permission to modify this course'
+        );
+    }
 
-  if (!title || !title.trim()) {
-    throw new BadRequestError('Lesson title is required');
-  }
+    if (!title || !title.trim()) {
+        throw new BadRequestError('Lesson title is required');
+    }
 
-  const order = Array.isArray(course.lessons) ? course.lessons.length : 0;
-  const lesson = { title: title.trim(), type: type || 'video', order };
+    const order = Array.isArray(course.lessons) ? course.lessons.length : 0;
+    const lesson = { title: title.trim(), type: type || 'video', order };
 
-  if (lesson.type === 'video') lesson.contentUrl = contentUrl || '';
-  if (lesson.type === 'text') lesson.textContent = textContent || '';
-  if (lesson.type === 'live') lesson.live = live || {};
+    if (lesson.type === 'video') lesson.contentUrl = contentUrl || '';
+    if (lesson.type === 'text') lesson.textContent = textContent || '';
+    if (lesson.type === 'live') lesson.live = live || {};
 
-  course.lessons = course.lessons || [];
-  course.lessons.push(lesson);
+    course.lessons = course.lessons || [];
+    course.lessons.push(lesson);
 
-  await course.save();
+    await course.save();
 
     // If lesson contains a prefilled live.roomName, spawn keepalive
     try {
         const pushed = course.lessons[course.lessons.length - 1];
-        if (pushed.type === 'live' && pushed.live?.roomName && !pushed.live?.keepalivePid) {
+        if (
+            pushed.type === 'live' &&
+            pushed.live?.roomName &&
+            !pushed.live?.keepalivePid
+        ) {
             try {
-                const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
-                const child = spawn(process.execPath, [runnerPath, pushed.live.roomName], {
-                    detached: true,
-                    stdio: 'ignore',
-                });
+                const runnerPath = path.resolve(
+                    process.cwd(),
+                    'server',
+                    'src',
+                    'utils',
+                    'jitsiKeepaliveRunner.js'
+                );
+                const child = spawn(
+                    process.execPath,
+                    [runnerPath, pushed.live.roomName],
+                    {
+                        detached: true,
+                        stdio: 'ignore',
+                    }
+                );
                 child.unref();
                 pushed.live.keepalivePid = child.pid;
                 await course.save();
-                console.log('Spawned keepalive(pid=', child.pid, ') for added lesson room=', pushed.live.roomName);
+                console.log(
+                    'Spawned keepalive(pid=',
+                    child.pid,
+                    ') for added lesson room=',
+                    pushed.live.roomName
+                );
             } catch (e) {
                 console.error('Failed to spawn keepalive for added lesson', e);
             }
@@ -573,7 +685,11 @@ export const addLessonToCourse = async (req, res) => {
         console.error('Error handling keepalive for added lesson', e);
     }
 
-  res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson added' });
+    res.status(StatusCodes.OK).json({
+        success: true,
+        course,
+        message: 'Lesson added',
+    });
 };
 
 /**
@@ -581,51 +697,75 @@ export const addLessonToCourse = async (req, res) => {
  * Update a lesson inside a course (only instructor or admin)
  */
 export const updateLessonInCourse = async (req, res) => {
-  const { role, userId } = req.user;
-  const courseId = req.params.id;
-  const lessonId = req.params.lessonId;
+    const { role, userId } = req.user;
+    const courseId = req.params.id;
+    const lessonId = req.params.lessonId;
 
-  const { title, type, contentUrl, textContent, live, order } = req.body;
+    const { title, type, contentUrl, textContent, live, order } = req.body;
 
-  const course = await Course.findById(courseId);
-  if (!course) throw new NotFoundError('Course not found');
+    const course = await Course.findById(courseId);
+    if (!course) throw new NotFoundError('Course not found');
 
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-    throw new UnauthorizedError('You do not have permission to modify this course');
-  }
+    if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+        throw new UnauthorizedError(
+            'You do not have permission to modify this course'
+        );
+    }
 
-  const lesson = course.lessons.id(lessonId);
-  if (!lesson) throw new NotFoundError('Lesson not found');
+    const lesson = course.lessons.id(lessonId);
+    if (!lesson) throw new NotFoundError('Lesson not found');
 
-  if (title !== undefined) lesson.title = title;
-  if (type !== undefined) lesson.type = type;
-  if (contentUrl !== undefined) lesson.contentUrl = contentUrl;
-  if (textContent !== undefined) lesson.textContent = textContent;
-  if (live !== undefined) lesson.live = live;
-  if (order !== undefined) lesson.order = order;
+    if (title !== undefined) lesson.title = title;
+    if (type !== undefined) lesson.type = type;
+    if (contentUrl !== undefined) lesson.contentUrl = contentUrl;
+    if (textContent !== undefined) lesson.textContent = textContent;
+    if (live !== undefined) lesson.live = live;
+    if (order !== undefined) lesson.order = order;
 
-  await course.save();
+    await course.save();
 
     // If lesson is live and has a roomName but no keepalive, spawn one.
     try {
-        if (lesson.type === 'live' && lesson.live?.roomName && !lesson.live?.keepalivePid) {
+        if (
+            lesson.type === 'live' &&
+            lesson.live?.roomName &&
+            !lesson.live?.keepalivePid
+        ) {
             try {
-                const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
-                const child = spawn(process.execPath, [runnerPath, lesson.live.roomName], {
-                    detached: true,
-                    stdio: 'ignore',
-                });
+                const runnerPath = path.resolve(
+                    process.cwd(),
+                    'server',
+                    'src',
+                    'utils',
+                    'jitsiKeepaliveRunner.js'
+                );
+                const child = spawn(
+                    process.execPath,
+                    [runnerPath, lesson.live.roomName],
+                    {
+                        detached: true,
+                        stdio: 'ignore',
+                    }
+                );
                 child.unref();
                 lesson.live.keepalivePid = child.pid;
                 await course.save();
-                console.log('Spawned keepalive(pid=', child.pid, ') for updated lesson room=', lesson.live.roomName);
+                console.log(
+                    'Spawned keepalive(pid=',
+                    child.pid,
+                    ') for updated lesson room=',
+                    lesson.live.roomName
+                );
             } catch (e) {
-                console.error('Failed to spawn keepalive for updated lesson', e);
+                console.error(
+                    'Failed to spawn keepalive for updated lesson',
+                    e
+                );
             }
         }
 
         // If live room was removed but a keepalive exists, try to kill it and clear PID
-        if (!(lesson.live?.roomName) && lesson.live?.keepalivePid) {
+        if (!lesson.live?.roomName && lesson.live?.keepalivePid) {
             try {
                 process.kill(lesson.live.keepalivePid);
             } catch (e) {
@@ -638,7 +778,11 @@ export const updateLessonInCourse = async (req, res) => {
         console.error('Error handling keepalive for updated lesson', e);
     }
 
-    res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson updated' });
+    res.status(StatusCodes.OK).json({
+        success: true,
+        course,
+        message: 'Lesson updated',
+    });
 };
 
 /**
@@ -646,51 +790,73 @@ export const updateLessonInCourse = async (req, res) => {
  * Remove a lesson from a course (only instructor or admin)
  */
 export const deleteLessonFromCourse = async (req, res) => {
-  const { role, userId } = req.user;
-  const courseId = req.params.id;
-  const lessonId = req.params.lessonId;
+    const { role, userId } = req.user;
+    const courseId = req.params.id;
+    const lessonId = req.params.lessonId;
 
-  const course = await Course.findById(courseId);
-  if (!course) throw new NotFoundError('Course not found');
+    const course = await Course.findById(courseId);
+    if (!course) throw new NotFoundError('Course not found');
 
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-    throw new UnauthorizedError('You do not have permission to modify this course');
-  }
+    if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+        throw new UnauthorizedError(
+            'You do not have permission to modify this course'
+        );
+    }
 
-  const lesson = course.lessons.id(lessonId);
-  if (!lesson) throw new NotFoundError('Lesson not found');
+    const lesson = course.lessons.id(lessonId);
+    if (!lesson) throw new NotFoundError('Lesson not found');
 
     // If a keepalive PID exists for this lesson, try to kill it
     try {
         if (lesson.live?.keepalivePid) {
             try {
                 process.kill(lesson.live.keepalivePid);
-                console.log('Killed keepalive pid=', lesson.live.keepalivePid, 'for lesson', lessonId);
+                console.log(
+                    'Killed keepalive pid=',
+                    lesson.live.keepalivePid,
+                    'for lesson',
+                    lessonId
+                );
             } catch (e) {
-                console.warn('Failed to kill keepalive pid', lesson.live.keepalivePid, e);
+                console.warn(
+                    'Failed to kill keepalive pid',
+                    lesson.live.keepalivePid,
+                    e
+                );
             }
             // clear PID
             lesson.live.keepalivePid = null;
         }
     } catch (e) {
-        console.error('Error while cleaning keepalive PID during lesson delete', e);
+        console.error(
+            'Error while cleaning keepalive PID during lesson delete',
+            e
+        );
     }
 
-        // Remove lesson: prefer subdocument.remove(), but fall back to filtering if not available
-        try {
-            if (lesson && typeof lesson.remove === 'function') {
-                lesson.remove();
-            } else {
-                course.lessons = (course.lessons || []).filter(l => String(l._id) !== String(lessonId));
-            }
-        } catch (e) {
-            // fallback
-            course.lessons = (course.lessons || []).filter(l => String(l._id) !== String(lessonId));
+    // Remove lesson: prefer subdocument.remove(), but fall back to filtering if not available
+    try {
+        if (lesson && typeof lesson.remove === 'function') {
+            lesson.remove();
+        } else {
+            course.lessons = (course.lessons || []).filter(
+                l => String(l._id) !== String(lessonId)
+            );
         }
+    } catch (e) {
+        // fallback
+        course.lessons = (course.lessons || []).filter(
+            l => String(l._id) !== String(lessonId)
+        );
+    }
 
-        await course.save();
+    await course.save();
 
-    res.status(StatusCodes.OK).json({ success: true, course, message: 'Lesson deleted' });
+    res.status(StatusCodes.OK).json({
+        success: true,
+        course,
+        message: 'Lesson deleted',
+    });
 };
 
 /**
@@ -698,37 +864,45 @@ export const deleteLessonFromCourse = async (req, res) => {
  * Create a Jitsi live session (roomName + joinCode) for a lesson (instructor/admin only)
  */
 export const createLiveSessionInLesson = async (req, res) => {
-  const { role, userId } = req.user;
-  const courseId = req.params.id;
-  const lessonId = req.params.lessonId;
+    const { role, userId } = req.user;
+    const courseId = req.params.id;
+    const lessonId = req.params.lessonId;
 
-  const { startTime } = req.body || {};
+    const { startTime } = req.body || {};
 
-  const course = await Course.findById(courseId);
-  if (!course) throw new NotFoundError('Course not found');
+    const course = await Course.findById(courseId);
+    if (!course) throw new NotFoundError('Course not found');
 
-  if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-    throw new UnauthorizedError('You do not have permission to modify this course');
-  }
+    if (role !== 'admin' && String(course.instructor) !== String(userId)) {
+        throw new UnauthorizedError(
+            'You do not have permission to modify this course'
+        );
+    }
 
-  const lesson = course.lessons.id(lessonId);
-  if (!lesson) throw new NotFoundError('Lesson not found');
+    const lesson = course.lessons.id(lessonId);
+    if (!lesson) throw new NotFoundError('Lesson not found');
 
-  // generate a unique room name and a short join code
-  const roomName = `learnoverse-${courseId}-${Date.now().toString(36)}`;
-  const joinCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+    // generate a unique room name and a short join code
+    const roomName = `learnoverse-${courseId}-${Date.now().toString(36)}`;
+    const joinCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
-  lesson.live = lesson.live || {};
-  lesson.live.roomName = roomName;
-  lesson.live.joinCode = joinCode;
-  if (startTime) lesson.live.startTime = new Date(startTime);
+    lesson.live = lesson.live || {};
+    lesson.live.roomName = roomName;
+    lesson.live.joinCode = joinCode;
+    if (startTime) lesson.live.startTime = new Date(startTime);
 
-  await course.save();
+    await course.save();
 
     // Try to spawn a detached keepalive process so the public meet.jit.si room
     // is joined by a headless client and isn't reclaimed while class runs.
     try {
-        const runnerPath = path.resolve(process.cwd(), 'server', 'src', 'utils', 'jitsiKeepaliveRunner.js');
+        const runnerPath = path.resolve(
+            process.cwd(),
+            'server',
+            'src',
+            'utils',
+            'jitsiKeepaliveRunner.js'
+        );
         const child = spawn(process.execPath, [runnerPath, roomName], {
             detached: true,
             stdio: 'ignore',
@@ -743,7 +917,13 @@ export const createLiveSessionInLesson = async (req, res) => {
         console.error('Failed to spawn keepalive runner', e);
     }
 
-    res.status(StatusCodes.OK).json({ success: true, course, message: 'Live session created', roomName, joinCode });
+    res.status(StatusCodes.OK).json({
+        success: true,
+        course,
+        message: 'Live session created',
+        roomName,
+        joinCode,
+    });
 };
 
 /**
@@ -759,7 +939,9 @@ export const stopKeepaliveForLesson = async (req, res) => {
     if (!course) throw new NotFoundError('Course not found');
 
     if (role !== 'admin' && String(course.instructor) !== String(userId)) {
-        throw new UnauthorizedError('You do not have permission to modify this course');
+        throw new UnauthorizedError(
+            'You do not have permission to modify this course'
+        );
     }
 
     const lesson = course.lessons.id(lessonId);
@@ -769,11 +951,19 @@ export const stopKeepaliveForLesson = async (req, res) => {
         try {
             process.kill(lesson.live.keepalivePid);
         } catch (e) {
-            console.warn('Failed to kill keepalive pid', lesson.live.keepalivePid, e);
+            console.warn(
+                'Failed to kill keepalive pid',
+                lesson.live.keepalivePid,
+                e
+            );
         }
         lesson.live.keepalivePid = null;
         await course.save();
     }
 
-    res.status(StatusCodes.OK).json({ success: true, course, message: 'Keepalive stopped' });
+    res.status(StatusCodes.OK).json({
+        success: true,
+        course,
+        message: 'Keepalive stopped',
+    });
 };

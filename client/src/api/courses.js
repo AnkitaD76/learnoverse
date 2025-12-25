@@ -41,6 +41,12 @@ export const fetchMyEnrollments = async () => {
   return res.data;
 };
 
+// ✅ NEW: Get my enrollment for a specific course
+export const fetchMyEnrollment = async courseId => {
+  const res = await apiClient.get(`/courses/${courseId}/my-enrollment`);
+  return res.data;
+};
+
 // ✅ NEW: My created courses
 export const fetchMyCreatedCourses = async () => {
   const res = await apiClient.get('/courses/me/created');
@@ -75,12 +81,21 @@ export const deleteCourseLesson = async (courseId, lessonId) => {
   return res.data;
 };
 
-export const createLessonLiveSession = async (courseId, lessonId, payload = {}) => {
-  const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/create-live`, payload);
+export const createLessonLiveSession = async (
+  courseId,
+  lessonId,
+  payload = {}
+) => {
+  const res = await apiClient.post(
+    `/courses/${courseId}/lessons/${lessonId}/create-live`,
+    payload
+  );
   return res.data;
 };
 
 export const stopLessonKeepalive = async (courseId, lessonId) => {
-  const res = await apiClient.post(`/courses/${courseId}/lessons/${lessonId}/stop-keepalive`);
+  const res = await apiClient.post(
+    `/courses/${courseId}/lessons/${lessonId}/stop-keepalive`
+  );
   return res.data;
 };

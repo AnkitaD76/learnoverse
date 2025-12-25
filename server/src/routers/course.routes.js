@@ -11,15 +11,20 @@ import {
     enrollInCourseWithPoints,
     withdrawFromCourse,
     getMyEnrollments,
+    getMyEnrollment,
     getMyCreatedCourses,
     deleteCourse,
     getCourseEnrollments,
-  addLessonToCourse,
-  updateLessonInCourse,
-  deleteLessonFromCourse,
-  createLiveSessionInLesson,
+    addLessonToCourse,
+    updateLessonInCourse,
+    deleteLessonFromCourse,
+    createLiveSessionInLesson,
     stopKeepaliveForLesson,
 } from '../controllers/course.controller.js';
+import {
+    markLessonComplete,
+    getMyCertificate,
+} from '../controllers/certificate.controller.js';
 
 const router = express.Router();
 
@@ -51,19 +56,75 @@ router.get('/', getCourses);
 // Course details
 router.get('/:id', getCourseById);
 
+// Get current user's enrollment for a course
+router.get(
+    '/:id/my-enrollment',
+    authenticate,
+    requireVerification,
+    getMyEnrollment
+);
+
 // Protected actions
 router.post('/', authenticate, requireVerification, createCourse);
 router.delete('/:id', authenticate, requireVerification, deleteCourse);
 router.post('/:id/enroll', authenticate, requireVerification, enrollInCourse);
-router.post('/:id/withdraw', authenticate, requireVerification, withdrawFromCourse);
-router.get('/:id/enrollments', authenticate, requireVerification, getCourseEnrollments);
+router.post(
+    '/:id/withdraw',
+    authenticate,
+    requireVerification,
+    withdrawFromCourse
+);
+router.get(
+    '/:id/enrollments',
+    authenticate,
+    requireVerification,
+    getCourseEnrollments
+);
 
 // Add lesson (instructor/admin)
-router.post('/:id/lessons', authenticate, requireVerification, addLessonToCourse);
-router.patch('/:id/lessons/:lessonId', authenticate, requireVerification, updateLessonInCourse);
-router.delete('/:id/lessons/:lessonId', authenticate, requireVerification, deleteLessonFromCourse);
-router.post('/:id/lessons/:lessonId/create-live', authenticate, requireVerification, createLiveSessionInLesson);
-router.post('/:id/lessons/:lessonId/stop-keepalive', authenticate, requireVerification, stopKeepaliveForLesson);
+router.post(
+    '/:id/lessons',
+    authenticate,
+    requireVerification,
+    addLessonToCourse
+);
+router.patch(
+    '/:id/lessons/:lessonId',
+    authenticate,
+    requireVerification,
+    updateLessonInCourse
+);
+router.delete(
+    '/:id/lessons/:lessonId',
+    authenticate,
+    requireVerification,
+    deleteLessonFromCourse
+);
+router.post(
+    '/:id/lessons/:lessonId/create-live',
+    authenticate,
+    requireVerification,
+    createLiveSessionInLesson
+);
+router.post(
+    '/:id/lessons/:lessonId/stop-keepalive',
+    authenticate,
+    requireVerification,
+    stopKeepaliveForLesson
+);
 
+// Lesson completion and certificates
+router.post(
+    '/:id/lessons/:lessonId/complete',
+    authenticate,
+    requireVerification,
+    markLessonComplete
+);
+router.get(
+    '/:id/certificate',
+    authenticate,
+    requireVerification,
+    getMyCertificate
+);
 
 export default router;

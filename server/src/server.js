@@ -27,6 +27,7 @@ import qaRoutes from './routers/qa.routes.js';
 import searchRoutes from './routers/search.routes.js';
 import reportRoutes from './routers/report.routes.js';
 import reviewRoutes from './routers/review.routes.js';
+import certificateRoutes from './routers/certificate.routes.js';
 
 // (Optional: only keep these if you really have these router files)
 import notificationsRoutes from './routers/notifications.routes.js';
@@ -74,6 +75,7 @@ app.use('/api/v1/qa', qaRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/certificates', certificateRoutes);
 
 // Optional modules (keep only if you created these endpoints)
 app.use('/api/v1/notifications', notificationsRoutes);

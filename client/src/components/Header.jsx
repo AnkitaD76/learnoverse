@@ -129,6 +129,14 @@ export const Header = () => {
                       </Link>
 
                       <Link
+                        to="/achievements"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        🏆 Achievements
+                      </Link>
+
+                      <Link
                         to="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
@@ -264,6 +272,16 @@ export const Header = () => {
                     >
                       <Button variant="outline" className="w-full">
                         My Courses
+                      </Button>
+                    </Link>
+
+                    <Link
+                      to="/achievements"
+                      className="block"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="outline" className="w-full">
+                        🏆 Achievements
                       </Button>
                     </Link>
 

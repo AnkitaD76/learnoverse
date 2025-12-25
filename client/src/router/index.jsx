@@ -45,6 +45,12 @@ import SearchPage from '../pages/Search/page';
 import MyReportsPage from '../pages/MyReports';
 import AdminReportsPage from '../pages/AdminReports';
 
+// Certificate
+import CertificatePage from '../pages/Certificate/page';
+
+// Achievements
+import AchievementsPage from '../pages/Achievements/page';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -155,6 +161,22 @@ export const AppRouter = () => {
 
       {/* Search */}
       <Route path="/search" element={<SearchPage />} />
+
+      {/* Certificate - Public Route */}
+      <Route
+        path="/certificates/:certificateId"
+        element={<CertificatePage />}
+      />
+
+      {/* Achievements - Protected Route */}
+      <Route
+        path="/achievements"
+        element={
+          <ProtectedRoute>
+            <AchievementsPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Q&A Routes */}
       <Route path="/qa" element={<QuestionsListPage />} />
