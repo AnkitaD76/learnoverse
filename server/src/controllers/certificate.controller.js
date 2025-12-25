@@ -5,6 +5,10 @@ import {
     NotFoundError,
     UnauthorizedError,
 } from '../errors/index.js';
+import {
+    checkCourseCompletion,
+    issueCertificateIfComplete,
+} from '../services/completion.service.js';
 
 /**
  * POST /api/v1/courses/:id/lessons/:lessonId/complete
@@ -47,30 +51,13 @@ export const markLessonComplete = async (req, res) => {
         await enrollment.save();
     }
 
-    // Check if course is now complete
+    // Check if course is now complete (including evaluation scores)
     const totalLessons = course.lessons.length;
     const completedLessons = enrollment.completedLessonIds.length;
-    const isCourseComplete =
-        totalLessons > 0 && completedLessons >= totalLessons;
 
-    let certificate = null;
-
-    // Issue certificate if course is complete and not already issued
-    if (isCourseComplete) {
-        const existingCertificate = await Certificate.findOne({
-            user: userId,
-            course: courseId,
-        });
-
-        if (!existingCertificate) {
-            certificate = await Certificate.create({
-                user: userId,
-                course: courseId,
-            });
-        } else {
-            certificate = existingCertificate;
-        }
-    }
+    // Use the completion service to check if course is complete
+    const completionStatus = await checkCourseCompletion(userId, courseId);
+    const certificate = await issueCertificateIfComplete(userId, courseId);
 
     res.status(StatusCodes.OK).json({
         success: true,
@@ -84,7 +71,9 @@ export const markLessonComplete = async (req, res) => {
                 totalLessons > 0
                     ? Math.round((completedLessons / totalLessons) * 100)
                     : 0,
-            isComplete: isCourseComplete,
+            isComplete: completionStatus.isComplete,
+            totalScore: completionStatus.totalScore,
+            reason: completionStatus.reason,
         },
         certificate: certificate
             ? {

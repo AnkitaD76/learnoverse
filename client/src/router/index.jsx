@@ -51,6 +51,14 @@ import CertificatePage from '../pages/Certificate/page';
 // Achievements
 import AchievementsPage from '../pages/Achievements/page';
 
+// Evaluations
+import { InstructorEvaluationsPage } from '../pages/InstructorEvaluations/page';
+import { CreateEvaluationPage } from '../pages/CreateEvaluation/page';
+import { EvaluationSubmissionsPage } from '../pages/EvaluationSubmissions/page';
+import { StudentEvaluationsPage } from '../pages/StudentEvaluations/page';
+import { AttemptEvaluationPage } from '../pages/AttemptEvaluation/page';
+import { ViewSubmissionPage } from '../pages/ViewSubmission/page';
+
 export const AppRouter = () => {
   return (
     <Routes>
@@ -152,6 +160,58 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <StudentEnrolledPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Evaluation Routes - Instructor */}
+      <Route
+        path="/courses/:courseId/evaluations"
+        element={
+          <ProtectedRoute>
+            <InstructorEvaluationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/courses/:courseId/evaluations/create"
+        element={
+          <ProtectedRoute>
+            <CreateEvaluationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/evaluations/:evaluationId/submissions"
+        element={
+          <ProtectedRoute>
+            <EvaluationSubmissionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Evaluation Routes - Student */}
+      <Route
+        path="/courses/:courseId/student/evaluations"
+        element={
+          <ProtectedRoute>
+            <StudentEvaluationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/evaluations/:evaluationId/attempt"
+        element={
+          <ProtectedRoute>
+            <AttemptEvaluationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/evaluations/:evaluationId/view"
+        element={
+          <ProtectedRoute>
+            <ViewSubmissionPage />
           </ProtectedRoute>
         }
       />
