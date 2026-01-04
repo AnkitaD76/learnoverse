@@ -30,13 +30,27 @@ const CreateCoursePage = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [submitForApproval, setSubmitForApproval] = useState(true);
 
-  if (user?.role !== 'instructor' && user?.role !== 'admin') {
+  // Must be logged in to create a course
+  if (!user) {
     return (
-      <p className="text-sm text-red-500">
-        Only instructors or admins can create courses.
-      </p>
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <Card>
+            <p className="text-sm text-[#4A4A4A]">
+              Please login to create a course.
+            </p>
+            <div className="mt-3">
+              <Button
+                onClick={() => navigate('/login')}
+                className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+              >
+                Go to Login
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
     );
   }
 
@@ -93,7 +107,9 @@ const CreateCoursePage = () => {
         level: form.level,
         pricePoints: Number(form.pricePoints) || 0,
         skillSwapEnabled: Boolean(form.skillSwapEnabled),
-        submitForApproval, // ✅ pending vs draft
+
+        // ✅ Always submit for admin approval
+        submitForApproval: true,
 
         skillTags: form.skillTags
           ? form.skillTags.split(',').map(s => s.trim())
@@ -123,7 +139,6 @@ const CreateCoursePage = () => {
           }),
       };
 
-      // Validate at least one lesson
       if (!payload.lessons || payload.lessons.length === 0) {
         throw new Error('Please add at least one lesson');
       }
@@ -131,7 +146,11 @@ const CreateCoursePage = () => {
       const res = await createCourse(payload);
       const course = res.course;
 
-      alert(res.message || 'Course saved');
+      alert(
+        res.message ||
+          'Course created and submitted for admin approval. It will be published once approved.'
+      );
+
       if (course?._id) navigate(`/courses/${course._id}`);
       else navigate('/courses');
     } catch (err) {
@@ -152,6 +171,13 @@ const CreateCoursePage = () => {
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           Create a New Course
         </h1>
+
+        <Card>
+          <p className="text-sm text-[#4A4A4A]">
+            After you submit, your course will go to the admin for approval. It
+            will be published once approved.
+          </p>
+        </Card>
 
         <Card>
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -219,7 +245,6 @@ const CreateCoursePage = () => {
               placeholder="JavaScript, React, MERN"
             />
 
-            {/* ✅ Skill swap toggle */}
             <div className="flex items-center gap-3">
               <input
                 id="skillSwapEnabled"
@@ -237,7 +262,6 @@ const CreateCoursePage = () => {
               </label>
             </div>
 
-            {/* ✅ Lessons */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-[#1A1A1A]">
@@ -365,21 +389,10 @@ const CreateCoursePage = () => {
               ))}
             </div>
 
-            {/* ✅ Two actions */}
             <div className="flex gap-3">
               <Button
                 type="submit"
                 isLoading={loading}
-                onClick={() => setSubmitForApproval(false)}
-                className="border border-[#FF6A00] text-[#FF6A00] hover:bg-[#FFF2E8]"
-              >
-                Save Draft
-              </Button>
-
-              <Button
-                type="submit"
-                isLoading={loading}
-                onClick={() => setSubmitForApproval(true)}
                 className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
               >
                 Submit for Admin Approval

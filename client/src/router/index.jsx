@@ -21,11 +21,14 @@ import CreateCoursePage from '../pages/CreateCourse/page';
 import ManageLessonsPage from '../pages/ManageLessons/page';
 import LiveSessionPage from '../pages/LiveSession/page';
 
-// ✅ NEW: My Courses
+// ✅ My Courses
 import MyCoursesPage from '../pages/MyCourses/page';
 
-// ✅ NEW: Student Enrolled
+// ✅ Student Enrolled
 import StudentEnrolledPage from '../pages/StudentEnrolled/page';
+
+// ✅ Notifications (NEW)
+import NotificationsPage from '../pages/Notifications/page';
 
 // Wallet
 import WalletDashboard from '../pages/Wallet/page';
@@ -92,6 +95,16 @@ export const AppRouter = () => {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ✅ Notifications */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />
@@ -223,10 +236,7 @@ export const AppRouter = () => {
       <Route path="/search" element={<SearchPage />} />
 
       {/* Certificate - Public Route */}
-      <Route
-        path="/certificates/:certificateId"
-        element={<CertificatePage />}
-      />
+      <Route path="/certificates/:certificateId" element={<CertificatePage />} />
 
       {/* Achievements - Protected Route */}
       <Route

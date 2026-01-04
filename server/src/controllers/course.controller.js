@@ -49,16 +49,11 @@ export const getCourseById = async (req, res) => {
 
 /**
  * POST /api/v1/courses
- * Only instructor/admin
+ * Any verified user can create a course (member/instructor/admin).
+ * The course will remain pending until admin approval.
  */
 export const createCourse = async (req, res) => {
-    const { role, userId } = req.user;
-
-    if (role !== 'instructor' && role !== 'admin') {
-        throw new UnauthorizedError(
-            'Only instructors or admins can create courses'
-        );
-    }
+    const { userId } = req.user;
 
     const {
         title,
@@ -69,7 +64,6 @@ export const createCourse = async (req, res) => {
         skillTags,
         lessons,
         skillSwapEnabled,
-        submitForApproval,
     } = req.body;
 
     if (!title) throw new BadRequestError('Title is required');
@@ -118,7 +112,10 @@ export const createCourse = async (req, res) => {
         instructor: userId,
         lessons: Array.isArray(lessons) ? lessons : [],
         skillSwapEnabled: Boolean(skillSwapEnabled),
-        status: submitForApproval ? 'pending' : 'draft',
+
+        // ✅ Always require admin approval before publishing
+        status: 'pending',
+        isPublished: false,
     });
 
     // Debug: log saved course
@@ -175,7 +172,12 @@ export const createCourse = async (req, res) => {
         );
     }
 
-    res.status(StatusCodes.CREATED).json({ success: true, course });
+    res.status(StatusCodes.CREATED).json({
+        success: true,
+        message:
+            'Course created and submitted for admin approval. It will be published once approved.',
+        course,
+    });
 };
 
 /**
@@ -439,23 +441,6 @@ export const getMyCreatedCourses = async (req, res) => {
  * POST /api/v1/courses/:id/enroll-with-points
  *
  * Enroll in a course using points.
- *
- * FINANCIAL INTEGRITY:
- * - Atomic transaction (enrollment + payment)
- * - Points are debited only if enrollment succeeds
- * - Transaction is created for audit trail
- * - Prevents double enrollment
- * - Validates sufficient balance
- *
- * FLOW:
- * 1. Validate course exists and is published
- * 2. Check if already enrolled
- * 3. Validate sufficient points balance
- * 4. Start database transaction
- * 5. Create enrollment record
- * 6. Create points transaction (ENROLLMENT type)
- * 7. Debit points from wallet
- * 8. Commit if all successful, rollback if any fails
  */
 export const enrollInCourseWithPoints = async (req, res) => {
     const userId = req.user.userId;
@@ -834,7 +819,7 @@ export const deleteLessonFromCourse = async (req, res) => {
         );
     }
 
-    // Remove lesson: prefer subdocument.remove(), but fall back to filtering if not available
+    // Remove lesson
     try {
         if (lesson && typeof lesson.remove === 'function') {
             lesson.remove();
@@ -882,7 +867,6 @@ export const createLiveSessionInLesson = async (req, res) => {
     const lesson = course.lessons.id(lessonId);
     if (!lesson) throw new NotFoundError('Lesson not found');
 
-    // generate a unique room name and a short join code
     const roomName = `learnoverse-${courseId}-${Date.now().toString(36)}`;
     const joinCode = Math.random().toString(36).slice(2, 8).toUpperCase();
 
@@ -893,8 +877,6 @@ export const createLiveSessionInLesson = async (req, res) => {
 
     await course.save();
 
-    // Try to spawn a detached keepalive process so the public meet.jit.si room
-    // is joined by a headless client and isn't reclaimed while class runs.
     try {
         const runnerPath = path.resolve(
             process.cwd(),
@@ -907,9 +889,7 @@ export const createLiveSessionInLesson = async (req, res) => {
             detached: true,
             stdio: 'ignore',
         });
-        // detach so it continues after this process returns
         child.unref();
-        // store PID on lesson so we can stop later if needed
         lesson.live.keepalivePid = child.pid;
         await course.save();
         console.log('Spawned keepalive pid=', child.pid, 'for room', roomName);

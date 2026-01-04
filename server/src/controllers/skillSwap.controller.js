@@ -1,13 +1,23 @@
 import { StatusCodes } from 'http-status-codes';
-import { Course, Enrollment, Notification, SkillSwapRequest, User, Wallet, Transaction } from '../models/index.js';
+import {
+  Course,
+  Enrollment,
+  Notification,
+  SkillSwapRequest,
+  User,
+  Wallet,
+  Transaction,
+} from '../models/index.js';
 import { BadRequestError, NotFoundError, UnauthorizedError } from '../errors/index.js';
 
 export const requestSkillSwap = async (req, res) => {
   const fromUserId = req.user.userId;
-  const { toUserId, offeredCourseId, requestedCourseId } = req.body;
 
-  if (!toUserId || !offeredCourseId || !requestedCourseId) {
-    throw new BadRequestError('toUserId, offeredCourseId, requestedCourseId required');
+  // ✅ We no longer require toUserId from frontend
+  const { offeredCourseId, requestedCourseId } = req.body;
+
+  if (!offeredCourseId || !requestedCourseId) {
+    throw new BadRequestError('offeredCourseId and requestedCourseId required');
   }
 
   // ✅ must have created at least 1 course
@@ -23,12 +33,36 @@ export const requestSkillSwap = async (req, res) => {
     throw new UnauthorizedError('You can only offer your own course');
   }
 
-  // requested course must exist
+  // ✅ offered course should be published (recommended)
+  if (!offeredCourse.isPublished) {
+    throw new BadRequestError('Your offered course must be published to do a skill swap');
+  }
+
+  // ✅ requested course must exist
   const requestedCourse = await Course.findById(requestedCourseId);
   if (!requestedCourse) throw new NotFoundError('Requested course not found');
 
-  // ✅ only ONE pending request per requester
-  const existingPending = await SkillSwapRequest.findOne({ fromUser: fromUserId, status: 'pending' });
+  // ✅ requested course must be published and skill swap enabled
+  if (!requestedCourse.isPublished) {
+    throw new BadRequestError('This course is not published yet');
+  }
+  if (!requestedCourse.skillSwapEnabled) {
+    throw new BadRequestError('Skill swap is not enabled for this course');
+  }
+
+  // ✅ Auto detect course creator (toUser) from requested course instructor
+  const toUserId = requestedCourse.instructor;
+
+  // ✅ cannot request swap on your own course
+  if (String(toUserId) === String(fromUserId)) {
+    throw new BadRequestError("You can't request a skill swap on your own course");
+  }
+
+  // ✅ only ONE pending request per requester (as per your existing rule)
+  const existingPending = await SkillSwapRequest.findOne({
+    fromUser: fromUserId,
+    status: 'pending',
+  });
   if (existingPending) throw new BadRequestError('You already have a pending skill swap request');
 
   const swap = await SkillSwapRequest.create({
@@ -39,30 +73,32 @@ export const requestSkillSwap = async (req, res) => {
     status: 'pending',
   });
 
-  // Include requester info and list of their created courses in the notification
+  // requester info for message
   const fromUser = await User.findById(fromUserId).select('name email');
-  const createdCourses = await Course.find({ instructor: fromUserId }).select('title');
-  const createdCoursesPayload = createdCourses.map(c => ({ id: c._id, title: c.title }));
 
   await Notification.create({
     user: toUserId,
     type: 'skill_swap_request',
     title: 'New Skill Swap Request',
-    message: `${fromUser?.name || 'A user'} requested a skill swap offering "${offeredCourse.title}". Select a course to accept or reject.`,
+    message: `${fromUser?.name || 'A user'} requested a skill swap offering "${offeredCourse.title}".`,
     data: {
       skillSwapRequestId: swap._id,
       fromUser: fromUserId,
       offeredCourseId,
-      fromUserCourses: createdCoursesPayload,
+      offeredCourseTitle: offeredCourse.title,
+      requestedCourseId,
+      requestedCourseTitle: requestedCourse.title,
     },
   });
 
-  res.status(StatusCodes.CREATED).json({ success: true, message: 'Skill swap request sent', swap });
+  res
+    .status(StatusCodes.CREATED)
+    .json({ success: true, message: 'Skill swap request sent', swap });
 };
 
 export const respondSkillSwap = async (req, res) => {
   const toUserId = req.user.userId;
-  const { action, acceptedOfferedCourseId } = req.body; // "accept" or "reject" + optional chosen offered course id
+  const { action } = req.body; // "accept" or "reject"
 
   const swap = await SkillSwapRequest.findById(req.params.id);
   if (!swap) throw new NotFoundError('Skill swap request not found');
@@ -79,6 +115,7 @@ export const respondSkillSwap = async (req, res) => {
     throw new BadRequestError('action must be accept or reject');
   }
 
+  // ✅ Reject flow
   if (action === 'reject') {
     swap.status = 'rejected';
     await swap.save();
@@ -94,64 +131,66 @@ export const respondSkillSwap = async (req, res) => {
     return res.status(StatusCodes.OK).json({ success: true, message: 'Rejected', swap });
   }
 
-  // If receiver specified a particular offered course, validate and use it
-  let offeredToEnroll = swap.offeredCourse;
-  if (acceptedOfferedCourseId) {
-    const chosen = await Course.findById(acceptedOfferedCourseId);
-    if (!chosen) throw new NotFoundError('Chosen offered course not found');
-    // ensure chosen course belongs to requester
-    if (String(chosen.instructor) !== String(swap.fromUser)) {
-      throw new UnauthorizedError('Chosen offered course does not belong to the requester');
-    }
-    offeredToEnroll = acceptedOfferedCourseId;
-    // update swap record to reflect the chosen offered course
-    swap.offeredCourse = acceptedOfferedCourseId;
+  // ✅ Accept flow: enroll both into each other's course
+  const offeredCourse = await Course.findById(swap.offeredCourse);
+  if (!offeredCourse) throw new NotFoundError('Offered course not found');
+
+  const requestedCourse = await Course.findById(swap.requestedCourse);
+  if (!requestedCourse) throw new NotFoundError('Requested course not found');
+
+  // Still valid?
+  if (!requestedCourse.isPublished || !requestedCourse.skillSwapEnabled) {
+    throw new BadRequestError('Requested course is not eligible for swap anymore');
+  }
+  if (!offeredCourse.isPublished) {
+    throw new BadRequestError('Offered course is not published');
   }
 
-  // ✅ accept: enroll receiver into offered course, and requester into requested course
+  // Mark accepted
   swap.status = 'accepted';
   await swap.save();
 
-  // enroll "toUser" into offeredToEnroll
-  const e1 = await Enrollment.findOne({ user: swap.toUser, course: offeredToEnroll });
-  if (!e1 || e1.status !== 'enrolled') {
-    await Enrollment.findOneAndUpdate(
-      { user: swap.toUser, course: offeredToEnroll },
-      { status: 'enrolled' },
-      { upsert: true, new: true }
-    );
-    // increment course enrollCount when a new enrolled record is created via swap
-    try {
-      await Course.findByIdAndUpdate(offeredToEnroll, { $inc: { enrollCount: 1 } });
-    } catch (err) {
-      // non-fatal: log and continue
-      console.warn('Failed to increment enrollCount for offeredCourse', err);
-    }
-  }
+  // helper: enroll and increment count only if newly enrolled (or was withdrawn)
+  const enrollOrReEnroll = async (userId, courseId) => {
+    const existing = await Enrollment.findOne({ user: userId, course: courseId });
 
-  // ensure requester enrolled in requestedCourse (often already enrolled, but keep safe)
-  const e2 = await Enrollment.findOne({ user: swap.fromUser, course: swap.requestedCourse });
-  if (!e2 || e2.status !== 'enrolled') {
-    await Enrollment.findOneAndUpdate(
-      { user: swap.fromUser, course: swap.requestedCourse },
-      { status: 'enrolled' },
-      { upsert: true, new: true }
-    );
-    // increment course enrollCount when requester is newly enrolled via swap
-    try {
-      await Course.findByIdAndUpdate(swap.requestedCourse, { $inc: { enrollCount: 1 } });
-    } catch (err) {
-      console.warn('Failed to increment enrollCount for requestedCourse', err);
+    if (!existing) {
+      await Enrollment.create({
+        user: userId,
+        course: courseId,
+        status: 'enrolled',
+        enrolledAt: new Date(),
+        withdrawnAt: null,
+        paymentMethod: 'SKILL_SWAP',
+        pointsPaid: 0,
+      });
+      await Course.findByIdAndUpdate(courseId, { $inc: { enrollCount: 1 } });
+      return;
     }
-  }
 
-  // Reward points to both users for completing a skill swap
+    if (existing.status !== 'enrolled') {
+      existing.status = 'enrolled';
+      existing.enrolledAt = new Date();
+      existing.withdrawnAt = null;
+      existing.paymentMethod = 'SKILL_SWAP';
+      existing.pointsPaid = 0;
+      await existing.save();
+      await Course.findByIdAndUpdate(courseId, { $inc: { enrollCount: 1 } });
+    }
+  };
+
+  // ✅ enroll course creator into offered course (fromUser's course)
+  await enrollOrReEnroll(swap.toUser, swap.offeredCourse);
+
+  // ✅ enroll requester into requested course (toUser's course)
+  await enrollOrReEnroll(swap.fromUser, swap.requestedCourse);
+
+  // Reward points (keep your existing bonus logic)
   try {
-    const SWAP_REWARD = 10; // default reward points per user; adjust if needed
+    const SWAP_REWARD = 10;
     const parties = [String(swap.fromUser), String(swap.toUser)];
 
     for (const uid of parties) {
-      // idempotency: ensure we haven't already created a bonus tx for this swap and user
       const existingBonus = await Transaction.findOne({
         userId: uid,
         type: 'BONUS',
@@ -159,7 +198,6 @@ export const respondSkillSwap = async (req, res) => {
       });
       if (existingBonus) continue;
 
-      // create completed bonus transaction
       await Transaction.createAndComplete({
         userId: uid,
         type: 'BONUS',
@@ -169,14 +207,12 @@ export const respondSkillSwap = async (req, res) => {
         balance_after: null,
       });
 
-      // credit the wallet
       try {
         await Wallet.creditPoints(uid, SWAP_REWARD);
       } catch (err) {
         console.warn('Failed to credit wallet for user', uid, err);
       }
 
-      // update user.pointsBalance for dashboard convenience
       try {
         await User.findByIdAndUpdate(uid, { $inc: { pointsBalance: SWAP_REWARD } });
       } catch (err) {
@@ -187,19 +223,20 @@ export const respondSkillSwap = async (req, res) => {
     console.warn('Failed to apply swap rewards', err);
   }
 
+  // ✅ Notify requester + receiver
   await Notification.create({
     user: swap.fromUser,
     type: 'skill_swap_response',
     title: 'Skill Swap Accepted',
-    message: 'Your skill swap request was accepted.',
+    message: 'Your skill swap request was accepted. You are now enrolled.',
     data: { skillSwapRequestId: swap._id, status: 'accepted' },
   });
 
   await Notification.create({
     user: swap.toUser,
     type: 'skill_swap_response',
-    title: 'Skill Swap Accepted',
-    message: 'You accepted the skill swap request.',
+    title: 'Skill Swap Completed',
+    message: 'You accepted the skill swap request. You are now enrolled.',
     data: { skillSwapRequestId: swap._id, status: 'accepted' },
   });
 

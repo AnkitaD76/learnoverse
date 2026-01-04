@@ -1,7 +1,6 @@
 # Wallet System Frontend Architecture
 
 ## Overview
-
 The wallet system frontend provides a complete, production-ready client-side implementation for the point-based virtual payment system. It follows fintech-grade UX principles with emphasis on **reliability**, **transparency**, and **user trust**.
 
 ## Core Principles

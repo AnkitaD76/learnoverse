@@ -7,7 +7,7 @@ export const getMyCertificate = async courseId => {
   const res = await apiClient.get(`/courses/${courseId}/certificate`);
   return res.data;
 };
-
+              
 /**
  * Get public certificate details
  */

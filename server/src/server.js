@@ -30,27 +30,25 @@ import reviewRoutes from './routers/review.routes.js';
 import certificateRoutes from './routers/certificate.routes.js';
 import evaluationRoutes from './routers/evaluation.routes.js';
 
-// (Optional: only keep these if you really have these router files)
+// Skill Swap + Notifications
 import notificationsRoutes from './routers/notifications.routes.js';
 import skillSwapRoutes from './routers/skillSwap.routes.js';
 
 const app = express();
 
 // CORS
-const allowedOrigins = process.env.CORS_ORIGINS?.split(',').map(s =>
-    s.trim()
-) || [
-    'http://localhost:5173',
+const allowedOrigins =
+  process.env.CORS_ORIGINS?.split(',').map(s => s.trim()) || [
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
-];
+  ];
 
 app.use(
-    cors({
-        origin: allowedOrigins,
-        credentials: true,
-    })
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
 );
 
 // Body parsers
@@ -60,7 +58,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 // Test route
 app.get('/', (req, res) => {
-    res.send('<h1>Learnoverse API</h1>');
+  res.send('<h1>Learnoverse API</h1>');
 });
 
 // API Routes
@@ -79,7 +77,7 @@ app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
 app.use('/api/v1', evaluationRoutes);
 
-// Optional modules (keep only if you created these endpoints)
+// ✅ Notifications + Skill Swap
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/skill-swap', skillSwapRoutes);
 
@@ -91,35 +89,35 @@ const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
 const start = async () => {
-    try {
-        // 1. Connect DB ONCE
-        await connectDB(MONGO_URI);
+  try {
+    // 1. Connect DB ONCE
+    await connectDB(MONGO_URI);
 
-        // 2. Create HTTP server
-        const httpServer = createServer(app);
+    // 2. Create HTTP server
+    const httpServer = createServer(app);
 
-        // 3. Attach Socket.IO
-        const io = new Server(httpServer, {
-            cors: {
-                origin: allowedOrigins,
-                credentials: true,
-            },
-        });
+    // 3. Attach Socket.IO
+    const io = new Server(httpServer, {
+      cors: {
+        origin: allowedOrigins,
+        credentials: true,
+      },
+    });
 
-        // 4. Setup socket logic
-        setupMessaging(io);
+    // 4. Setup socket logic
+    setupMessaging(io);
 
-        // 5. Start server ONCE
-        httpServer.listen(port, () => {
-            console.log(`🚀 Server running on port ${port}...`);
-        });
+    // 5. Start server ONCE
+    httpServer.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}...`);
+    });
 
-        // Optional: seed once
-        // await seedExchangeRates();
-    } catch (error) {
-        console.error('❌ Server startup error:', error);
-        process.exit(1);
-    }
+    // Optional: seed once
+    // await seedExchangeRates();
+  } catch (error) {
+    console.error('❌ Server startup error:', error);
+    process.exit(1);
+  }
 };
 
 start();
