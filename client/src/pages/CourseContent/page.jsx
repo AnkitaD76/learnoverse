@@ -95,7 +95,6 @@ const CourseContentPage = () => {
 
   // Poll course data so students see live session link without manual refresh
   useEffect(() => {
-    // only poll for non-owners when any live lesson exists without a room
     const shouldPoll = () => {
       if (!course) return false;
       if (!user) return false;
@@ -135,7 +134,6 @@ const CourseContentPage = () => {
       const res = await withdrawFromCourse(courseId);
       setInfo(res.message || 'Withdrawn successfully');
       setShowConfirm(false);
-      // Navigate to courses page after 1 second
       setTimeout(() => {
         navigate('/courses');
       }, 1000);
@@ -197,14 +195,12 @@ const CourseContentPage = () => {
   const handleCreateLive = async lesson => {
     try {
       const res = await createLessonLiveSession(courseId, lesson._id);
-      // refresh
       const updated = await fetchCourseById(courseId);
       setCourse(updated.course);
       setViewingLesson(
         updated.course.lessons.find(l => String(l._id) === String(lesson._id))
       );
       setInfo('Live session created');
-      // navigate into in-app live session page (embedded Jitsi)
       if (res.roomName) {
         navigate(`/courses/${courseId}/lessons/${lesson._id}/live`);
       }
@@ -301,7 +297,6 @@ const CourseContentPage = () => {
                     {course.pricePoints}
                   </p>
                 </div>
-                {/* Owner actions: add lesson/live */}
                 {user &&
                   (user.role === 'admin' ||
                     String(user._id) === String(course.instructor?._id)) && (
@@ -342,7 +337,6 @@ const CourseContentPage = () => {
             </h2>
             <Button
               onClick={() => {
-                // Instructors go to instructor view, students go to student view
                 const isInstructor =
                   user &&
                   (user.role === 'admin' ||
@@ -358,6 +352,7 @@ const CourseContentPage = () => {
               📝 Quizzes & Assignments
             </Button>
           </div>
+
           {!course.lessons || course.lessons.length === 0 ? (
             <p className="mt-4 text-sm text-[#4A4A4A]">No lessons added yet.</p>
           ) : (
@@ -381,7 +376,6 @@ const CourseContentPage = () => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-1 items-start gap-3">
-                        {/* Completion Indicator */}
                         {isStudent && (
                           <div className="mt-1">
                             {isCompleted ? (
@@ -418,15 +412,28 @@ const CourseContentPage = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* RIGHT SIDE ACTION BUTTONS */}
                       {lesson.type === 'live' ? (
                         lesson.live?.roomName ? (
                           <div className="flex gap-2">
                             <button
-                              onClick={() =>
+                              onClick={async () => {
+                                // ✅ Clicking Join Live counts as completion for students
+                                if (isStudent && !isCompleted) {
+                                  try {
+                                    await handleMarkLessonComplete(lesson._id);
+                                  } catch (e) {
+                                    console.error(
+                                      'Failed to auto-complete live lesson',
+                                      e
+                                    );
+                                  }
+                                }
                                 navigate(
                                   `/courses/${courseId}/lessons/${lesson._id}/live`
-                                )
-                              }
+                                );
+                              }}
                               className="flex-shrink-0 rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
                             >
                               Join Live
@@ -481,24 +488,29 @@ const CourseContentPage = () => {
                         )
                       ) : (
                         <div className="flex gap-2">
+                          {/* ✅ Start counts as completion now */}
                           <button
-                            onClick={() => setViewingLesson(lesson)}
+                            onClick={async () => {
+                              setViewingLesson(lesson);
+
+                              // ✅ Clicking Start auto-completes for students
+                              if (isStudent && !isCompleted) {
+                                try {
+                                  await handleMarkLessonComplete(lesson._id);
+                                } catch (e) {
+                                  console.error(
+                                    'Failed to auto-complete on start',
+                                    e
+                                  );
+                                }
+                              }
+                            }}
                             className="flex-shrink-0 rounded bg-[#FF6A00] px-3 py-1 text-sm font-medium text-white hover:bg-[#e85f00]"
                           >
                             {isCompleted ? 'Review' : 'Start'}
                           </button>
 
-                          {/* Mark Complete Button for Students */}
-                          {isStudent && !isCompleted && (
-                            <button
-                              onClick={() =>
-                                handleMarkLessonComplete(lesson._id)
-                              }
-                              className="flex-shrink-0 rounded bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-700"
-                            >
-                              Mark Complete
-                            </button>
-                          )}
+                          {/* ❌ Removed "Mark Complete" button as requested */}
                         </div>
                       )}
                     </div>
@@ -769,7 +781,6 @@ const CourseContentPage = () => {
                                     payload.live = newLesson.live;
 
                                   await addCourseLesson(courseId, payload);
-                                  // refresh
                                   const res = await fetchCourseById(courseId);
                                   setCourse(res.course);
                                   setShowAddLesson(false);
@@ -796,9 +807,7 @@ const CourseContentPage = () => {
                 {/* Text Lesson */}
                 {viewingLesson.type === 'text' && (
                   <div>
-                    <p className="mb-3 text-sm text-[#4A4A4A]">
-                      📄 Text Lesson
-                    </p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">📄 Text Lesson</p>
                     {viewingLesson.textContent ? (
                       <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-sm whitespace-pre-wrap text-[#1A1A1A]">
                         {viewingLesson.textContent}
@@ -814,9 +823,7 @@ const CourseContentPage = () => {
                 {/* Live Session */}
                 {viewingLesson.type === 'live' && (
                   <div>
-                    <p className="mb-3 text-sm text-[#4A4A4A]">
-                      🔴 Live Session
-                    </p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">🔴 Live Session</p>
                     <div className="space-y-3 rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
                       {viewingLesson.live?.roomName && (
                         <div>
@@ -840,7 +847,28 @@ const CourseContentPage = () => {
                           </p>
                         </div>
                       )}
-                      <Button className="w-full bg-[#FF6A00] text-white hover:bg-[#e85f00]">
+
+                      <Button
+                        onClick={async () => {
+                          // ✅ Also count as completion if someone enters from modal
+                          const isStudent = enrollment !== null;
+                          const done = isLessonCompleted(viewingLesson._id);
+                          if (isStudent && !done) {
+                            try {
+                              await handleMarkLessonComplete(viewingLesson._id);
+                            } catch (e) {
+                              console.error(
+                                'Failed to auto-complete live lesson from modal',
+                                e
+                              );
+                            }
+                          }
+                          navigate(
+                            `/courses/${courseId}/lessons/${viewingLesson._id}/live`
+                          );
+                        }}
+                        className="w-full bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                      >
                         Join Live Session
                       </Button>
                     </div>
