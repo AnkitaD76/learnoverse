@@ -9,9 +9,6 @@ const navigationRoutes = [
   { name: 'My Courses', path: '/my-courses' },
   { name: 'Q&A', path: '/qa' },
   { name: 'Posts', path: '/posts' },
-  // { name: 'Marketplace', path: '/marketplace' },
-  // { name: 'About', path: '/about' },
-  // { name: 'Contact', path: '/contact' },
 ];
 
 export const Header = () => {
@@ -118,6 +115,15 @@ export const Header = () => {
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Dashboard
+                      </Link>
+
+                      {/* ✅ Notifications */}
+                      <Link
+                        to="/notifications"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        🔔 Notifications
                       </Link>
 
                       <Link
@@ -262,6 +268,17 @@ export const Header = () => {
                     >
                       <Button variant="outline" className="w-full">
                         Dashboard
+                      </Button>
+                    </Link>
+
+                    {/* ✅ Notifications */}
+                    <Link
+                      to="/notifications"
+                      className="block"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant="outline" className="w-full">
+                        🔔 Notifications
                       </Button>
                     </Link>
 

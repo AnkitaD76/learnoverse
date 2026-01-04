@@ -4,21 +4,19 @@ import { Button } from '../../components/Button';
 import { fetchNotifications, markNotificationRead } from '../../api/notifications';
 import { respondSkillSwap } from '../../api/skillSwap';
 
-export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState([]);
+const NotificationsPage = () => {
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
-  const [error, setError] = useState(null);
+  const [err, setErr] = useState('');
 
   const load = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setErr('');
       const res = await fetchNotifications();
-      setNotifications(res.notifications || []);
+      setItems(res.notifications || []);
     } catch (e) {
-      console.error(e);
-      setError('Failed to load notifications');
+      setErr(e.response?.data?.message || 'Failed to load notifications');
     } finally {
       setLoading(false);
     }
@@ -28,116 +26,112 @@ export default function NotificationsPage() {
     load();
   }, []);
 
-  const isRead = n => !!n.readAt;
-
-  const handleMarkRead = async notifId => {
-    try {
-      await markNotificationRead(notifId);
-      setNotifications(prev =>
-        prev.map(n => (n._id === notifId ? { ...n, readAt: new Date().toISOString() } : n))
-      );
-    } catch (e) {
-      console.error(e);
-    }
+  const handleRead = async id => {
+    await markNotificationRead(id);
+    load();
   };
 
-  const handleSwap = async (notif, action) => {
-    const swapId = notif?.data?.skillSwapRequestId;
-    if (!swapId) return;
-
-    try {
-      setBusyId(notif._id);
-      setError(null);
-
-      await respondSkillSwap(swapId, action);
-
-      await markNotificationRead(notif._id);
-      await load();
-    } catch (e) {
-      console.error(e);
-      setError(e.response?.data?.message || 'Failed to respond to skill swap');
-    } finally {
-      setBusyId(null);
-    }
+  const handleRespond = async (swapId, action) => {
+    await respondSkillSwap(swapId, action);
+    load();
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <Card className="p-6">Loading...</Card>
-      </div>
-    );
-  }
+  const handleRespondWithCourse = async (swapId, action, chosenCourseId) => {
+    await respondSkillSwap(swapId, action, chosenCourseId);
+    load();
+  };
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Notifications</h1>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Notifications</h1>
 
-      {error && (
-        <Card className="p-4 border-red-200 bg-red-50 text-red-700">
-          {error}
-        </Card>
-      )}
+        {loading && <p className="text-sm text-[#4A4A4A]">Loading...</p>}
+        {err && <p className="text-sm text-red-600">{err}</p>}
 
-      {notifications.length === 0 ? (
-        <Card className="p-6 text-center text-sm opacity-70">
-          No notifications yet.
-        </Card>
-      ) : (
-        notifications.map(n => {
-          const skillSwapRequest = n.type === 'skill_swap_request';
-          const swapId = n.data?.skillSwapRequestId;
+        {(items || []).map(n => {
+          const payload = n.data || n.metadata || {};
+          const isRead = Boolean(n.readAt || n.read === true);
 
           return (
-            <Card
-              key={n._id}
-              className={`p-4 space-y-2 ${
-                isRead(n) ? 'opacity-70' : 'border border-[#FF6A00]'
-              }`}
-            >
+            <Card key={n._id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold">{n.title || 'Notification'}</h2>
-                  <p className="text-sm">{n.message}</p>
-                  <p className="text-xs opacity-60 mt-1">
-                    {new Date(n.createdAt).toLocaleString()}
+                  <p className="font-semibold">{n.title || n.type}</p>
+                  <p className="text-sm text-[#4A4A4A]">{n.message}</p>
+                  <p className="mt-1 text-xs text-[#4A4A4A]">
+                    {new Date(n.createdAt).toLocaleString()} {isRead ? '• Read' : '• Unread'}
                   </p>
                 </div>
 
-                {!isRead(n) && (
-                  <Button
-                    onClick={() => handleMarkRead(n._id)}
-                    className="bg-gray-200 text-black hover:bg-gray-300"
-                  >
-                    Mark Read
-                  </Button>
-                )}
-              </div>
+                <div className="flex flex-col gap-2">
+                  {!isRead && (
+                    <Button size="sm" variant="secondary" onClick={() => handleRead(n._id)}>
+                      Mark Read
+                    </Button>
+                  )}
 
-              {/* ✅ Skill Swap Actions */}
-              {skillSwapRequest && swapId && (
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    onClick={() => handleSwap(n, 'accept')}
-                    isLoading={busyId === n._id}
-                    className="bg-[#00A86B] text-white hover:bg-[#008f5a]"
-                  >
-                    Accept
-                  </Button>
+                  {n.type === 'skill_swap_request' && payload?.skillSwapRequestId && (
+                    <div className="flex flex-col gap-2">
+                      {Array.isArray(payload?.fromUserCourses) && payload.fromUserCourses.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {payload.fromUserCourses.map(c => (
+                            <label
+                              key={c.id}
+                              className="flex cursor-pointer items-center gap-2 rounded border p-2"
+                            >
+                              <input
+                                type="radio"
+                                name={`swap-choice-${n._id}`}
+                                value={c.id}
+                                onChange={e => {
+                                  const el = document.getElementById(`accept-btn-${n._id}`);
+                                  if (el) el.dataset.choice = e.target.value;
+                                }}
+                              />
+                              <span className="text-sm">{c.title}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
 
-                  <Button
-                    onClick={() => handleSwap(n, 'reject')}
-                    isLoading={busyId === n._id}
-                    className="bg-[#E74C3C] text-white hover:bg-[#cf3f31]"
-                  >
-                    Reject
-                  </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          id={`accept-btn-${n._id}`}
+                          size="sm"
+                          className="bg-[#FF6A00] text-white hover:bg-[#e85f00]"
+                          onClick={() => {
+                            const el = document.getElementById(`accept-btn-${n._id}`);
+                            const choice = el?.dataset?.choice;
+                            handleRespondWithCourse(payload.skillSwapRequestId, 'accept', choice);
+                          }}
+                        >
+                          Accept
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="border border-red-500 text-red-500 hover:bg-red-50"
+                          onClick={() => handleRespond(payload.skillSwapRequestId, 'reject')}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </Card>
           );
-        })
-      )}
+        })}
+
+        {!loading && items.length === 0 && (
+          <p className="text-sm text-[#4A4A4A]">No notifications yet.</p>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default NotificationsPage;

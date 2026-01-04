@@ -13,6 +13,9 @@ import ProfilePage from '../pages/Profile/page';
 import SettingsPage from '../pages/Settings/page';
 import PostsPage from '../pages/Posts/page';
 
+// ✅ Notifications
+import NotificationsPage from '../pages/Notifications/page';
+
 // Courses
 import CoursesPage from '../pages/courses/page';
 import CourseDetailPage from '../pages/CourseDetails/page';
@@ -21,14 +24,11 @@ import CreateCoursePage from '../pages/CreateCourse/page';
 import ManageLessonsPage from '../pages/ManageLessons/page';
 import LiveSessionPage from '../pages/LiveSession/page';
 
-// ✅ My Courses
+// ✅ NEW: My Courses
 import MyCoursesPage from '../pages/MyCourses/page';
 
-// ✅ Student Enrolled
+// ✅ NEW: Student Enrolled
 import StudentEnrolledPage from '../pages/StudentEnrolled/page';
-
-// ✅ Notifications (NEW)
-import NotificationsPage from '../pages/Notifications/page';
 
 // Wallet
 import WalletDashboard from '../pages/Wallet/page';
