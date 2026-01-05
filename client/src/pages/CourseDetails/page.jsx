@@ -4,7 +4,6 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import {
   fetchCourseById,
-  enrollInCourse,
   enrollInCourseWithPoints,
   withdrawFromCourse,
 } from '../../api/courses';
@@ -90,28 +89,6 @@ const CourseDetailPage = () => {
     loadUserReview();
   }, [courseId, user, course?.enrolled]);
 
-  const handleEnroll = async () => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    try {
-      setActionLoading(true);
-      setError(null);
-      setInfo(null);
-
-      const res = await enrollInCourse(courseId);
-      setInfo(res.message || 'Enrolled successfully');
-
-      await loadCourse();
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Failed to enroll');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleEnrollWithPoints = async () => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -170,7 +147,9 @@ const CourseDetailPage = () => {
       // Must have at least one created course to offer
       if (!list.length) {
         setShowSwapModal(false);
-        setError('You must create at least one course before requesting a skill swap.');
+        setError(
+          'You must create at least one course before requesting a skill swap.'
+        );
         setMyCreatedCourses([]);
         return;
       }
@@ -280,18 +259,20 @@ const CourseDetailPage = () => {
     String(user._id) === String(course.instructor?._id || course.instructor);
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="space-y-5 p-6">
       {error && (
-        <Card className="p-4 border-red-200 bg-red-50 text-red-700">{error}</Card>
+        <Card className="border-red-200 bg-red-50 p-4 text-red-700">
+          {error}
+        </Card>
       )}
       {info && (
-        <Card className="p-4 border-green-200 bg-green-50 text-green-700">
+        <Card className="border-green-200 bg-green-50 p-4 text-green-700">
           {info}
         </Card>
       )}
 
-      <Card className="p-6 space-y-3">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <Card className="space-y-3 p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold">{course.title}</h1>
             <p className="text-sm opacity-80">
@@ -322,23 +303,13 @@ const CourseDetailPage = () => {
 
         <div className="flex flex-wrap gap-3">
           {!course.enrolled && !isOwner && (
-            <>
-              <Button
-                onClick={handleEnroll}
-                isLoading={actionLoading}
-                className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
-              >
-                Enroll
-              </Button>
-
-              <Button
-                onClick={handleEnrollWithPoints}
-                isLoading={actionLoading}
-                className="bg-[#00A86B] text-white hover:bg-[#008f5a]"
-              >
-                Enroll With Points
-              </Button>
-            </>
+            <Button
+              onClick={handleEnrollWithPoints}
+              isLoading={actionLoading}
+              className="bg-[#00A86B] text-white hover:bg-[#008f5a]"
+            >
+              Enroll With Points
+            </Button>
           )}
 
           {course.enrolled && !isOwner && (
@@ -374,17 +345,17 @@ const CourseDetailPage = () => {
                 >
                   <div
                     className="modal-content"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   >
-                    <h3 className="text-lg font-semibold mb-3">
+                    <h3 className="mb-3 text-lg font-semibold">
                       Select a course to offer
                     </h3>
 
-                    <div className="space-y-2 max-h-60 overflow-auto pr-1">
-                      {myCreatedCourses.map((c) => (
+                    <div className="max-h-60 space-y-2 overflow-auto pr-1">
+                      {myCreatedCourses.map(c => (
                         <label
                           key={c._id}
-                          className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+                          className="flex cursor-pointer items-center gap-2 rounded border p-2 hover:bg-gray-50"
                         >
                           <input
                             type="radio"
@@ -397,7 +368,7 @@ const CourseDetailPage = () => {
                       ))}
                     </div>
 
-                    <div className="flex justify-end gap-2 mt-4">
+                    <div className="mt-4 flex justify-end gap-2">
                       <Button
                         onClick={() => setShowSwapModal(false)}
                         className="bg-gray-200 text-black hover:bg-gray-300"
@@ -434,13 +405,13 @@ const CourseDetailPage = () => {
         </div>
       </Card>
 
-      <Card className="p-6 space-y-2">
+      <Card className="space-y-2 p-6">
         <h2 className="text-lg font-semibold">Description</h2>
         <p className="opacity-90">{course.description || 'No description'}</p>
       </Card>
 
       {course.enrolled && !isOwner && (
-        <Card className="p-6 space-y-3">
+        <Card className="space-y-3 p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Your Review</h2>
 
@@ -477,8 +448,8 @@ const CourseDetailPage = () => {
           )}
 
           {!showReviewForm && userReview && (
-            <div className="p-3 border rounded">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="rounded border p-3">
+              <div className="mb-1 flex items-center gap-2">
                 <StarRating rating={userReview.rating} />
                 <span className="text-xs opacity-70">
                   {new Date(userReview.createdAt).toLocaleDateString()}
@@ -490,7 +461,7 @@ const CourseDetailPage = () => {
         </Card>
       )}
 
-      <Card className="p-6 space-y-3">
+      <Card className="space-y-3 p-6">
         <h2 className="text-lg font-semibold">Reviews</h2>
         <ReviewList reviews={course.reviews || []} />
       </Card>
