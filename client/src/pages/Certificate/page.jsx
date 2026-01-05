@@ -11,6 +11,7 @@ const CertificatePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchCertificate = async () => {
@@ -48,8 +49,13 @@ const CertificatePage = () => {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate PDF');
+        // Check if response is JSON (error) or blob (PDF)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to generate PDF');
+        }
+        throw new Error('Failed to generate PDF');
       }
 
       const blob = await response.blob();
@@ -65,6 +71,24 @@ const CertificatePage = () => {
       alert(err.message);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -117,14 +141,20 @@ const CertificatePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="mx-auto max-w-6xl px-4">
-        {/* Download Button */}
-        <div className="mb-8 flex justify-center">
+        {/* Action Buttons */}
+        <div className="mb-8 flex justify-center gap-4">
           <button
             onClick={handleDownloadPDF}
             disabled={downloading}
             className="rounded-lg bg-[#FF6A00] px-6 py-3 font-semibold text-white shadow-md transition hover:bg-[#E85D00] disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             {downloading ? 'Generating PDF...' : 'Download Certificate'}
+          </button>
+          <button
+            onClick={handleCopyLink}
+            className="rounded-lg border-2 border-[#FF6A00] bg-white px-6 py-3 font-semibold text-[#FF6A00] shadow-md transition hover:bg-orange-50"
+          >
+            {copied ? '✓ Link Copied!' : 'Copy Public Link'}
           </button>
         </div>
 
@@ -156,11 +186,18 @@ const CertificatePage = () => {
                   {certificate.course.title}
                 </div>
 
-                <p className="mt-6 text-sm">Awarded on {formattedDate}</p>
+                <p className="mt-4 text-sm text-gray-600">
+                  Instructor: {certificate.course.instructor || 'Learnoverse'}
+                </p>
+
+                <p className="mt-4 text-sm">Awarded on {formattedDate}</p>
               </div>
 
               <div className="absolute right-20 bottom-20 left-20 flex items-center justify-between text-sm">
                 <div className="text-center">
+                  <div className="mb-1 font-semibold text-[#3c7f91]">
+                    {certificate.course.instructor || 'Learnoverse'}
+                  </div>
                   _______________________
                   <br />
                   Instructor
@@ -177,8 +214,17 @@ const CertificatePage = () => {
                 </div>
               </div>
 
-              <div className="absolute right-6 bottom-6 text-xs text-gray-600">
-                Certificate ID: {certificate.certificateNumber}
+              <div className="absolute right-6 bottom-6 left-6 flex items-end justify-between text-xs text-gray-600">
+                <div>
+                  <span className="font-semibold">Verify at:</span>{' '}
+                  <a
+                    href={window.location.href}
+                    className="text-[#3c7f91] underline"
+                  >
+                    {window.location.href}
+                  </a>
+                </div>
+                <div>Certificate ID: {certificate.certificateNumber}</div>
               </div>
             </div>
           </div>
@@ -187,10 +233,8 @@ const CertificatePage = () => {
         {/* Verification Info */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
-            This certificate can be verified at:{' '}
-            <span className="font-mono text-[#FF6A00]">
-              {window.location.href}
-            </span>
+            Share this certificate - anyone with the link can verify its
+            authenticity
           </p>
         </div>
       </div>

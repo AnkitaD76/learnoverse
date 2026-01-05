@@ -195,6 +195,14 @@ export const generateCertificatePDF = async (req, res) => {
             }
         );
 
+        // Get instructor name
+        const instructorName =
+            certificate.course.instructor?.name || 'Learnoverse Instructor';
+
+        // Get base URL for verification link
+        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+        const verificationUrl = `${baseUrl}/certificates/${certificate._id}`;
+
         // Build certificate HTML with Tailwind CDN
         const html = `
 <!DOCTYPE html>
@@ -215,19 +223,21 @@ export const generateCertificatePDF = async (req, res) => {
                 <h1 class="text-5xl tracking-widest">CERTIFICATE</h1>
                 <h2 class="text-2xl italic mt-2">of Completion</h2>
             </div>
-            <div class="text-center mt-12 text-gray-800">
+            <div class="text-center mt-10 text-gray-800">
                 <p class="text-lg">This certificate is proudly presented to</p>
                 <div class="text-4xl font-bold text-[#3c7f91] border-b-2 border-[#3c7f91] inline-block mt-4 px-6">
                     ${certificate.user.name}
                 </div>
-                <p class="mt-6">for successfully completing the course</p>
-                <div class="text-xl font-semibold mt-3">
+                <p class="mt-5">for successfully completing the course</p>
+                <div class="text-xl font-semibold mt-2">
                     ${certificate.course.title}
                 </div>
-                <p class="mt-6 text-sm">Awarded on ${formattedDate}</p>
+                <p class="mt-3 text-sm text-gray-600">Instructor: ${instructorName}</p>
+                <p class="mt-3 text-sm">Awarded on ${formattedDate}</p>
             </div>
-            <div class="absolute bottom-20 left-20 right-20 flex justify-between items-center text-sm">
+            <div class="absolute bottom-24 left-20 right-20 flex justify-between items-center text-sm">
                 <div class="text-center">
+                    <div class="font-semibold text-[#3c7f91] mb-1">${instructorName}</div>
                     _______________________<br />Instructor
                 </div>
                 <div class="w-28 h-28 rounded-full bg-gradient-to-br from-yellow-200 to-yellow-500 flex items-center justify-center font-bold text-yellow-900">
@@ -237,8 +247,13 @@ export const generateCertificatePDF = async (req, res) => {
                     _______________________<br />Learnoverse
                 </div>
             </div>
-            <div class="absolute bottom-6 right-6 text-xs text-gray-600">
-                Certificate ID: ${certificate.certificateNumber}
+            <div class="absolute bottom-6 left-6 right-6 flex justify-between items-end text-xs text-gray-600">
+                <div>
+                    <span class="font-semibold">Verify at:</span> <a href="${verificationUrl}" class="text-[#3c7f91] underline">${verificationUrl}</a>
+                </div>
+                <div>
+                    Certificate ID: ${certificate.certificateNumber}
+                </div>
             </div>
         </div>
     </div>
