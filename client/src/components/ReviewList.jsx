@@ -7,6 +7,7 @@ import {
   getCourseReviews,
   markReviewHelpful,
   deleteReview as deleteReviewAPI,
+  adminDeleteReview,
 } from '../api/reviews';
 import { useSession } from '../contexts/SessionContext';
 
@@ -15,16 +16,10 @@ import { useSession } from '../contexts/SessionContext';
  * Displays paginated list of reviews with sorting and filtering
  *
  * @param {string} courseId - Course ID to fetch reviews for
- * @param {function} onEditReview - Callback when user wants to edit their review
  * @param {function} onReviewDeleted - Callback when review is deleted
  * @param {boolean} isOwner - Whether current user is the course owner
  */
-const ReviewList = ({
-  courseId,
-  onEditReview,
-  onReviewDeleted,
-  isOwner = false,
-}) => {
+const ReviewList = ({ courseId, onReviewDeleted, isOwner = false }) => {
   const { user } = useSession();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,8 +88,9 @@ const ReviewList = ({
         prev.map(review => {
           if (review._id === reviewId) {
             // Optimistically update counts
-            const wasHelpful = review.helpfulBy?.includes(user?.userId);
-            const wasNotHelpful = review.notHelpfulBy?.includes(user?.userId);
+            const currentUserId = user?._id;
+            const wasHelpful = review.helpfulBy?.includes(currentUserId);
+            const wasNotHelpful = review.notHelpfulBy?.includes(currentUserId);
 
             let newHelpfulCount = review.helpfulCount || 0;
             let newNotHelpfulCount = review.notHelpfulCount || 0;
@@ -126,7 +122,20 @@ const ReviewList = ({
     if (!confirm('Are you sure you want to delete this review?')) return;
 
     try {
-      await deleteReviewAPI(reviewId);
+      // Find the review to check if user is the author
+      const reviewToDelete = reviews.find(r => r._id === reviewId);
+      const isAuthor = String(reviewToDelete?.user?._id) === String(user?._id);
+      const isAdmin = user?.role === 'admin';
+
+      // Use admin delete endpoint if admin (for any review)
+      // Use regular delete endpoint if user is deleting their own review
+      if (isAdmin) {
+        await adminDeleteReview(reviewId);
+      } else if (isAuthor) {
+        await deleteReviewAPI(reviewId);
+      } else {
+        throw new Error('You can only delete your own reviews');
+      }
 
       // Remove from local state
       setReviews(prev => prev.filter(review => review._id !== reviewId));
@@ -208,10 +217,9 @@ const ReviewList = ({
             <ReviewCard
               key={review._id}
               review={review}
-              onEdit={onEditReview}
               onDelete={handleDelete}
               onMarkHelpful={handleMarkHelpful}
-              currentUserId={user?.userId}
+              currentUserId={user?._id}
               isAdmin={user?.role === 'admin'}
               isCourseOwner={isOwner}
             />

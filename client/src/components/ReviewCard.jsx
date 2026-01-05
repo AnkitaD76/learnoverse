@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ThumbsUp, ThumbsDown, Edit2, Trash2, Flag } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Trash2, Flag } from 'lucide-react';
 import StarRating from './StarRating';
 import ReportModal from './ReportModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,7 +18,6 @@ import { formatDistanceToNow } from 'date-fns';
  */
 const ReviewCard = ({
   review,
-  onEdit,
   onDelete,
   onMarkHelpful,
   currentUserId,
@@ -29,7 +28,6 @@ const ReviewCard = ({
   const [showReportModal, setShowReportModal] = useState(false);
 
   const isAuthor = currentUserId === review.user?._id;
-  const canEdit = isAuthor;
   const canDelete = isAuthor || isAdmin;
   const canReport = isCourseOwner && !isAuthor;
 
@@ -79,17 +77,8 @@ const ReviewCard = ({
           </div>
         </div>
 
-        {/* Action Buttons (Edit/Delete/Report) */}
+        {/* Action Buttons (Delete/Report) */}
         <div className="flex gap-2">
-          {canEdit && onEdit && (
-            <button
-              onClick={() => onEdit(review)}
-              className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50"
-              title="Edit review"
-            >
-              <Edit2 size={18} />
-            </button>
-          )}
           {canDelete && onDelete && (
             <button
               onClick={() => onDelete(review._id)}

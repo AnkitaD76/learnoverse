@@ -190,7 +190,7 @@ export const deleteReview = async (req, res) => {
     }
 
     // Check ownership
-    if (review.user.toString() !== userId) {
+    if (review.user.toString() !== userId.toString()) {
         throw new UnauthorizedError('You can only delete your own reviews');
     }
 

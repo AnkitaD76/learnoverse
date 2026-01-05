@@ -18,7 +18,7 @@ import ReportModal from '../../components/ReportModal';
 import StarRating from '../../components/StarRating';
 import ReviewForm from '../../components/ReviewForm';
 import ReviewList from '../../components/ReviewList';
-import { getUserReview, createReview, updateReview } from '../../api/reviews';
+import { getUserReview, createReview } from '../../api/reviews';
 
 const CourseDetailPage = () => {
   const { courseId } = useParams();
@@ -46,7 +46,6 @@ const CourseDetailPage = () => {
   // Review states
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [userReview, setUserReview] = useState(null);
-  const [isEditingReview, setIsEditingReview] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
 
   const loadCourse = async () => {
@@ -216,17 +215,10 @@ const CourseDetailPage = () => {
   // Reviews
   const openReviewForm = () => {
     setShowReviewForm(true);
-    setIsEditingReview(false);
-  };
-
-  const openEditReviewForm = () => {
-    setShowReviewForm(true);
-    setIsEditingReview(true);
   };
 
   const closeReviewForm = () => {
     setShowReviewForm(false);
-    setIsEditingReview(false);
   };
 
   const submitReview = async ({
@@ -239,23 +231,13 @@ const CourseDetailPage = () => {
       setError(null);
       setInfo(null);
 
-      let res;
-      if (isEditingReview && userReview) {
-        res = await updateReview(userReview._id, {
-          courseRating,
-          instructorRating,
-          reviewText,
-        });
-        setInfo(res.message || 'Review updated');
-      } else {
-        res = await createReview(
-          courseId,
-          courseRating,
-          instructorRating,
-          reviewText
-        );
-        setInfo(res.message || 'Review submitted');
-      }
+      const res = await createReview(
+        courseId,
+        courseRating,
+        instructorRating,
+        reviewText
+      );
+      setInfo(res.message || 'Review submitted');
 
       // refresh user review
       const ur = await getUserReview(courseId);
@@ -463,24 +445,13 @@ const CourseDetailPage = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Your Review</h2>
 
-            {!showReviewForm && (
-              <>
-                {userReview ? (
-                  <Button
-                    onClick={openEditReviewForm}
-                    className="bg-gray-200 text-black hover:bg-gray-300"
-                  >
-                    Edit Review
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={openReviewForm}
-                    className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
-                  >
-                    Write Review
-                  </Button>
-                )}
-              </>
+            {!showReviewForm && !userReview && (
+              <Button
+                onClick={openReviewForm}
+                className="bg-[#0066CC] text-white hover:bg-[#005bb5]"
+              >
+                Write Review
+              </Button>
             )}
           </div>
 
@@ -502,6 +473,10 @@ const CourseDetailPage = () => {
               {userReview.reviewText && (
                 <p className="text-sm">{userReview.reviewText}</p>
               )}
+              <p className="mt-2 text-xs text-gray-500">
+                To write a new review, delete this one from the reviews section
+                below.
+              </p>
             </div>
           )}
         </Card>
@@ -512,16 +487,6 @@ const CourseDetailPage = () => {
         isOpen={showReviewForm}
         onClose={closeReviewForm}
         onSubmit={submitReview}
-        initialData={
-          isEditingReview && userReview
-            ? {
-                courseRating: userReview.courseRating,
-                instructorRating: userReview.instructorRating,
-                reviewText: userReview.reviewText,
-              }
-            : null
-        }
-        isEditing={isEditingReview}
         courseName={course.title}
         instructorName={course.instructor?.name}
       />
