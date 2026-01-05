@@ -103,10 +103,13 @@ export default function SearchPage() {
         setTotalResults(response.pagination?.total || 0);
         setPagination(response.pagination || {});
       } else if (activeTab === 'posts') {
+        // Posts only support 'newest' and 'popular', not 'relevance'
+        const postSortBy =
+          filters.sortBy === 'relevance' ? 'newest' : filters.sortBy;
         response = await searchPosts(query, {
           page,
           limit: 10,
-          sortBy: filters.sortBy,
+          sortBy: postSortBy,
         });
         setResults([{ type: 'posts', ...response }]);
         setTotalResults(response.pagination?.total || 0);
