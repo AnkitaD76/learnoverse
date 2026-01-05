@@ -62,19 +62,32 @@ export const updateReportSchema = z.object({
  */
 export const getReportsSchema = z.object({
     status: z
-        .enum(['pending', 'reviewed', 'dismissed', 'action-taken'])
-        .optional(),
-    reportType: z.enum(['course', 'post', 'user', 'liveSession']).optional(),
+        .string()
+        .transform(val => (val === '' ? undefined : val))
+        .pipe(
+            z
+                .enum(['pending', 'reviewed', 'dismissed', 'action-taken'])
+                .optional()
+        ),
+    reportType: z
+        .string()
+        .transform(val => (val === '' ? undefined : val))
+        .pipe(z.enum(['course', 'post', 'user', 'liveSession']).optional()),
     category: z
-        .enum([
-            'inappropriate-content',
-            'spam',
-            'harassment',
-            'scam',
-            'copyright',
-            'other',
-        ])
-        .optional(),
+        .string()
+        .transform(val => (val === '' ? undefined : val))
+        .pipe(
+            z
+                .enum([
+                    'inappropriate-content',
+                    'spam',
+                    'harassment',
+                    'scam',
+                    'copyright',
+                    'other',
+                ])
+                .optional()
+        ),
     page: z.coerce.number().int().positive().optional().default(1),
     limit: z.coerce.number().int().positive().max(100).optional().default(20),
 });

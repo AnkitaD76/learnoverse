@@ -3,8 +3,9 @@ import { BadRequestError } from '../errors/index.js';
 /**
  * Middleware to validate request using Zod schemas
  * @param {ZodSchema} schema - Zod validation schema
+ * @param {string} source - Source of data to validate: 'body', 'query', or 'params'
  */
-export const validateRequest = schema => {
+export const validateRequest = (schema, source = 'body') => {
     return async (req, res, next) => {
         try {
             // Check if schema has nested body, query, or params properties
@@ -36,9 +37,19 @@ export const validateRequest = schema => {
                     });
                 }
             } else {
-                // Legacy: single source validation (defaults to body)
-                const validated = await schema.parseAsync(req.body);
-                req.body = validated;
+                // Single source validation based on source parameter
+                const dataToValidate = req[source] || {};
+                const validated = await schema.parseAsync(dataToValidate);
+
+                // Update validated data back to request
+                if (source === 'body') {
+                    req.body = validated;
+                } else {
+                    // For query and params, update individual keys
+                    Object.keys(validated).forEach(key => {
+                        req[source][key] = validated[key];
+                    });
+                }
             }
 
             next();
