@@ -22,8 +22,17 @@ import { issueCertificateIfComplete } from '../services/completion.service.js';
 export const createEvaluation = async (req, res) => {
     const { courseId } = req.params;
     const { userId, role } = req.user;
-    const { type, title, description, totalMarks, weight, questions } =
-        req.body;
+    const {
+        type,
+        title,
+        description,
+        totalMarks,
+        weight,
+        passingGrade,
+        allowRetake,
+        maxRetakes,
+        questions,
+    } = req.body;
 
     // Validate course exists
     const course = await Course.findById(courseId);
@@ -69,6 +78,9 @@ export const createEvaluation = async (req, res) => {
         description: description || '',
         totalMarks,
         weight,
+        passingGrade: passingGrade !== undefined ? passingGrade : 50,
+        allowRetake: allowRetake !== undefined ? allowRetake : true,
+        maxRetakes: maxRetakes !== undefined ? maxRetakes : 0,
         status: 'draft',
     });
 
@@ -528,15 +540,46 @@ export const submitEvaluation = async (req, res) => {
     }
 
     // Check for existing submission
-    const existingSubmission = await EvaluationSubmission.findOne({
+    const existingSubmissions = await EvaluationSubmission.find({
         evaluation: id,
         student: userId,
-    });
+    }).sort({ attemptNumber: -1 });
 
-    if (existingSubmission) {
-        throw new BadRequestError(
-            'You have already submitted this evaluation. Only one submission is allowed.'
-        );
+    const latestSubmission = existingSubmissions[0];
+    let attemptNumber = 1;
+
+    if (latestSubmission) {
+        // Check if the latest submission is graded and failed
+        if (latestSubmission.status !== 'graded') {
+            throw new BadRequestError(
+                'Your previous submission is still being graded. Please wait for results.'
+            );
+        }
+
+        if (latestSubmission.isPassed === true) {
+            throw new BadRequestError(
+                'You have already passed this evaluation.'
+            );
+        }
+
+        // Check if retakes are allowed
+        if (!evaluation.allowRetake) {
+            throw new BadRequestError(
+                'Retakes are not allowed for this evaluation.'
+            );
+        }
+
+        // Check if max retakes exceeded
+        if (
+            evaluation.maxRetakes > 0 &&
+            existingSubmissions.length >= evaluation.maxRetakes + 1
+        ) {
+            throw new BadRequestError(
+                `Maximum retake attempts (${evaluation.maxRetakes}) exceeded.`
+            );
+        }
+
+        attemptNumber = latestSubmission.attemptNumber + 1;
     }
 
     // Validate answers
@@ -593,11 +636,15 @@ export const submitEvaluation = async (req, res) => {
         answers: validatedAnswers,
         submittedAt: new Date(),
         status: 'submitted',
+        attemptNumber,
     });
 
     res.status(StatusCodes.CREATED).json({
         success: true,
-        message: 'Evaluation submitted successfully',
+        message:
+            attemptNumber > 1
+                ? `Retake attempt ${attemptNumber} submitted successfully`
+                : 'Evaluation submitted successfully',
         submission,
     });
 };
@@ -622,7 +669,7 @@ export const gradeSubmission = async (req, res) => {
     // Find submission
     const submission = await EvaluationSubmission.findById(id).populate({
         path: 'evaluation',
-        select: 'instructor course totalMarks',
+        select: 'instructor course totalMarks passingGrade allowRetake maxRetakes',
         populate: {
             path: 'course',
             select: 'instructor',
@@ -671,12 +718,18 @@ export const gradeSubmission = async (req, res) => {
         );
     }
 
+    // Calculate if student passed based on passingGrade
+    const scorePercentage = (scoreNum / submission.evaluation.totalMarks) * 100;
+    const passingGrade = submission.evaluation.passingGrade || 50;
+    const isPassed = scorePercentage >= passingGrade;
+
     // Update submission
     submission.totalScore = scoreNum;
     submission.feedback = feedback || null;
     submission.gradedBy = userId;
     submission.gradedAt = new Date();
     submission.status = 'graded';
+    submission.isPassed = isPassed;
     await submission.save();
 
     // Recalculate enrollment total score
@@ -691,10 +744,39 @@ export const gradeSubmission = async (req, res) => {
         submission.evaluation.course
     );
 
+    // Determine if retake is available for failed submissions
+    let canRetake = false;
+    let retakesRemaining = 0;
+    if (!isPassed && submission.evaluation.allowRetake) {
+        const existingSubmissions = await EvaluationSubmission.countDocuments({
+            evaluation: submission.evaluation._id,
+            student: submission.student,
+        });
+        if (
+            submission.evaluation.maxRetakes === 0 ||
+            existingSubmissions < submission.evaluation.maxRetakes + 1
+        ) {
+            canRetake = true;
+            retakesRemaining =
+                submission.evaluation.maxRetakes === 0
+                    ? -1 // unlimited
+                    : submission.evaluation.maxRetakes +
+                      1 -
+                      existingSubmissions;
+        }
+    }
+
     res.status(StatusCodes.OK).json({
         success: true,
-        message: 'Submission graded successfully',
+        message: isPassed
+            ? 'Submission graded successfully - PASSED!'
+            : 'Submission graded successfully - Did not pass',
         submission,
+        isPassed,
+        scorePercentage: Math.round(scorePercentage * 100) / 100,
+        passingGrade,
+        canRetake,
+        retakesRemaining,
         certificateIssued: !!certificate,
     });
 };
@@ -725,14 +807,16 @@ export const getMySubmission = async (req, res) => {
         throw new UnauthorizedError('You must be enrolled in this course');
     }
 
-    // Find submission
+    // Find latest submission (sorted by attemptNumber descending)
     const submission = await EvaluationSubmission.findOne({
         evaluation: id,
         student: userId,
-    }).populate({
-        path: 'answers.questionId',
-        select: 'prompt maxMarks order',
-    });
+    })
+        .sort({ attemptNumber: -1 })
+        .populate({
+            path: 'answers.questionId',
+            select: 'prompt maxMarks order',
+        });
 
     if (!submission) {
         return res.status(StatusCodes.OK).json({
@@ -741,14 +825,28 @@ export const getMySubmission = async (req, res) => {
         });
     }
 
+    // Get all submissions count for attempt history
+    const allSubmissions = await EvaluationSubmission.find({
+        evaluation: id,
+        student: userId,
+    }).sort({ attemptNumber: 1 });
+
     res.status(StatusCodes.OK).json({
         success: true,
         submission,
+        attemptHistory: allSubmissions.map(s => ({
+            attemptNumber: s.attemptNumber,
+            submittedAt: s.submittedAt,
+            status: s.status,
+            totalScore: s.totalScore,
+            isPassed: s.isPassed,
+        })),
     });
 };
 
 /**
  * Helper: Recalculate total score for an enrollment
+ * For each evaluation, uses the best passing score or highest score if no passing attempt
  * Sums up (submissionScore / evaluationTotalMarks * evaluationWeight)
  */
 const recalculateEnrollmentScore = async (studentId, courseId) => {
@@ -760,21 +858,36 @@ const recalculateEnrollmentScore = async (studentId, courseId) => {
     });
 
     // Get all graded submissions for this student
-    const submissions = await EvaluationSubmission.find({
+    const allSubmissions = await EvaluationSubmission.find({
         student: studentId,
         evaluation: { $in: evaluations.map(e => e._id) },
         status: 'graded',
     });
 
+    // Group submissions by evaluation and find the best score
+    const bestScoreByEvaluation = {};
+    allSubmissions.forEach(sub => {
+        const evalId = String(sub.evaluation);
+        const current = bestScoreByEvaluation[evalId];
+
+        // Prefer passing submissions, otherwise use highest score
+        if (
+            !current ||
+            (sub.isPassed && !current.isPassed) ||
+            (sub.isPassed === current.isPassed &&
+                sub.totalScore > current.totalScore)
+        ) {
+            bestScoreByEvaluation[evalId] = sub;
+        }
+    });
+
     // Calculate weighted score
     let totalScore = 0;
 
-    for (const submission of submissions) {
-        const evaluation = evaluations.find(
-            e => String(e._id) === String(submission.evaluation)
-        );
+    for (const evaluation of evaluations) {
+        const submission = bestScoreByEvaluation[String(evaluation._id)];
 
-        if (evaluation && submission.totalScore !== null) {
+        if (submission && submission.totalScore !== null) {
             // Percentage = (score / totalMarks) * weight
             const percentage =
                 (submission.totalScore / evaluation.totalMarks) *
@@ -819,24 +932,59 @@ export const getStudentEvaluations = async (req, res) => {
         isDeleted: false,
     }).sort('-publishedAt');
 
-    // Get user's submissions
+    // Get user's submissions (get all attempts for each evaluation)
     const submissions = await EvaluationSubmission.find({
         student: userId,
         evaluation: { $in: evaluations.map(e => e._id) },
-    });
+    }).sort({ attemptNumber: -1 });
 
-    const submissionMap = {};
+    // Build a map of latest submission per evaluation
+    const latestSubmissionMap = {};
+    const attemptCountMap = {};
     submissions.forEach(sub => {
-        submissionMap[String(sub.evaluation)] = sub;
+        const evalId = String(sub.evaluation);
+        if (!latestSubmissionMap[evalId]) {
+            latestSubmissionMap[evalId] = sub;
+        }
+        attemptCountMap[evalId] = (attemptCountMap[evalId] || 0) + 1;
     });
 
-    // Combine data
-    const evaluationsWithStatus = evaluations.map(evaluation => ({
-        ...evaluation.toObject(),
-        hasSubmitted: !!submissionMap[String(evaluation._id)],
-        isGraded: submissionMap[String(evaluation._id)]?.status === 'graded',
-        score: submissionMap[String(evaluation._id)]?.totalScore,
-    }));
+    // Combine data with pass/fail and retake info
+    const evaluationsWithStatus = evaluations.map(evaluation => {
+        const evalId = String(evaluation._id);
+        const latestSubmission = latestSubmissionMap[evalId];
+        const attemptCount = attemptCountMap[evalId] || 0;
+
+        // Determine if retake is available
+        let canRetake = false;
+        if (
+            latestSubmission?.status === 'graded' &&
+            !latestSubmission.isPassed
+        ) {
+            if (evaluation.allowRetake) {
+                if (
+                    evaluation.maxRetakes === 0 ||
+                    attemptCount < evaluation.maxRetakes + 1
+                ) {
+                    canRetake = true;
+                }
+            }
+        }
+
+        return {
+            ...evaluation.toObject(),
+            hasSubmitted: !!latestSubmission,
+            isGraded: latestSubmission?.status === 'graded',
+            score: latestSubmission?.totalScore,
+            isPassed: latestSubmission?.isPassed,
+            attemptNumber: latestSubmission?.attemptNumber || 0,
+            canRetake,
+            retakesRemaining:
+                evaluation.maxRetakes === 0
+                    ? -1 // unlimited
+                    : Math.max(0, evaluation.maxRetakes + 1 - attemptCount),
+        };
+    });
 
     res.status(StatusCodes.OK).json({
         success: true,

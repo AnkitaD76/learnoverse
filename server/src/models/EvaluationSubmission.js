@@ -60,6 +60,17 @@ const evaluationSubmissionSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        // Whether the student passed based on evaluation's passingGrade
+        isPassed: {
+            type: Boolean,
+            default: null,
+        },
+        // Track retake attempts
+        attemptNumber: {
+            type: Number,
+            default: 1,
+            min: 1,
+        },
         status: {
             type: String,
             enum: ['submitted', 'graded'],
@@ -70,11 +81,8 @@ const evaluationSubmissionSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Unique constraint: one submission per student per evaluation
-evaluationSubmissionSchema.index(
-    { student: 1, evaluation: 1 },
-    { unique: true }
-);
+// Index by student and evaluation (not unique to allow retakes)
+evaluationSubmissionSchema.index({ student: 1, evaluation: 1 });
 
 // Index for queries
 evaluationSubmissionSchema.index({ evaluation: 1, status: 1 });
@@ -94,6 +102,7 @@ evaluationSubmissionSchema.pre('save', function (next) {
             'gradedBy',
             'gradedAt',
             'status',
+            'isPassed',
             'updatedAt', // Mongoose timestamp
             'createdAt', // Mongoose timestamp
         ];
@@ -124,7 +133,8 @@ evaluationSubmissionSchema.pre('save', function (next) {
             (modifiedPaths.includes('totalScore') ||
                 modifiedPaths.includes('feedback') ||
                 modifiedPaths.includes('gradedBy') ||
-                modifiedPaths.includes('gradedAt'))
+                modifiedPaths.includes('gradedAt') ||
+                modifiedPaths.includes('isPassed'))
         ) {
             const err = new Error('Cannot modify grade after grading.');
             err.name = 'ValidationError';

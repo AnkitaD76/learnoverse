@@ -6,16 +6,59 @@ import { fetchMyEnrollments, fetchMyCreatedCourses } from '../../api/courses';
 import ReportButton from '../../components/ReportButton';
 import ReportModal from '../../components/ReportModal';
 
-const ProgressBar = ({ percent = 0 }) => {
+const ProgressBar = ({ progress = {} }) => {
+  const overallPercent = progress?.overall || 0;
+  const lessonsPercent = progress?.lessons || 0;
+  const evaluationsPercent = progress?.evaluations || 0;
+
   return (
-    <div className="mt-2">
-      <div className="h-2 w-full rounded bg-gray-200">
-        <div
-          className="h-2 rounded bg-[#FF6A00]"
-          style={{ width: `${Math.min(100, Math.max(0, percent))}%` }}
-        />
+    <div className="mt-2 space-y-2">
+      {/* Overall Progress */}
+      <div>
+        <div className="flex justify-between text-xs text-[#4A4A4A]">
+          <span>Overall Progress</span>
+          <span>{overallPercent}%</span>
+        </div>
+        <div className="h-2 w-full rounded bg-gray-200">
+          <div
+            className="h-2 rounded bg-[#FF6A00]"
+            style={{ width: `${Math.min(100, Math.max(0, overallPercent))}%` }}
+          />
+        </div>
       </div>
-      <p className="mt-1 text-xs text-[#4A4A4A]">{percent}% completed</p>
+
+      {/* Lessons Progress */}
+      <div className="flex items-center gap-2 text-xs text-[#4A4A4A]">
+        <span>📚 Lessons:</span>
+        <span>
+          {progress?.completedLessons || 0}/{progress?.totalLessons || 0}
+        </span>
+        <div className="h-1.5 flex-1 rounded bg-gray-200">
+          <div
+            className="h-1.5 rounded bg-blue-500"
+            style={{ width: `${Math.min(100, Math.max(0, lessonsPercent))}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Evaluations Progress */}
+      {(progress?.totalEvaluations || 0) > 0 && (
+        <div className="flex items-center gap-2 text-xs text-[#4A4A4A]">
+          <span>📝 Evaluations:</span>
+          <span>
+            {progress?.passedEvaluations || 0}/{progress?.totalEvaluations || 0}{' '}
+            passed
+          </span>
+          <div className="h-1.5 flex-1 rounded bg-gray-200">
+            <div
+              className="h-1.5 rounded bg-green-500"
+              style={{
+                width: `${Math.min(100, Math.max(0, evaluationsPercent))}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -137,7 +180,13 @@ const MyCoursesPage = () => {
                           {item.course?.category} · {item.course?.level}
                         </p>
 
-                        <ProgressBar percent={item.progress?.percent || 0} />
+                        <ProgressBar progress={item.progress} />
+
+                        {item.isComplete && (
+                          <p className="mt-2 text-xs font-medium text-green-600">
+                            ✅ Course Complete!
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex gap-2">

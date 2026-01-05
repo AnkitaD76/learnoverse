@@ -9,8 +9,7 @@ import {
 /**
  * Check if a course is complete based on:
  * 1. All lessons completed (marked as done by student)
- * 2. All evaluations submitted (quizzes/assignments)
- * 3. Total evaluation score >= threshold (50%)
+ * 2. All evaluations passed (quizzes/assignments with score >= passingGrade)
  *
  * AUTHORIZATION:
  * - Only enrolled students can mark lessons complete
@@ -19,11 +18,9 @@ import {
  *
  * @param {string} userId - Student user ID
  * @param {string} courseId - Course ID
- * @returns {Promise<{isComplete: boolean, reason: string, totalScore: number}>}
+ * @returns {Promise<{isComplete: boolean, reason: string, progress: object}>}
  */
 export const checkCourseCompletion = async (userId, courseId) => {
-    const SCORE_THRESHOLD = 50; // Minimum 50% total score required
-
     // Get enrollment
     const enrollment = await Enrollment.findOne({
         user: userId,
@@ -32,28 +29,32 @@ export const checkCourseCompletion = async (userId, courseId) => {
     });
 
     if (!enrollment) {
-        return { isComplete: false, reason: 'Not enrolled', totalScore: 0 };
+        return {
+            isComplete: false,
+            reason: 'Not enrolled',
+            progress: { lessons: 0, evaluations: 0, overall: 0 },
+        };
     }
 
     // Get course
     const course = await Course.findById(courseId);
     if (!course) {
-        return { isComplete: false, reason: 'Course not found', totalScore: 0 };
+        return {
+            isComplete: false,
+            reason: 'Course not found',
+            progress: { lessons: 0, evaluations: 0, overall: 0 },
+        };
     }
 
     // Check lessons completion
     const totalLessons = course.lessons?.length || 0;
     const completedLessons = enrollment.completedLessonIds?.length || 0;
+    const lessonsProgress =
+        totalLessons === 0
+            ? 100
+            : Math.round((completedLessons / totalLessons) * 100);
     const allLessonsComplete =
         totalLessons === 0 || completedLessons >= totalLessons;
-
-    if (!allLessonsComplete) {
-        return {
-            isComplete: false,
-            reason: 'Not all lessons completed',
-            totalScore: enrollment.totalScore || 0,
-        };
-    }
 
     // Get all published/closed evaluations for this course
     const evaluations = await Evaluation.find({
@@ -62,47 +63,95 @@ export const checkCourseCompletion = async (userId, courseId) => {
         isDeleted: false,
     });
 
-    // If there are no evaluations, course is complete
+    // If there are no evaluations, only lessons matter
     if (evaluations.length === 0) {
         return {
-            isComplete: true,
-            reason: 'All lessons completed, no evaluations',
-            totalScore: 0,
+            isComplete: allLessonsComplete,
+            reason: allLessonsComplete
+                ? 'All lessons completed, no evaluations required'
+                : 'Not all lessons completed',
+            progress: {
+                lessons: lessonsProgress,
+                evaluations: 100,
+                overall: lessonsProgress,
+                completedLessons,
+                totalLessons,
+                passedEvaluations: 0,
+                totalEvaluations: 0,
+            },
         };
     }
 
-    // Check if student has submitted all evaluations
-    const submittedEvaluations = await EvaluationSubmission.find({
-        student: userId,
-        evaluation: { $in: evaluations.map(e => e._id) },
-    });
+    // Check if student has passed all evaluations
+    // Get the latest submission for each evaluation
+    const passedEvaluationIds = [];
+    const failedEvaluationIds = [];
+    const pendingEvaluationIds = [];
 
-    if (submittedEvaluations.length < evaluations.length) {
-        return {
-            isComplete: false,
-            reason: `Not all evaluations submitted (${submittedEvaluations.length}/${evaluations.length})`,
-            totalScore: enrollment.totalScore || 0,
-        };
+    for (const evaluation of evaluations) {
+        // Get the latest submission for this evaluation
+        const latestSubmission = await EvaluationSubmission.findOne({
+            student: userId,
+            evaluation: evaluation._id,
+        }).sort({ attemptNumber: -1 });
+
+        if (!latestSubmission) {
+            pendingEvaluationIds.push(evaluation._id);
+        } else if (latestSubmission.status !== 'graded') {
+            pendingEvaluationIds.push(evaluation._id);
+        } else if (latestSubmission.isPassed) {
+            passedEvaluationIds.push(evaluation._id);
+        } else {
+            failedEvaluationIds.push(evaluation._id);
+        }
     }
 
-    // Calculate total score from enrollment (already calculated in gradeSubmission)
-    const totalScore = enrollment.totalScore || 0;
+    const passedEvaluations = passedEvaluationIds.length;
+    const totalEvaluations = evaluations.length;
+    const evaluationsProgress = Math.round(
+        (passedEvaluations / totalEvaluations) * 100
+    );
+    const allEvaluationsPassed = passedEvaluations >= totalEvaluations;
 
-    // Check if score meets threshold
-    const meetsScoreRequirement = totalScore >= SCORE_THRESHOLD;
+    // Overall progress is a combination of lessons and evaluations
+    const overallProgress = Math.round(
+        (lessonsProgress + evaluationsProgress) / 2
+    );
 
-    if (!meetsScoreRequirement) {
-        return {
-            isComplete: false,
-            reason: `Score ${totalScore}% is below threshold ${SCORE_THRESHOLD}%`,
-            totalScore,
-        };
+    const isComplete = allLessonsComplete && allEvaluationsPassed;
+
+    let reason;
+    if (!allLessonsComplete && !allEvaluationsPassed) {
+        reason = `Lessons: ${completedLessons}/${totalLessons}, Evaluations passed: ${passedEvaluations}/${totalEvaluations}`;
+    } else if (!allLessonsComplete) {
+        reason = `Not all lessons completed (${completedLessons}/${totalLessons})`;
+    } else if (!allEvaluationsPassed) {
+        if (pendingEvaluationIds.length > 0) {
+            reason = `${pendingEvaluationIds.length} evaluation(s) pending submission or grading`;
+        } else if (failedEvaluationIds.length > 0) {
+            reason = `${failedEvaluationIds.length} evaluation(s) failed - retake required`;
+        } else {
+            reason = `Evaluations passed: ${passedEvaluations}/${totalEvaluations}`;
+        }
+    } else {
+        reason =
+            'All requirements met: lessons completed, all evaluations passed';
     }
 
     return {
-        isComplete: true,
-        reason: `All requirements met: lessons complete, score ${totalScore}%`,
-        totalScore,
+        isComplete,
+        reason,
+        progress: {
+            lessons: lessonsProgress,
+            evaluations: evaluationsProgress,
+            overall: overallProgress,
+            completedLessons,
+            totalLessons,
+            passedEvaluations,
+            totalEvaluations,
+            failedEvaluations: failedEvaluationIds.length,
+            pendingEvaluations: pendingEvaluationIds.length,
+        },
     };
 };
 

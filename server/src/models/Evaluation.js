@@ -50,6 +50,25 @@ const evaluationSchema = new mongoose.Schema(
             max: 100,
             default: 0,
         },
+        // Passing grade percentage (0-100)
+        passingGrade: {
+            type: Number,
+            required: true,
+            min: 0,
+            max: 100,
+            default: 50, // Default 50% to pass
+        },
+        // Allow retakes if student fails
+        allowRetake: {
+            type: Boolean,
+            default: true,
+        },
+        // Maximum number of retake attempts (0 = unlimited)
+        maxRetakes: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
         status: {
             type: String,
             enum: ['draft', 'published', 'closed'],

@@ -81,7 +81,7 @@ export const StudentEvaluationsPage = () => {
                       {evaluation.description || 'No description'}
                     </p>
 
-                    <div className="mb-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+                    <div className="mb-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
                       <div>
                         <span className="text-gray-500">Total Marks:</span>
                         <span className="ml-2 font-medium">
@@ -94,33 +94,76 @@ export const StudentEvaluationsPage = () => {
                           {evaluation.weight}%
                         </span>
                       </div>
+                      <div>
+                        <span className="text-gray-500">Passing:</span>
+                        <span className="ml-2 font-medium">
+                          {evaluation.passingGrade || 50}%
+                        </span>
+                      </div>
                       {evaluation.isGraded && (
                         <div>
                           <span className="text-gray-500">Your Score:</span>
-                          <span className="ml-2 font-medium text-green-600">
+                          <span
+                            className={`ml-2 font-medium ${
+                              evaluation.isPassed
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}
+                          >
                             {evaluation.score}/{evaluation.totalMarks}
+                            {evaluation.isPassed ? ' ✓' : ' ✗'}
                           </span>
                         </div>
                       )}
                     </div>
 
+                    {/* Attempt info */}
+                    {evaluation.attemptNumber > 0 && (
+                      <p className="mb-2 text-xs text-gray-500">
+                        Attempt #{evaluation.attemptNumber}
+                        {evaluation.retakesRemaining === -1
+                          ? ' (unlimited retakes)'
+                          : evaluation.retakesRemaining > 0
+                            ? ` (${evaluation.retakesRemaining} retake${evaluation.retakesRemaining > 1 ? 's' : ''} remaining)`
+                            : ''}
+                      </p>
+                    )}
+
                     {/* Status indicator */}
                     {evaluation.hasSubmitted ? (
                       evaluation.isGraded ? (
-                        <div className="flex items-center gap-2 text-sm text-green-600">
-                          <svg
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          Submitted & Graded
-                        </div>
+                        evaluation.isPassed ? (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <svg
+                              className="h-5 w-5"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Passed ✓
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-sm text-red-600">
+                            <svg
+                              className="h-5 w-5"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Did not pass
+                            {evaluation.canRetake && ' - Retake available'}
+                          </div>
+                        )
                       ) : (
                         <div className="flex items-center gap-2 text-sm text-yellow-600">
                           <svg
@@ -170,16 +213,31 @@ export const StudentEvaluationsPage = () => {
                     )}
                   </div>
 
-                  <div className="ml-4">
+                  <div className="ml-4 flex flex-col gap-2">
                     {evaluation.hasSubmitted ? (
-                      <Button
-                        variant="secondary"
-                        onClick={() =>
-                          navigate(`/evaluations/${evaluation._id}/view`)
-                        }
-                      >
-                        View Submission
-                      </Button>
+                      <>
+                        <Button
+                          variant="secondary"
+                          onClick={() =>
+                            navigate(`/evaluations/${evaluation._id}/view`)
+                          }
+                        >
+                          View Submission
+                        </Button>
+                        {evaluation.canRetake &&
+                          evaluation.status !== 'closed' && (
+                            <Button
+                              onClick={() =>
+                                navigate(
+                                  `/evaluations/${evaluation._id}/attempt`
+                                )
+                              }
+                              className="bg-orange-500 text-white hover:bg-orange-600"
+                            >
+                              Retake
+                            </Button>
+                          )}
+                      </>
                     ) : evaluation.status === 'closed' ? (
                       <Button variant="secondary" disabled>
                         Closed

@@ -253,20 +253,68 @@ const CourseContentPage = () => {
                   {enrollment.progress?.completedLessons || 0} of{' '}
                   {enrollment.progress?.totalLessons || 0} lessons completed
                 </p>
+                {(enrollment.progress?.totalEvaluations || 0) > 0 && (
+                  <p className="text-sm text-[#4A4A4A]">
+                    {enrollment.progress?.passedEvaluations || 0} of{' '}
+                    {enrollment.progress?.totalEvaluations || 0} evaluations
+                    passed
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-[#FF6A00]">
-                  {enrollment.progress?.percent || 0}%
+                  {enrollment.progress?.overall || 0}%
                 </div>
-                <p className="text-xs text-[#4A4A4A]">Complete</p>
+                <p className="text-xs text-[#4A4A4A]">Overall Progress</p>
               </div>
             </div>
-            <div className="mt-3 h-2 w-full rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-[#FF6A00]"
-                style={{ width: `${enrollment.progress?.percent || 0}%` }}
-              />
+
+            {/* Lessons Progress Bar */}
+            <div className="mt-3">
+              <div className="mb-1 flex justify-between text-xs text-[#4A4A4A]">
+                <span>📚 Lessons</span>
+                <span>{enrollment.progress?.lessons || 0}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-gray-200">
+                <div
+                  className="h-2 rounded-full bg-blue-500"
+                  style={{ width: `${enrollment.progress?.lessons || 0}%` }}
+                />
+              </div>
             </div>
+
+            {/* Evaluations Progress Bar */}
+            {(enrollment.progress?.totalEvaluations || 0) > 0 && (
+              <div className="mt-2">
+                <div className="mb-1 flex justify-between text-xs text-[#4A4A4A]">
+                  <span>📝 Evaluations</span>
+                  <span>{enrollment.progress?.evaluations || 0}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-gray-200">
+                  <div
+                    className="h-2 rounded-full bg-green-500"
+                    style={{
+                      width: `${enrollment.progress?.evaluations || 0}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Failed evaluations warning */}
+            {(enrollment.progress?.failedEvaluations || 0) > 0 && (
+              <p className="mt-2 text-xs text-red-600">
+                ⚠️ {enrollment.progress.failedEvaluations} evaluation(s) failed
+                - retake required
+              </p>
+            )}
+
+            {/* Course Complete Message */}
+            {enrollment.isComplete && (
+              <p className="mt-2 text-sm font-medium text-green-600">
+                ✅ All requirements completed! Certificate available.
+              </p>
+            )}
           </Card>
         )}
 
@@ -807,7 +855,9 @@ const CourseContentPage = () => {
                 {/* Text Lesson */}
                 {viewingLesson.type === 'text' && (
                   <div>
-                    <p className="mb-3 text-sm text-[#4A4A4A]">📄 Text Lesson</p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">
+                      📄 Text Lesson
+                    </p>
                     {viewingLesson.textContent ? (
                       <div className="rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-sm whitespace-pre-wrap text-[#1A1A1A]">
                         {viewingLesson.textContent}
@@ -823,7 +873,9 @@ const CourseContentPage = () => {
                 {/* Live Session */}
                 {viewingLesson.type === 'live' && (
                   <div>
-                    <p className="mb-3 text-sm text-[#4A4A4A]">🔴 Live Session</p>
+                    <p className="mb-3 text-sm text-[#4A4A4A]">
+                      🔴 Live Session
+                    </p>
                     <div className="space-y-3 rounded-lg border border-[#E5E5E5] bg-[#F9F9F9] p-4">
                       {viewingLesson.live?.roomName && (
                         <div>

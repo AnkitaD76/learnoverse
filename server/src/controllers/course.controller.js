@@ -8,6 +8,7 @@ import {
 } from '../errors/index.js';
 import { spawn } from 'child_process';
 import path from 'path';
+import { checkCourseCompletion } from '../services/completion.service.js';
 
 /**
  * GET /api/v1/courses
@@ -354,24 +355,22 @@ export const getMyEnrollments = async (req, res) => {
         .populate('course')
         .sort('-createdAt');
 
-    // Add progress information to each enrollment
-    const enrollmentsWithProgress = enrollments.map(enrollment => {
-        const totalLessons = enrollment.course?.lessons?.length || 0;
-        const completedLessons = enrollment.completedLessonIds?.length || 0;
-        const percent =
-            totalLessons > 0
-                ? Math.round((completedLessons / totalLessons) * 100)
-                : 0;
+    // Add progress information to each enrollment (including evaluations)
+    const enrollmentsWithProgress = await Promise.all(
+        enrollments.map(async enrollment => {
+            const completionStatus = await checkCourseCompletion(
+                userId,
+                enrollment.course._id
+            );
 
-        return {
-            ...enrollment.toObject(),
-            progress: {
-                completedLessons,
-                totalLessons,
-                percent,
-            },
-        };
-    });
+            return {
+                ...enrollment.toObject(),
+                progress: completionStatus.progress,
+                isComplete: completionStatus.isComplete,
+                completionReason: completionStatus.reason,
+            };
+        })
+    );
 
     res.status(StatusCodes.OK).json({
         success: true,
@@ -400,22 +399,16 @@ export const getMyEnrollment = async (req, res) => {
         });
     }
 
-    const totalLessons = enrollment.course?.lessons?.length || 0;
-    const completedLessons = enrollment.completedLessonIds?.length || 0;
-    const percent =
-        totalLessons > 0
-            ? Math.round((completedLessons / totalLessons) * 100)
-            : 0;
+    // Get comprehensive progress including evaluations
+    const completionStatus = await checkCourseCompletion(userId, courseId);
 
     res.status(StatusCodes.OK).json({
         success: true,
         enrollment: {
             ...enrollment.toObject(),
-            progress: {
-                completedLessons,
-                totalLessons,
-                percent,
-            },
+            progress: completionStatus.progress,
+            isComplete: completionStatus.isComplete,
+            completionReason: completionStatus.reason,
         },
     });
 };

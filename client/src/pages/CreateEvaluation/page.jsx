@@ -28,6 +28,9 @@ export const CreateEvaluationPage = () => {
     description: '',
     totalMarks: 100,
     weight: 10,
+    passingGrade: 50,
+    allowRetake: true,
+    maxRetakes: 0,
     questions: [emptyQuestion()],
   });
 
@@ -114,6 +117,9 @@ export const CreateEvaluationPage = () => {
         description: form.description,
         totalMarks: parseInt(form.totalMarks),
         weight: parseFloat(form.weight),
+        passingGrade: parseInt(form.passingGrade),
+        allowRetake: form.allowRetake,
+        maxRetakes: parseInt(form.maxRetakes),
         questions: form.questions.map(q => ({
           prompt: q.prompt,
           maxMarks: parseInt(q.maxMarks),
@@ -212,6 +218,59 @@ export const CreateEvaluationPage = () => {
             min="1"
             required
           />
+
+          {/* Passing Grade and Retake Settings */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <h3 className="mb-3 font-medium text-gray-700">
+              Passing & Retake Settings
+            </h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <Input
+                label="Passing Grade (%)"
+                type="number"
+                name="passingGrade"
+                value={form.passingGrade}
+                onChange={handleChange}
+                min="0"
+                max="100"
+                required
+              />
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Allow Retakes
+                </label>
+                <select
+                  name="allowRetake"
+                  value={form.allowRetake}
+                  onChange={e =>
+                    setForm(prev => ({
+                      ...prev,
+                      allowRetake: e.target.value === 'true',
+                    }))
+                  }
+                  className="w-full rounded-md border px-3 py-2"
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+
+              <Input
+                label="Max Retakes (0 = unlimited)"
+                type="number"
+                name="maxRetakes"
+                value={form.maxRetakes}
+                onChange={handleChange}
+                min="0"
+                disabled={!form.allowRetake}
+              />
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Students scoring below {form.passingGrade}% will need to retake
+              the evaluation to pass.
+            </p>
+          </div>
 
           <div className="text-sm text-gray-600">
             Sum of question marks:{' '}
