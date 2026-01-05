@@ -4,6 +4,7 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import {
   fetchCourseById,
+  enrollInCourse,
   enrollInCourseWithPoints,
   withdrawFromCourse,
 } from '../../api/courses';
@@ -88,6 +89,28 @@ const CourseDetailPage = () => {
 
     loadUserReview();
   }, [courseId, user, course?.enrolled]);
+
+  const handleEnrollFree = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    try {
+      setActionLoading(true);
+      setError(null);
+      setInfo(null);
+
+      const res = await enrollInCourse(courseId);
+      setInfo(res.message || 'Enrolled successfully');
+
+      await loadCourse();
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to enroll');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleEnrollWithPoints = async () => {
     if (!isAuthenticated) {
@@ -315,15 +338,25 @@ const CourseDetailPage = () => {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {!course.enrolled && !isOwner && (
-            <Button
-              onClick={handleEnrollWithPoints}
-              isLoading={actionLoading}
-              className="bg-[#00A86B] text-white hover:bg-[#008f5a]"
-            >
-              Enroll With Points
-            </Button>
-          )}
+          {!course.enrolled &&
+            !isOwner &&
+            (course.pricePoints > 0 ? (
+              <Button
+                onClick={handleEnrollWithPoints}
+                isLoading={actionLoading}
+                className="bg-yellow-500 text-white hover:bg-yellow-600"
+              >
+                Enroll With Points ({course.pricePoints} pts)
+              </Button>
+            ) : (
+              <Button
+                onClick={handleEnrollFree}
+                isLoading={actionLoading}
+                className="bg-[#00A86B] text-white hover:bg-[#008f5a]"
+              >
+                Enroll Free
+              </Button>
+            ))}
 
           {course.enrolled && !isOwner && (
             <Button
@@ -503,12 +536,27 @@ const CourseDetailPage = () => {
       </Card>
 
       <ConfirmationModal
-        show={showPointsConfirm}
+        isOpen={showPointsConfirm}
         onClose={() => setShowPointsConfirm(false)}
         onConfirm={confirmEnrollWithPoints}
         title="Confirm Enrollment"
         message="Do you want to enroll using wallet points?"
         isLoading={actionLoading}
+        details={[
+          {
+            label: 'Course',
+            value: course?.title,
+          },
+          {
+            label: 'Cost',
+            value: `${course?.pricePoints?.toLocaleString() || 0} points`,
+          },
+          {
+            label: 'Your Balance',
+            value: `${wallet?.available_balance?.toLocaleString() || 0} points`,
+          },
+        ]}
+        confirmText="Confirm Enrollment"
       />
     </div>
   );
