@@ -12,7 +12,7 @@ const reportSchema = new mongoose.Schema(
         // What is being reported
         reportType: {
             type: String,
-            enum: ['course', 'post', 'user', 'liveSession'],
+            enum: ['course', 'post', 'user', 'liveSession', 'review'],
             required: [true, 'Report type is required'],
         },
 

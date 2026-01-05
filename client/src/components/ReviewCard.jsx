@@ -1,13 +1,7 @@
-import React, { useState, useContext } from 'react';
-import {
-  ThumbsUp,
-  ThumbsDown,
-  Edit2,
-  Trash2,
-  MessageSquare,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { ThumbsUp, ThumbsDown, Edit2, Trash2, Flag } from 'lucide-react';
 import StarRating from './StarRating';
-// import { SessionContext } from '../contexts/SessionContext';
+import ReportModal from './ReportModal';
 import { formatDistanceToNow } from 'date-fns';
 
 /**
@@ -20,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
  * @param {function} onMarkHelpful - Mark as helpful callback
  * @param {string} currentUserId - Current logged-in user ID
  * @param {boolean} isAdmin - Whether current user is admin
+ * @param {boolean} isCourseOwner - Whether current user is the course owner
  */
 const ReviewCard = ({
   review,
@@ -28,12 +23,15 @@ const ReviewCard = ({
   onMarkHelpful,
   currentUserId,
   isAdmin = false,
+  isCourseOwner = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const isAuthor = currentUserId === review.user?._id;
   const canEdit = isAuthor;
   const canDelete = isAuthor || isAdmin;
+  const canReport = isCourseOwner && !isAuthor;
 
   // Check if review text is long (>300 chars)
   const isLongText = review.reviewText && review.reviewText.length > 300;
@@ -81,29 +79,36 @@ const ReviewCard = ({
           </div>
         </div>
 
-        {/* Action Buttons (Edit/Delete) */}
-        {(canEdit || canDelete) && (
-          <div className="flex gap-2">
-            {canEdit && onEdit && (
-              <button
-                onClick={() => onEdit(review)}
-                className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50"
-                title="Edit review"
-              >
-                <Edit2 size={18} />
-              </button>
-            )}
-            {canDelete && onDelete && (
-              <button
-                onClick={() => onDelete(review._id)}
-                className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50"
-                title="Delete review"
-              >
-                <Trash2 size={18} />
-              </button>
-            )}
-          </div>
-        )}
+        {/* Action Buttons (Edit/Delete/Report) */}
+        <div className="flex gap-2">
+          {canEdit && onEdit && (
+            <button
+              onClick={() => onEdit(review)}
+              className="rounded-lg p-2 text-blue-600 transition-colors hover:bg-blue-50"
+              title="Edit review"
+            >
+              <Edit2 size={18} />
+            </button>
+          )}
+          {canDelete && onDelete && (
+            <button
+              onClick={() => onDelete(review._id)}
+              className="rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50"
+              title="Delete review"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+          {canReport && (
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+              title="Report review"
+            >
+              <Flag size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Ratings */}
@@ -179,6 +184,15 @@ const ReviewCard = ({
           </span>
         </div>
       )}
+
+      {/* Report Modal for course owners */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportType="review"
+        reportedEntity={review._id}
+        reportedUser={review.user?._id}
+      />
     </div>
   );
 };

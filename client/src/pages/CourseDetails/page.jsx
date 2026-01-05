@@ -206,7 +206,11 @@ const CourseDetailPage = () => {
     setIsEditingReview(false);
   };
 
-  const submitReview = async ({ rating, comment }) => {
+  const submitReview = async ({
+    courseRating,
+    instructorRating,
+    reviewText,
+  }) => {
     try {
       setReviewLoading(true);
       setError(null);
@@ -214,10 +218,19 @@ const CourseDetailPage = () => {
 
       let res;
       if (isEditingReview && userReview) {
-        res = await updateReview(courseId, { rating, comment });
+        res = await updateReview(userReview._id, {
+          courseRating,
+          instructorRating,
+          reviewText,
+        });
         setInfo(res.message || 'Review updated');
       } else {
-        res = await createReview(courseId, { rating, comment });
+        res = await createReview(
+          courseId,
+          courseRating,
+          instructorRating,
+          reviewText
+        );
         setInfo(res.message || 'Review submitted');
       }
 
@@ -438,34 +451,55 @@ const CourseDetailPage = () => {
             )}
           </div>
 
-          {showReviewForm && (
-            <ReviewForm
-              onSubmit={submitReview}
-              onCancel={closeReviewForm}
-              isLoading={reviewLoading}
-              initialRating={userReview?.rating || 0}
-              initialComment={userReview?.comment || ''}
-              isEditing={isEditingReview}
-            />
-          )}
-
           {!showReviewForm && userReview && (
             <div className="rounded border p-3">
-              <div className="mb-1 flex items-center gap-2">
-                <StarRating rating={userReview.rating} />
+              <div className="mb-2 flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Course:</span>
+                  <StarRating rating={userReview.courseRating} size="sm" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Instructor:</span>
+                  <StarRating rating={userReview.instructorRating} size="sm" />
+                </div>
                 <span className="text-xs opacity-70">
                   {new Date(userReview.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <p className="text-sm">{userReview.comment}</p>
+              {userReview.reviewText && (
+                <p className="text-sm">{userReview.reviewText}</p>
+              )}
             </div>
           )}
         </Card>
       )}
 
+      {/* Review Form Modal */}
+      <ReviewForm
+        isOpen={showReviewForm}
+        onClose={closeReviewForm}
+        onSubmit={submitReview}
+        initialData={
+          isEditingReview && userReview
+            ? {
+                courseRating: userReview.courseRating,
+                instructorRating: userReview.instructorRating,
+                reviewText: userReview.reviewText,
+              }
+            : null
+        }
+        isEditing={isEditingReview}
+        courseName={course.title}
+        instructorName={course.instructor?.name}
+      />
+
       <Card className="space-y-3 p-6">
         <h2 className="text-lg font-semibold">Reviews</h2>
-        <ReviewList reviews={course.reviews || []} />
+        <ReviewList
+          courseId={courseId}
+          isOwner={isOwner}
+          onReviewDeleted={loadCourse}
+        />
       </Card>
 
       <ConfirmationModal

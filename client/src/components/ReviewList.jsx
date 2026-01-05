@@ -17,8 +17,14 @@ import { useSession } from '../contexts/SessionContext';
  * @param {string} courseId - Course ID to fetch reviews for
  * @param {function} onEditReview - Callback when user wants to edit their review
  * @param {function} onReviewDeleted - Callback when review is deleted
+ * @param {boolean} isOwner - Whether current user is the course owner
  */
-const ReviewList = ({ courseId, onEditReview, onReviewDeleted }) => {
+const ReviewList = ({
+  courseId,
+  onEditReview,
+  onReviewDeleted,
+  isOwner = false,
+}) => {
   const { user } = useSession();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -207,6 +213,7 @@ const ReviewList = ({ courseId, onEditReview, onReviewDeleted }) => {
               onMarkHelpful={handleMarkHelpful}
               currentUserId={user?.userId}
               isAdmin={user?.role === 'admin'}
+              isCourseOwner={isOwner}
             />
           ))}
         </div>

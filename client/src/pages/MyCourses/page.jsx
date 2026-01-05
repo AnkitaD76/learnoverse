@@ -5,6 +5,9 @@ import { Button } from '../../components/Button';
 import { fetchMyEnrollments, fetchMyCreatedCourses } from '../../api/courses';
 import ReportButton from '../../components/ReportButton';
 import ReportModal from '../../components/ReportModal';
+import ReviewForm from '../../components/ReviewForm';
+import { Star } from 'lucide-react';
+import { createReview, updateReview, getUserReview } from '../../api/reviews';
 
 const ProgressBar = ({ progress = {} }) => {
   const overallPercent = progress?.overall || 0;
@@ -72,6 +75,12 @@ const MyCoursesPage = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportingCourse, setReportingCourse] = useState(null);
 
+  // Review states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewingCourse, setReviewingCourse] = useState(null);
+  const [existingReview, setExistingReview] = useState(null);
+  const [isEditingReview, setIsEditingReview] = useState(false);
+
   const load = async () => {
     try {
       setLoading(true);
@@ -103,6 +112,53 @@ const MyCoursesPage = () => {
   const handleReportCourse = course => {
     setReportingCourse(course);
     setShowReportModal(true);
+  };
+
+  const handleOpenReview = async (course, enrollment) => {
+    setReviewingCourse({ ...course, enrollment });
+    setExistingReview(null);
+    setIsEditingReview(false);
+
+    // Check if user already has a review for this course
+    try {
+      const res = await getUserReview(course._id);
+      if (res.review) {
+        setExistingReview(res.review);
+        setIsEditingReview(true);
+      }
+    } catch (err) {
+      // No existing review, that's fine
+    }
+
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async ({
+    courseRating,
+    instructorRating,
+    reviewText,
+  }) => {
+    if (!reviewingCourse) return;
+
+    if (isEditingReview && existingReview) {
+      await updateReview(existingReview._id, {
+        courseRating,
+        instructorRating,
+        reviewText,
+      });
+    } else {
+      await createReview(
+        reviewingCourse._id,
+        courseRating,
+        instructorRating,
+        reviewText
+      );
+    }
+
+    setShowReviewModal(false);
+    setReviewingCourse(null);
+    setExistingReview(null);
+    setIsEditingReview(false);
   };
 
   return (
@@ -190,6 +246,13 @@ const MyCoursesPage = () => {
                       </div>
 
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => handleOpenReview(item.course, item)}
+                          className="rounded-lg p-2 text-yellow-500 transition-colors hover:bg-yellow-50 hover:text-yellow-600"
+                          title="Write a review"
+                        >
+                          <Star size={18} />
+                        </button>
                         <ReportButton
                           onReport={() => handleReportCourse(item.course)}
                         />
@@ -320,6 +383,30 @@ const MyCoursesPage = () => {
           reportedUser={reportingCourse.instructor?._id}
         />
       )}
+
+      {/* Review Modal */}
+      <ReviewForm
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setReviewingCourse(null);
+          setExistingReview(null);
+          setIsEditingReview(false);
+        }}
+        onSubmit={handleSubmitReview}
+        initialData={
+          existingReview
+            ? {
+                courseRating: existingReview.courseRating,
+                instructorRating: existingReview.instructorRating,
+                reviewText: existingReview.reviewText,
+              }
+            : null
+        }
+        isEditing={isEditingReview}
+        courseName={reviewingCourse?.title}
+        instructorName={reviewingCourse?.instructor?.name}
+      />
     </div>
   );
 };

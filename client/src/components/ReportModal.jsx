@@ -197,8 +197,13 @@ const ReportModal = ({
 ReportModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  reportType: PropTypes.oneOf(['course', 'post', 'user', 'liveSession'])
-    .isRequired,
+  reportType: PropTypes.oneOf([
+    'course',
+    'post',
+    'user',
+    'liveSession',
+    'review',
+  ]).isRequired,
   reportedEntity: PropTypes.string.isRequired,
   reportedUser: PropTypes.string,
 };

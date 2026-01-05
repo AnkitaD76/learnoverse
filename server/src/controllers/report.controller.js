@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
-import { Report, User, Course, Post } from '../models/index.js';
+import { Report, User, Course, Post, Review } from '../models/index.js';
 import {
     NotFoundError,
     BadRequestError,
@@ -31,6 +31,9 @@ export const createReport = async (req, res) => {
             break;
         case 'liveSession':
             entityModel = Course; // Live sessions are part of courses
+            break;
+        case 'review':
+            entityModel = Review;
             break;
         default:
             throw new BadRequestError('Invalid report type');
@@ -169,6 +172,16 @@ export const getAllReports = async (req, res) => {
                 model: 'User',
                 select: 'name email avatar role',
             });
+        } else if (report.reportType === 'review') {
+            await report.populate({
+                path: 'reportedEntity',
+                model: 'Review',
+                select: 'courseRating instructorRating reviewText user course createdAt',
+                populate: [
+                    { path: 'user', select: 'name email' },
+                    { path: 'course', select: 'title' },
+                ],
+            });
         }
     }
 
@@ -238,6 +251,20 @@ export const getReportById = async (req, res) => {
             path: 'reportedEntity',
             model: 'User',
             select: 'name email avatar role bio createdAt',
+        });
+    } else if (report.reportType === 'review') {
+        await report.populate({
+            path: 'reportedEntity',
+            model: 'Review',
+            select: 'courseRating instructorRating reviewText user course createdAt isEdited',
+            populate: [
+                { path: 'user', select: 'name email avatar' },
+                {
+                    path: 'course',
+                    select: 'title instructor',
+                    populate: { path: 'instructor', select: 'name' },
+                },
+            ],
         });
     }
 
@@ -322,6 +349,9 @@ export const takeActionOnReport = async (req, res) => {
         } else if (report.reportType === 'post') {
             await Post.findByIdAndDelete(report.reportedEntity);
             actionTaken += 'Post deleted. ';
+        } else if (report.reportType === 'review') {
+            await Review.findByIdAndDelete(report.reportedEntity);
+            actionTaken += 'Review deleted. ';
         }
         report.adminAction = 'content-deleted';
     }
