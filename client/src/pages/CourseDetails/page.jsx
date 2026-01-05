@@ -392,12 +392,14 @@ const CourseDetailPage = () => {
           {/* Report */}
           {user && !isOwner && (
             <>
-              <ReportButton onClick={() => setShowReportModal(true)} />
+              <ReportButton onReport={() => setShowReportModal(true)} />
               {showReportModal && (
                 <ReportModal
+                  isOpen={showReportModal}
                   onClose={() => setShowReportModal(false)}
-                  targetType="course"
-                  targetId={course._id}
+                  reportType="course"
+                  reportedEntity={course._id}
+                  reportedUser={course.instructor?._id}
                 />
               )}
             </>

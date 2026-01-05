@@ -191,7 +191,7 @@ const MyCoursesPage = () => {
 
                       <div className="flex gap-2">
                         <ReportButton
-                          onClick={() => handleReportCourse(item.course)}
+                          onReport={() => handleReportCourse(item.course)}
                         />
                         <Link to={`/courses/${item.course?._id}/content`}>
                           <Button
@@ -310,13 +310,14 @@ const MyCoursesPage = () => {
       {/* Report Modal */}
       {showReportModal && reportingCourse && (
         <ReportModal
-          targetType="course"
-          targetId={reportingCourse._id}
-          targetTitle={reportingCourse.title}
+          isOpen={showReportModal}
           onClose={() => {
             setShowReportModal(false);
             setReportingCourse(null);
           }}
+          reportType="course"
+          reportedEntity={reportingCourse._id}
+          reportedUser={reportingCourse.instructor?._id}
         />
       )}
     </div>
