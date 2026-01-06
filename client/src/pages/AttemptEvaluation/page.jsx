@@ -30,11 +30,11 @@ export const AttemptEvaluationPage = () => {
       ]);
 
       // Check if already submitted
-      if (submissionRes.submission) {
-        alert('You have already submitted this evaluation');
-        navigate(`/evaluations/${evaluationId}/view`);
-        return;
-      }
+      // if (submissionRes.submission) {
+      //   alert('You have already submitted this evaluation');
+      //   navigate(`/evaluations/${evaluationId}/view`);
+      //   return;
+      // }
 
       setEvaluation(evalRes.evaluation);
 
