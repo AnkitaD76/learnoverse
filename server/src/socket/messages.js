@@ -42,8 +42,10 @@ export const setupMessaging = (io) => {
       const { courseId } = data;
       const room = `course-${courseId}`;
       
+      console.log(`🚪 join-course event received from ${socket.userName}:`, { courseId, socketId: socket.id });
       socket.join(room);
-      console.log(`👤 ${socket.userName} joined room: ${room}`);
+      console.log(`✅ ${socket.userName} (${socket.id}) joined room: ${room}`);
+      console.log(`📊 Room members:`, [...socket.adapter.rooms.get(room) || []].length);
       
       // Notify others that user joined
       socket.to(room).emit('user-joined', {
@@ -59,16 +61,21 @@ export const setupMessaging = (io) => {
      * Data: { courseId, message }
      */
     socket.on('send-message', (data) => {
+      console.log('📬 send-message event received:', { data, socketId: socket.id });
       const { courseId, message } = data;
       const room = `course-${courseId}`;
       
+      console.log(`📍 Room: ${room}, Message length: ${message?.length}, Message: ${message?.substring(0, 50)}`);
+      
       // Validate message
       if (!message || message.trim().length === 0) {
+        console.log('❌ Empty message, sending error');
         socket.emit('message-error', { error: 'Message cannot be empty' });
         return;
       }
 
       if (message.length > 500) {
+        console.log('❌ Message too long:', message.length);
         socket.emit('message-error', { error: 'Message too long (max 500 chars)' });
         return;
       }
@@ -83,9 +90,11 @@ export const setupMessaging = (io) => {
       };
 
       console.log(`💬 Message in ${room} from ${socket.userName}: ${message}`);
+      console.log(`📤 Broadcasting to room ${room}:`, messageObj);
       
       // Emit to all users in room (including sender)
       io.to(room).emit('receive-message', messageObj);
+      console.log(`✅ Message broadcasted to ${room}`);
     });
 
     /**

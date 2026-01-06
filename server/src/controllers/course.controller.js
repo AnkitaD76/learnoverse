@@ -356,8 +356,11 @@ export const getMyEnrollments = async (req, res) => {
         .sort('-createdAt');
 
     // Add progress information to each enrollment (including evaluations)
+    // Filter out enrollments with null courses
+    const validEnrollments = enrollments.filter(e => e.course !== null);
+    
     const enrollmentsWithProgress = await Promise.all(
-        enrollments.map(async enrollment => {
+        validEnrollments.map(async enrollment => {
             const completionStatus = await checkCourseCompletion(
                 userId,
                 enrollment.course._id

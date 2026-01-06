@@ -33,6 +33,8 @@ import evaluationRoutes from './routers/evaluation.routes.js';
 // Skill Swap + Notifications
 import notificationsRoutes from './routers/notifications.routes.js';
 import skillSwapRoutes from './routers/skillSwap.routes.js';
+import fileShareRoutes from './routers/fileShare.routes.js';
+import tempImageRoutes from './routers/tempImage.routes.js';
 
 const app = express();
 
@@ -78,9 +80,11 @@ app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
 app.use('/api/v1', evaluationRoutes);
 
-// ✅ Notifications + Skill Swap
+// ✅ Notifications + Skill Swap + File Sharing + Temporary Images
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/skill-swap', skillSwapRoutes);
+app.use('/api/v1/file-share', fileShareRoutes);
+app.use('/api/v1/temp-images', tempImageRoutes);
 
 // Error Handlers (MUST BE LAST)
 app.use(notFoundMiddleware);

@@ -31,3 +31,6 @@ export { default as Certificate } from './Certificate.js';
 export { default as Evaluation } from './Evaluation.js';
 export { default as EvaluationQuestion } from './EvaluationQuestion.js';
 export { default as EvaluationSubmission } from './EvaluationSubmission.js';
+
+// File Sharing System Model
+export { default as FileShare } from './FileShare.js';

@@ -113,11 +113,21 @@ const MyCoursesPage = () => {
   }, []);
 
   const handleReportCourse = course => {
+    if (!course || !course._id) {
+      setError('Course information is missing');
+      return;
+    }
     setReportingCourse(course);
     setShowReportModal(true);
   };
 
   const handleOpenReview = async (course, enrollment) => {
+    // Validate course exists
+    if (!course || !course._id) {
+      setError('Course information is missing');
+      return;
+    }
+
     // Check if user already has a review for this course
     try {
       const res = await getUserReview(course._id);
