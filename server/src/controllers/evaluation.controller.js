@@ -36,12 +36,14 @@ export const createEvaluation = async (req, res) => {
 
     // Validate course exists
     const course = await Course.findById(courseId);
+    console.log(course.instructor._id, userId);
+
     if (!course) {
         throw new NotFoundError('Course not found');
     }
 
     // Ensure only instructor of the course or admin can create evaluations
-    if (String(course.instructor) !== String(userId) && role !== 'admin') {
+    if (String(course.instructor) !== String(userId)) {
         throw new UnauthorizedError(
             'Only the course instructor can create evaluations'
         );
@@ -484,7 +486,7 @@ export const getEvaluationSubmissions = async (req, res) => {
     const isCourseInstructor =
         String(evaluation.course.instructor) === String(userId);
 
-    if (!isEvaluationInstructor && !isCourseInstructor && role !== 'admin') {
+    if (!isEvaluationInstructor && !isCourseInstructor ) {
         throw new UnauthorizedError(
             'Only the course instructor can view submissions'
         );

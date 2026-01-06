@@ -37,17 +37,17 @@ export const CreateEvaluationPage = () => {
   const [loading, setLoading] = useState(false);
   const [saveAsDraft, setSaveAsDraft] = useState(true);
 
-  if (user?.role !== 'instructor' && user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <Card className="mx-auto mt-8 max-w-2xl">
-          <p className="text-red-500">
-            Only instructors can create evaluations.
-          </p>
-        </Card>
-      </div>
-    );
-  }
+  // if (user?.role !== 'instructor') {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 p-4">
+  //       <Card className="mx-auto mt-8 max-w-2xl">
+  //         <p className="text-red-500">
+  //           Only instructors can create evaluations.
+  //         </p>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   const handleChange = e => {
     const { name, value } = e.target;
