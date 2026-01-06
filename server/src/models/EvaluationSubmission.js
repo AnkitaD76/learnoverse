@@ -81,11 +81,6 @@ const evaluationSubmissionSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Index by student and evaluation (not unique to allow retakes)
-evaluationSubmissionSchema.index({ student: 1, evaluation: 1 });
-
-// Index for queries
-evaluationSubmissionSchema.index({ evaluation: 1, status: 1 });
 
 // Store original document on init for comparison
 evaluationSubmissionSchema.post('init', function () {

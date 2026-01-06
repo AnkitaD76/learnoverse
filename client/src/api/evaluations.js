@@ -82,7 +82,7 @@ export const getEvaluationById = async evaluationId => {
 
 // Submit evaluation answers
 export const submitEvaluation = async (evaluationId, answers) => {
-  const response = await apiClient.post(`/evaluations/${evaluationId}/You have already submitted this evaluation`, {
+  const response = await apiClient.post(`/evaluations/${evaluationId}/submit`, {
     answers,
   });
   return response.data;
