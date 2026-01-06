@@ -79,7 +79,6 @@ const ExchangeRateSchema = new mongoose.Schema(
 );
 
 // Compound index for efficient querying
-ExchangeRateSchema.index({ currency: 1, is_active: 1 });
 ExchangeRateSchema.index({ currency: 1, effective_from: -1 });
 
 // Ensure only one active rate per currency

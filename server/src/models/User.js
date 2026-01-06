@@ -249,7 +249,6 @@ UserSchema.index({
 UserSchema.index({ role: 1 }); // Filter by role
 UserSchema.index({ country: 1 }); // Filter by country
 UserSchema.index({ interests: 1 }); // Filter by interests
-UserSchema.index({ email: 1 }); // Unique constraint + lookup
 
 // Compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {

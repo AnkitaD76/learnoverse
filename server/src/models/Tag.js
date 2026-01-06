@@ -36,7 +36,6 @@ const tagSchema = new mongoose.Schema(
 );
 
 // Index for fast lookups
-tagSchema.index({ name: 1 });
 tagSchema.index({ questionCount: -1 }); // For popular tags query
 
 export default mongoose.model('Tag', tagSchema);

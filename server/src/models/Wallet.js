@@ -85,9 +85,6 @@ WalletSchema.virtual('available_balance').get(function () {
     return this.points_balance - this.reserved_points;
 });
 
-// Index for faster lookups
-WalletSchema.index({ userId: 1 });
-
 // Method: Check if user has sufficient balance
 WalletSchema.methods.hasSufficientBalance = function (amount) {
     const available = this.points_balance - this.reserved_points;

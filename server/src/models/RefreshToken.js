@@ -31,7 +31,6 @@ const RefreshTokenSchema = new mongoose.Schema(
 );
 
 // Add index for faster lookups
-RefreshTokenSchema.index({ refreshToken: 1 });
 RefreshTokenSchema.index({ user: 1 });
 
 export default mongoose.model('RefreshToken', RefreshTokenSchema);
