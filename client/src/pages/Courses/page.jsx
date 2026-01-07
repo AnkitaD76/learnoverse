@@ -5,6 +5,7 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { fetchCourses } from '../../api/courses';
 
+
 const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState('');

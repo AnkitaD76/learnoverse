@@ -14,6 +14,11 @@ export const initializeSocket = (token, userId, userName) => {
     userId,
     userName,
   });
+  console.log('🔍 Current socket state BEFORE init:', {
+    socketExists: !!socket,
+    socketConnected: socket?.connected,
+    socketId: socket?.id,
+  });
 
   if (socket?.connected) {
     console.log('✅ Socket already connected:', socket.id);
@@ -70,9 +75,20 @@ export const initializeSocket = (token, userId, userName) => {
   }
 
   socket = io(SOCKET_URL, socketOptions);
+  console.log('🎯 Socket JUST CREATED:', {
+    socketVarExists: !!socket,
+    id: socket?.id,
+    connected: socket?.connected,
+    url: SOCKET_URL,
+  });
 
   socket.on('connect', () => {
     console.log('✅ Socket connected successfully! Socket ID:', socket.id);
+    console.log('🔍 Socket object after connect:', {
+      exists: !!socket,
+      id: socket.id,
+      connected: socket.connected,
+    });
   });
 
   socket.on('connect_error', error => {
@@ -88,6 +104,11 @@ export const initializeSocket = (token, userId, userName) => {
     console.error('❌ Socket error event:', error);
   });
 
+  console.log('✅ initializeSocket COMPLETE. Returning socket:', {
+    exists: !!socket,
+    id: socket.id,
+    connected: socket.connected,
+  });
   return socket;
 };
 
@@ -108,8 +129,12 @@ export const disconnectSocket = () => {
 
 // Course messaging events
 export const joinCourseRoom = courseId => {
+  console.log('🚪 joinCourseRoom called with:', courseId);
   if (socket) {
+    console.log('📤 Emitting join-course event');
     socket.emit('join-course', { courseId });
+  } else {
+    console.warn('⚠️ Socket not initialized for joinCourseRoom');
   }
 };
 
@@ -120,13 +145,25 @@ export const leaveCourseRoom = courseId => {
 };
 
 export const sendMessage = (courseId, message) => {
+  const sock = getSocket();
+  console.log('🔍 Socket check in sendMessage:', {
+    socketExists: !!socket,
+    getSocketReturns: !!sock,
+    connected: sock?.connected,
+    socketId: sock?.id
+  });
+
   if (!socket) {
-    console.error('❌ Socket not initialized');
+    console.error('❌ Socket not initialized (socket is null)');
     return;
   }
 
   if (!socket.connected) {
-    console.error('❌ Socket not connected');
+    console.error('❌ Socket not connected:', {
+      connected: socket.connected,
+      disconnected: socket.disconnected,
+      id: socket.id
+    });
     return;
   }
 
@@ -136,7 +173,11 @@ export const sendMessage = (courseId, message) => {
 
 export const onReceiveMessage = callback => {
   if (socket) {
-    socket.on('receive-message', callback);
+    console.log('🎧 Registering receive-message listener');
+    socket.on('receive-message', (data) => {
+      console.log('💌 receive-message event fired:', data);
+      callback(data);
+    });
   }
 };
 

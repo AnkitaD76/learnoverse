@@ -73,8 +73,16 @@ export const Header = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center space-x-2 rounded-full focus:ring-2 focus:ring-[#FF6A00] focus:ring-offset-2 focus:outline-none"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF6A00] font-semibold text-white">
-                    {getInitials(user.name)}
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#FF6A00] font-semibold text-white">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      getInitials(user.name)
+                    )}
                   </div>
                   <svg
                     className={`h-4 w-4 text-gray-600 transition-transform ${

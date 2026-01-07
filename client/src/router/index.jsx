@@ -17,7 +17,7 @@ import PostsPage from '../pages/Posts/page';
 import NotificationsPage from '../pages/Notifications/page';
 
 // Courses
-import CoursesPage from '../pages/courses/page';
+import CoursesPage from '../pages/Courses/page';
 import CourseDetailPage from '../pages/CourseDetails/page';
 import CourseContentPage from '../pages/CourseContent/page';
 import CreateCoursePage from '../pages/CreateCourse/page';

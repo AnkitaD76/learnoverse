@@ -4,6 +4,7 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import CourseMessaging from '../../components/CourseMessaging';
+import { FileShare } from '../../components/FileShare';
 import { fetchCourseById, fetchCourseEnrollments } from '../../api/courses';
 import { initializeSocket } from '../../services/socketService.js';
 import { useSession } from '../../contexts/SessionContext';
@@ -53,8 +54,16 @@ const StudentEnrolledPage = () => {
 
   // Initialize Socket.io separately
   useEffect(() => {
+    console.log('🎯 Socket init effect RUNNING');
+    console.log('👤 Current user:', {
+      exists: !!user,
+      _id: user?._id,
+      name: user?.name,
+      fullUser: user,
+    });
+
     if (!user?._id || !user?.name) {
-      console.log('⏳ Waiting for user data...');
+      console.log('⏳ Waiting for user data... (early return)');
       return;
     }
 
@@ -68,7 +77,9 @@ const StudentEnrolledPage = () => {
     console.log('🔑 Token from apiClient:', token ? 'YES ✅' : 'NO ❌');
 
     // Initialize socket with or without token (cookies will be sent via withCredentials)
+    console.log('🚀 About to call initializeSocket...');
     initializeSocket(token, user._id, user.name);
+    console.log('✅ initializeSocket call complete');
   }, [user]);
 
   if (isLoading) {
@@ -153,6 +164,9 @@ const StudentEnrolledPage = () => {
             currentUserName={user.name}
           />
         )}
+
+        {/* File Sharing Feature */}
+        <FileShare courseId={courseId} />
 
         {/* Course Info */}
         <Card>
