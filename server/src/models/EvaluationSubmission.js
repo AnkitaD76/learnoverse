@@ -101,7 +101,6 @@ evaluationSubmissionSchema.pre('save', function (next) {
             'updatedAt', // Mongoose timestamp
             'createdAt', // Mongoose timestamp
         ];
-
         // If already submitted, only allow grading fields to be modified
         const illegalChanges = modifiedPaths.filter(
             path => !allowedAfterSubmit.includes(path)
