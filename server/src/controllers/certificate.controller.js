@@ -72,8 +72,8 @@ export const markLessonComplete = async (req, res) => {
                     ? Math.round((completedLessons / totalLessons) * 100)
                     : 0,
             isComplete: completionStatus.isComplete,
-            totalScore: completionStatus.totalScore,
             reason: completionStatus.reason,
+            progressDetails: completionStatus.progress,
         },
         certificate: certificate
             ? {
